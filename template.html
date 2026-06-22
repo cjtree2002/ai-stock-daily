@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI美股日报 · {{DATE_STR}}</title>
+  <style>
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface2: #f8f9fc;
+      --border: #e4e7ef;
+      --border-light: #eef0f7;
+      --accent: #4f46e5;
+      --accent2: #6366f1;
+      --text: #1e2130;
+      --text-muted: #5a6278;
+      --text-dim: #9499b0;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --ticker-bg: #eef0fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+    .header-left h1 span { color: var(--accent2); }
+    .header-date {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .header-stats { display: flex; gap: 28px; }
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Company Card ── */
+    .company-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .company-card:hover {
+      border-color: var(--accent2);
+      box-shadow: 0 2px 16px rgba(99,102,241,0.10);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .company-name {
+      font-weight: 600;
+      font-size: 14px;
+      flex: 1;
+      color: var(--text);
+    }
+    .ticker {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: "SF Mono", "Fira Code", monospace;
+      background: var(--ticker-bg);
+      color: var(--accent);
+      border: 1px solid #d4d8f7;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .ticker.private {
+      background: #f3f4f6;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .article-count {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Stock Price Block ── */
+    .stock-price {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--surface);
+    }
+    .price-current {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--text);
+    }
+    .price-change {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: "SF Mono", "Fira Code", monospace;
+      padding: 1px 7px;
+      border-radius: 4px;
+    }
+    .price-change.up {
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+    }
+    .price-change.down {
+      color: var(--red);
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
+    .price-change.flat {
+      color: var(--text-dim);
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+    }
+    .price-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+    .price-vol {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Articles ── */
+    .articles { padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .article { padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+    .article:last-child { border-bottom: none; padding-bottom: 0; }
+    .article-title {
+      display: block;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .article-title:hover { color: var(--accent); text-decoration: underline; }
+    .article-meta {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .source { color: var(--accent); font-weight: 500; }
+    .pub-time { color: var(--text-dim); }
+    .article-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+
+    /* ── No News Section ── */
+    .no-news-section {
+      margin-top: 24px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .no-news-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+    .no-news-list { font-size: 12px; color: var(--text-dim); line-height: 1.8; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 36px;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .header { padding: 14px 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .container { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>AI 美股 <span>日报</span></h1>
+    <div class="header-date">{{DATE_STR}}（周{{WEEKDAY}}）前一日 &nbsp;·&nbsp; 生成于 {{GENERATED_AT}}</div>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-value">{{COMPANIES_COUNT}}</div>
+      <div class="stat-label">有新闻公司</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">{{ARTICLES_COUNT}}</div>
+      <div class="stat-label">新闻总条数</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+    {{CARDS_HTML}}
+  </div>
+
+  <div class="no-news-section">
+    <div class="no-news-title">当日无新闻的公司</div>
+    <div class="no-news-list">{{NO_NEWS_LIST}}</div>
+  </div>
+</div>
+
+<footer class="footer">
+  新闻数据：NewsAPI.org &nbsp;·&nbsp; 股价数据：Yahoo Finance &nbsp;·&nbsp; 仅供参考，不构成投资建议
+</footer>
+
+</body>
+</html>
