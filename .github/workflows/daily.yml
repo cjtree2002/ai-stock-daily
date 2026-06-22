@@ -29,14 +29,16 @@ jobs:
         env:
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
         run: |
+          mkdir -p docs
           python fetch_news.py
-          # Also copy latest.html to index.html so GitHub Pages serves it directly
-          cp reports/latest.html reports/index.html
+          cp reports/latest.html docs/index.html
+          # Keep dated copies in docs/ as archive
+          cp reports/latest.html docs/$(date +'%Y-%m-%d').html
 
       - name: Commit and push report
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reports/
+          git add reports/ docs/
           git diff --cached --quiet || git commit -m "📊 Daily report $(date +'%Y-%m-%d')"
           git push
