@@ -10,6 +10,7 @@ import requests
 import yfinance as yf
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 from companies import AI_COMPANIES
 
@@ -162,6 +163,53 @@ def fetch_all_news(target_date: datetime) -> dict:
     return company_articles
 
 
+# ── Translation (Google free endpoint, no API key) ──────────────────────────
+_translate_cache: dict[str, str] = {}
+
+
+def translate_text(text: str) -> str:
+    """Translate English text to Simplified Chinese. Falls back to original on error."""
+    if not text or not text.strip():
+        return text
+    if text in _translate_cache:
+        return _translate_cache[text]
+    try:
+        resp = requests.get(
+            "https://translate.googleapis.com/translate_a/single",
+            params={"client": "gtx", "sl": "en", "tl": "zh-CN", "dt": "t", "q": text},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        translated = "".join(seg[0] for seg in data[0] if seg[0])
+        _translate_cache[text] = translated or text
+        return _translate_cache[text]
+    except Exception:
+        _translate_cache[text] = text  # cache the failure to avoid retry storms
+        return text
+
+
+def pretranslate_displayed(company_articles: dict) -> None:
+    """Pre-translate all displayed titles/descriptions concurrently to fill the cache."""
+    texts: set[str] = set()
+    for company in AI_COMPANIES:
+        for art in company_articles.get(company["ticker"], [])[:MAX_ARTICLES_PER_COMPANY]:
+            title = art.get("title")
+            if title:
+                texts.add(title)
+            desc = art.get("description") or ""
+            if len(desc) > 120:
+                desc = desc[:120] + "…"
+            if desc:
+                texts.add(desc)
+    if not texts:
+        return
+    print(f"Translating {len(texts)} text segments to Chinese...")
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        list(ex.map(translate_text, list(texts)))
+    print(f"  Translation done (cache size: {len(_translate_cache)})")
+
+
 def format_time(iso_str: str) -> str:
     try:
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
@@ -219,13 +267,14 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
         stock_html = render_stock_price(ticker, prices)
         articles_html = ""
         for art in articles:
-            title = art.get("title") or "无标题"
+            title = translate_text(art.get("title") or "") or "无标题"
             url = art.get("url") or "#"
             source = (art.get("source") or {}).get("name") or ""
             published = format_time(art.get("publishedAt") or "")
             description = art.get("description") or ""
             if len(description) > 120:
                 description = description[:120] + "…"
+            description = translate_text(description)
 
             articles_html += f"""
             <div class="article">
@@ -273,6 +322,7 @@ def main():
 
     company_articles = fetch_all_news(target)
     prices = fetch_stock_prices(target)
+    pretranslate_displayed(company_articles)
 
     OUTPUT_DIR.mkdir(exist_ok=True)
     html = generate_html(company_articles, prices, target)
