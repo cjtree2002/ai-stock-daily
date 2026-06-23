@@ -1,16 +1,21 @@
 # AI sector top 100 US-listed companies (by market cap, as of 2025)
 AI_COMPANIES = [
+    # ── Priority (user-pinned, shown first) ──
+    {"name": "英伟达 NVIDIA",   "ticker": "NVDA",  "keywords": ["NVIDIA", "NVDA"]},
+    {"name": "谷歌 Alphabet",   "ticker": "GOOGL", "keywords": ["Google", "Alphabet", "GOOGL", "Gemini", "DeepMind"]},
+    {"name": "美光 Micron",     "ticker": "MU",    "keywords": ["Micron", "MU", "HBM memory"]},
+    {"name": "闪迪 SanDisk",    "ticker": "SNDK",  "keywords": ["SanDisk", "SNDK"]},
+    {"name": "迈威尔 Marvell",  "ticker": "MRVL",  "keywords": ["Marvell", "MRVL"]},
+    {"name": "AMD",             "ticker": "AMD",   "keywords": ["AMD", "Advanced Micro Devices"]},
+
     # Mega cap
-    {"name": "NVIDIA",          "ticker": "NVDA",  "keywords": ["NVIDIA", "NVDA"]},
     {"name": "Microsoft",       "ticker": "MSFT",  "keywords": ["Microsoft", "MSFT", "Azure AI", "Copilot"]},
     {"name": "Apple",           "ticker": "AAPL",  "keywords": ["Apple", "AAPL", "Apple Intelligence"]},
-    {"name": "Alphabet",        "ticker": "GOOGL", "keywords": ["Google", "Alphabet", "GOOGL", "Gemini", "DeepMind"]},
     {"name": "Amazon",          "ticker": "AMZN",  "keywords": ["Amazon", "AMZN", "AWS", "Bedrock AI"]},
     {"name": "Meta",            "ticker": "META",  "keywords": ["Meta", "META", "Llama", "Facebook AI"]},
     {"name": "TSMC (ADR)",      "ticker": "TSM",   "keywords": ["TSMC", "TSM", "Taiwan Semiconductor"]},
     {"name": "Broadcom",        "ticker": "AVGO",  "keywords": ["Broadcom", "AVGO"]},
     {"name": "Tesla",           "ticker": "TSLA",  "keywords": ["Tesla", "TSLA", "Optimus robot", "FSD"]},
-    {"name": "AMD",             "ticker": "AMD",   "keywords": ["AMD", "Advanced Micro Devices"]},
     # Large cap
     {"name": "Oracle",          "ticker": "ORCL",  "keywords": ["Oracle", "ORCL", "Oracle AI"]},
     {"name": "Salesforce",      "ticker": "CRM",   "keywords": ["Salesforce", "CRM", "Agentforce"]},
@@ -34,8 +39,6 @@ AI_COMPANIES = [
     {"name": "ASML (ADR)",      "ticker": "ASML",  "keywords": ["ASML"]},
     {"name": "Lam Research",    "ticker": "LRCX",  "keywords": ["Lam Research", "LRCX"]},
     {"name": "KLA Corp",        "ticker": "KLAC",  "keywords": ["KLA", "KLAC"]},
-    {"name": "Marvell Tech",    "ticker": "MRVL",  "keywords": ["Marvell", "MRVL"]},
-    {"name": "Micron",          "ticker": "MU",    "keywords": ["Micron", "MU", "HBM memory"]},
     {"name": "Arm Holdings",    "ticker": "ARM",   "keywords": ["Arm Holdings", "ARM"]},
     # AI-focused mid cap
     {"name": "C3.ai",           "ticker": "AI",    "keywords": ["C3.ai", " AI "]},
@@ -65,7 +68,6 @@ AI_COMPANIES = [
     {"name": "Brainware AI",    "ticker": "BWAI",  "keywords": ["Brainware", "BWAI"]},
     {"name": "Luminar Tech",    "ticker": "LAZR",  "keywords": ["Luminar", "LAZR"]},
     {"name": "Mobileye",        "ticker": "MBLY",  "keywords": ["Mobileye", "MBLY"]},
-    {"name": "Waymo (Alphabet)","ticker": "GOOGL", "keywords": ["Waymo"]},
     {"name": "Cruise (GM)",     "ticker": "GM",    "keywords": ["Cruise autonomous", "GM AI"]},
     {"name": "Aurora Innovation","ticker": "AUR",  "keywords": ["Aurora Innovation", "AUR"]},
     {"name": "Symbotic",        "ticker": "SYM",   "keywords": ["Symbotic", "SYM"]},
