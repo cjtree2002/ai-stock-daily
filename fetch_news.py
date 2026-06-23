@@ -8,12 +8,14 @@ import sys
 import time
 import requests
 import yfinance as yf
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from companies import AI_COMPANIES
 
 # ── Config ──────────────────────────────────────────────────────────────────
+# Beijing timezone (UTC+8) — GitHub runners use UTC, so we convert explicitly
+BEIJING_TZ = timezone(timedelta(hours=8))
 NEWS_API_KEY = os.environ.get("NEWS_API_KEY", "")
 OUTPUT_DIR = Path(__file__).parent / "reports"
 TEMPLATE_PATH = Path(__file__).parent / "template.html"
@@ -192,7 +194,7 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
     date_str = target_date.strftime("%Y年%m月%d日")
     weekdays = ["一", "二", "三", "四", "五", "六", "日"]
     weekday_str = weekdays[target_date.weekday()]
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    now_str = datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M") + " 北京时间"
 
     # Build company cards (only companies with news)
     cards_html = ""
@@ -264,8 +266,8 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
 
 
 def main():
-    # Default: yesterday (US Eastern previous trading day)
-    target = datetime.now() - timedelta(days=1)
+    # Default: yesterday (relative to Beijing date)
+    target = datetime.now(BEIJING_TZ).replace(tzinfo=None) - timedelta(days=1)
     if len(sys.argv) > 1:
         target = datetime.strptime(sys.argv[1], "%Y-%m-%d")
 
