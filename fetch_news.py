@@ -169,6 +169,12 @@ def _score_article(article: dict, pats: list) -> float:
     return score
 
 
+def _is_junk_source(article: dict) -> bool:
+    """Deal sites, PR wires, content farms — never relevant to a stock daily."""
+    name = ((article.get("source") or {}).get("name") or "").lower()
+    return any(s in name for s in JUNK_SOURCES)
+
+
 def _title_tokens(t: str) -> set:
     return set(re.findall(r"[a-z0-9]+", (t or "").lower()))
 
@@ -199,9 +205,11 @@ def assign_articles_to_companies(articles: list[dict], companies: list[dict]) ->
     patterns = _build_company_patterns(companies)
     name_to_pats = {c["name"]: pats for c, pats in patterns}
 
-    # 1) Collect all matching articles per company.
+    # 1) Collect all matching articles per company (junk sources excluded outright).
     raw: dict[str, list] = {c["name"]: [] for c in companies}
     for article in articles:
+        if _is_junk_source(article):
+            continue
         title = article.get("title") or ""
         description = article.get("description") or ""
         content = title + " " + description  # original case for ticker matching
@@ -305,7 +313,7 @@ def fetch_all_news(target_date: datetime) -> dict:
     print(f"Fetching news for {target_date.strftime('%Y-%m-%d')}...")
 
     all_articles: list[dict] = []
-    batches = build_query_batches(AI_COMPANIES, batch_size=8)
+    batches = build_query_batches(AI_COMPANIES, batch_size=5)
 
     for i, batch in enumerate(batches):
         print(f"  Batch {i+1}/{len(batches)}: {', '.join(batch[:3])}...")
