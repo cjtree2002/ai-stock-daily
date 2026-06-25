@@ -27,12 +27,23 @@ MAX_ARTICLES_PER_COMPANY = 5
 REQUEST_DELAY = 1.2  # seconds between requests
 
 
+# Set by fetch_all_news so main() can refuse to overwrite a good page on rate-limit.
+RATE_LIMITED = False
+
+
 def fetch_articles_bulk(keywords_batch: list[str], from_date: str, to_date: str) -> list[dict]:
-    """Fetch articles for a batch of keywords in one API call."""
+    """Fetch articles whose TITLE contains one of the keywords (one API call).
+
+    searchIn=title is the key relevance filter: it drops articles that only
+    mention the company in passing (e.g. gaming/deal posts that name 'AMD' in
+    the body but not the headline), keeping articles that are actually about it.
+    """
+    global RATE_LIMITED
     query = " OR ".join(f'"{kw}"' for kw in keywords_batch[:10])  # API limit
     url = "https://newsapi.org/v2/everything"
     params = {
         "q": query,
+        "searchIn": "title",
         "from": from_date,
         "to": to_date,
         "language": "en",
@@ -42,8 +53,12 @@ def fetch_articles_bulk(keywords_batch: list[str], from_date: str, to_date: str)
     }
     try:
         resp = requests.get(url, params=params, timeout=15)
-        resp.raise_for_status()
         data = resp.json()
+        if data.get("status") == "error":
+            if data.get("code") == "rateLimited":
+                RATE_LIMITED = True
+            print(f"  [WARN] API {data.get('code')}: {data.get('message')}", file=sys.stderr)
+            return []
         return data.get("articles", [])
     except Exception as e:
         print(f"  [WARN] API error for batch: {e}", file=sys.stderr)
@@ -115,13 +130,20 @@ JUNK_SOURCES = {
     "einnews", "openpr", "newsfile", "prweb", "digitaljournal",
 }
 
-# Finance/market context — signals the article is actually about the stock.
+# Market + material-event context — signals the article matters to the stock.
+# Includes finance terms AND business events (regulatory, M&A, products, legal)
+# so that material news like a Tesla safety probe also scores well.
 FINANCE_TERMS = [
+    # markets / finance
     "stock", "shares", "share price", "earnings", "revenue", "market cap",
     "valuation", "analyst", "price target", "quarterly", "guidance",
     "wall street", "nasdaq", "nyse", "ipo", "dividend", "investor",
     "sell-off", "selloff", "rally", "billion", "forecast", "upgrade",
-    "downgrade", "%",
+    "downgrade", "%", "profit", "sales", "outlook", "rating",
+    # material business events
+    "probe", "investigation", "lawsuit", "recall", "regulator", "antitrust",
+    "ceo", "resign", "layoff", "acquire", "acquisition", "merger",
+    "partnership", "contract", "unveil", "launch", "data center", "chip",
 ]
 
 
@@ -494,6 +516,15 @@ def main():
         target = datetime.strptime(sys.argv[1], "%Y-%m-%d")
 
     company_articles = fetch_all_news(target)
+
+    # Safety guard: if the news API was rate-limited and we got essentially
+    # nothing, do NOT overwrite the last good page with an empty report.
+    total = sum(len(v) for v in company_articles.values())
+    if RATE_LIMITED and total == 0:
+        print("ERROR: news API rate-limited, no articles. Keeping previous report.",
+              file=sys.stderr)
+        sys.exit(1)
+
     prices = fetch_stock_prices(target)
     pretranslate_displayed(company_articles)
 
