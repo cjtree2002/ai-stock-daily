@@ -94,24 +94,120 @@ def _build_company_patterns(companies: list[dict]) -> list[tuple]:
     return out
 
 
-def assign_articles_to_companies(articles: list[dict], companies: list[dict]) -> dict:
-    """Map each article to matching companies by keyword (keyed by company name)."""
-    company_articles: dict[str, list] = {c["name"]: [] for c in companies}
-    patterns = _build_company_patterns(companies)
+# ── Importance scoring ───────────────────────────────────────────────────────
+# Top-tier financial/tech outlets (substring match, lowercased).
+TOP_SOURCES = {
+    "reuters", "bloomberg", "wall street journal", "wsj", "cnbc",
+    "financial times", "ft.com", "associated press", "ap news",
+    "new york times", "nytimes", "barron",
+}
+GOOD_SOURCES = {
+    "marketwatch", "forbes", "business insider", "yahoo", "techcrunch",
+    "the verge", "axios", "fortune", "motley fool", "seeking alpha",
+    "benzinga", "zacks", "the information", "ars technica", "engadget",
+    "cnet", "investor's business daily", "investopedia",
+}
 
+
+def _source_score(name: str) -> int:
+    n = (name or "").lower()
+    if any(s in n for s in TOP_SOURCES):
+        return 6
+    if any(s in n for s in GOOD_SOURCES):
+        return 3
+    return 0
+
+
+def _recency_bonus(published: str) -> float:
+    """Small bonus for articles later in the day (closer to / after market close)."""
+    try:
+        dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
+        return round(dt.hour / 24 * 2, 2)  # 0 .. ~2
+    except Exception:
+        return 0.0
+
+
+def _score_article(article: dict, pats: list) -> float:
+    """Importance score for one article w.r.t. one company's keyword patterns."""
+    title = article.get("title") or ""
+    desc = article.get("description") or ""
+    content = title + " " + desc
+    title_hit = any(p.search(title) for p in pats)          # named in headline = strong
+    n_kw = sum(1 for p in pats if p.search(content))         # how many keywords matched
+    score = (12 if title_hit else 0)
+    score += min(n_kw, 3) * 2
+    score += _source_score((article.get("source") or {}).get("name"))
+    score += _recency_bonus(article.get("publishedAt") or "")
+    # mild penalty for thin/empty articles
+    if not desc.strip():
+        score -= 2
+    return score
+
+
+def _title_tokens(t: str) -> set:
+    return set(re.findall(r"[a-z0-9]+", (t or "").lower()))
+
+
+def _is_near_duplicate(title: str, kept_titles: list[str]) -> bool:
+    """Jaccard similarity on title words — drop repeats of the same story."""
+    toks = _title_tokens(title)
+    if not toks:
+        return False
+    for kt in kept_titles:
+        other = _title_tokens(kt)
+        if not other:
+            continue
+        inter = len(toks & other)
+        union = len(toks | other)
+        if union and inter / union >= 0.6:
+            return True
+    return False
+
+
+def assign_articles_to_companies(articles: list[dict], companies: list[dict]) -> dict:
+    """Pick the top-N most important articles per company (keyed by company name).
+
+    Selection principle: collect every keyword match, score each by headline
+    hit + keyword count + source authority + recency, drop near-duplicates,
+    then keep the highest-scoring MAX_ARTICLES_PER_COMPANY, sorted by score.
+    """
+    patterns = _build_company_patterns(companies)
+    name_to_pats = {c["name"]: pats for c, pats in patterns}
+
+    # 1) Collect all matching articles per company.
+    raw: dict[str, list] = {c["name"]: [] for c in companies}
     for article in articles:
         title = article.get("title") or ""
         description = article.get("description") or ""
-        content = title + " " + description  # keep original case for ticker matching
-
+        content = title + " " + description  # original case for ticker matching
         for company, pats in patterns:
-            bucket = company_articles[company["name"]]
-            if len(bucket) >= MAX_ARTICLES_PER_COMPANY:
-                continue
             if any(p.search(content) for p in pats):
-                urls = [a["url"] for a in bucket]
-                if article.get("url") not in urls:
-                    bucket.append(article)
+                raw[company["name"]].append(article)
+
+    # 2) Score, de-dup, keep top N sorted by importance.
+    company_articles: dict[str, list] = {}
+    for name, arts in raw.items():
+        pats = name_to_pats[name]
+        seen_urls = set()
+        scored = []
+        for art in arts:
+            url = art.get("url")
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
+            scored.append((_score_article(art, pats), art.get("publishedAt") or "", art))
+        # highest score first; ties broken by most recent (ISO strings sort chronologically)
+        scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+
+        kept, kept_titles = [], []
+        for _, _, art in scored:
+            if _is_near_duplicate(art.get("title") or "", kept_titles):
+                continue
+            kept.append(art)
+            kept_titles.append(art.get("title") or "")
+            if len(kept) >= MAX_ARTICLES_PER_COMPANY:
+                break
+        company_articles[name] = kept
 
     return company_articles
 
