@@ -4,6 +4,7 @@ AI Stock Daily News Fetcher
 Fetches previous day's news for AI sector companies and generates an HTML report.
 """
 import os
+import re
 import sys
 import time
 import requests
@@ -49,25 +50,68 @@ def fetch_articles_bulk(keywords_batch: list[str], from_date: str, to_date: str)
         return []
 
 
+# Ticker symbols that are also common English words / ubiquitous acronyms.
+# Matching these as bare symbols produces garbage (e.g. "AI" appears in every
+# AI article, "NOW"/"NET"/"PATH" are everyday words), so we ignore the bare
+# symbol and rely on the company's full name instead.
+SKIP_TICKER_TOKENS = {
+    "AI", "S", "NET", "NOW", "NICE", "PATH", "OLO", "ZEN",
+    "ON", "IT", "ALL", "ARE", "GM", "ARM", "IOT", "ROP", "TYL",
+}
+
+
+def _is_ticker_token(kw: str) -> bool:
+    """True if the keyword looks like a bare ticker symbol (e.g. 'MU', 'NVDA')."""
+    k = kw.strip()
+    return k.isalpha() and k.isupper() and 1 <= len(k) <= 5
+
+
+def _compile_keyword(kw: str):
+    """Compile one keyword into (regex, ...) or return None to skip it.
+
+    - Bare ticker symbols (MU, NVDA, AMD): matched CASE-SENSITIVELY with word
+      boundaries, so the uppercase ticker 'MU' matches but the lowercase 'mu'
+      inside 'immune'/'muscle' does not. Generic-word tickers are skipped.
+    - Distinctive names/phrases (Micron, HBM memory, C3.ai): matched
+      case-insensitively with boundaries.
+    """
+    k = kw.strip()
+    if not k:
+        return None
+    if _is_ticker_token(k):
+        if k in SKIP_TICKER_TOKENS:
+            return None
+        return re.compile(r"(?<![A-Za-z0-9.])" + re.escape(k) + r"(?![A-Za-z0-9.])")
+    return re.compile(r"(?<![A-Za-z0-9])" + re.escape(k) + r"(?![A-Za-z0-9])", re.IGNORECASE)
+
+
+def _build_company_patterns(companies: list[dict]) -> list[tuple]:
+    """Pre-compile keyword regexes once per company."""
+    out = []
+    for c in companies:
+        pats = [p for p in (_compile_keyword(kw) for kw in c["keywords"]) if p is not None]
+        out.append((c, pats))
+    return out
+
+
 def assign_articles_to_companies(articles: list[dict], companies: list[dict]) -> dict:
-    """Map each article to matching companies by keyword."""
-    company_articles: dict[str, list] = {c["ticker"]: [] for c in companies}
+    """Map each article to matching companies by keyword (keyed by company name)."""
+    company_articles: dict[str, list] = {c["name"]: [] for c in companies}
+    patterns = _build_company_patterns(companies)
 
     for article in articles:
-        title = (article.get("title") or "").lower()
-        description = (article.get("description") or "").lower()
-        content = title + " " + description
+        title = article.get("title") or ""
+        description = article.get("description") or ""
+        content = title + " " + description  # keep original case for ticker matching
 
-        for company in companies:
-            if len(company_articles[company["ticker"]]) >= MAX_ARTICLES_PER_COMPANY:
+        for company, pats in patterns:
+            bucket = company_articles[company["name"]]
+            if len(bucket) >= MAX_ARTICLES_PER_COMPANY:
                 continue
-            for kw in company["keywords"]:
-                if kw.lower() in content:
-                    # Avoid duplicates
-                    urls = [a["url"] for a in company_articles[company["ticker"]]]
-                    if article.get("url") not in urls:
-                        company_articles[company["ticker"]].append(article)
-                    break
+            if any(p.search(content) for p in pats):
+                urls = [a["url"] for a in bucket]
+                if article.get("url") not in urls:
+                    bucket.append(article)
 
     return company_articles
 
@@ -193,7 +237,7 @@ def pretranslate_displayed(company_articles: dict) -> None:
     """Pre-translate all displayed titles/descriptions concurrently to fill the cache."""
     texts: set[str] = set()
     for company in AI_COMPANIES:
-        for art in company_articles.get(company["ticker"], [])[:MAX_ARTICLES_PER_COMPANY]:
+        for art in company_articles.get(company["name"], [])[:MAX_ARTICLES_PER_COMPANY]:
             title = art.get("title")
             if title:
                 texts.add(title)
@@ -251,7 +295,7 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
 
     for company in AI_COMPANIES:
         ticker = company["ticker"]
-        articles = company_articles.get(ticker, [])
+        articles = company_articles.get(company["name"], [])
         if not articles:
             continue
 
@@ -298,7 +342,7 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
       </div>"""
 
     # No-news companies list
-    no_news = [c["name"] for c in AI_COMPANIES if not company_articles.get(c["ticker"])]
+    no_news = [c["name"] for c in AI_COMPANIES if not company_articles.get(c["name"])]
     no_news_html = ", ".join(no_news) if no_news else "（全部有新闻）"
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
