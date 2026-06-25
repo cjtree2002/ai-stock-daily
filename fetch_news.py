@@ -107,15 +107,39 @@ GOOD_SOURCES = {
     "benzinga", "zacks", "the information", "ars technica", "engadget",
     "cnet", "investor's business daily", "investopedia",
 }
+# Deal sites, press-release wires, content farms, aggregators — investor noise.
+JUNK_SOURCES = {
+    "ozbargain", "slickdeals", "dealnews", "techbargains", "9to5toys",
+    "prtimes", "biztoc", "naturalnews", "globenewswire", "prnewswire",
+    "pr newswire", "business wire", "businesswire", "accesswire",
+    "einnews", "openpr", "newsfile", "prweb", "digitaljournal",
+}
+
+# Finance/market context — signals the article is actually about the stock.
+FINANCE_TERMS = [
+    "stock", "shares", "share price", "earnings", "revenue", "market cap",
+    "valuation", "analyst", "price target", "quarterly", "guidance",
+    "wall street", "nasdaq", "nyse", "ipo", "dividend", "investor",
+    "sell-off", "selloff", "rally", "billion", "forecast", "upgrade",
+    "downgrade", "%",
+]
 
 
 def _source_score(name: str) -> int:
     n = (name or "").lower()
+    if any(s in n for s in JUNK_SOURCES):
+        return -8
     if any(s in n for s in TOP_SOURCES):
         return 6
     if any(s in n for s in GOOD_SOURCES):
         return 3
     return 0
+
+
+def _finance_bonus(content: str) -> int:
+    c = content.lower()
+    hits = sum(1 for t in FINANCE_TERMS if t in c)
+    return min(hits, 3) * 2  # 0 .. 6
 
 
 def _recency_bonus(published: str) -> float:
@@ -137,6 +161,7 @@ def _score_article(article: dict, pats: list) -> float:
     score = (12 if title_hit else 0)
     score += min(n_kw, 3) * 2
     score += _source_score((article.get("source") or {}).get("name"))
+    score += _finance_bonus(content)
     score += _recency_bonus(article.get("publishedAt") or "")
     # mild penalty for thin/empty articles
     if not desc.strip():
