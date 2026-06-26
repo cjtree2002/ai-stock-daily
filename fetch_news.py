@@ -18,51 +18,99 @@ from companies import AI_COMPANIES
 # ── Config ──────────────────────────────────────────────────────────────────
 # Beijing timezone (UTC+8) — GitHub runners use UTC, so we convert explicitly
 BEIJING_TZ = timezone(timedelta(hours=8))
-NEWS_API_KEY = os.environ.get("NEWS_API_KEY", "")
+# Finnhub: finance-specific company news, no 24h delay (free tier: 60 calls/min).
+# NOTE: the GitHub Actions secret is stored under the name NEWS_API_KEY (reused
+# from the old NewsAPI setup) so we can swap the source without touching the
+# workflow file. FINNHUB_API_KEY takes precedence when set (local runs).
+FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY") or os.environ.get("NEWS_API_KEY", "")
 OUTPUT_DIR = Path(__file__).parent / "reports"
 TEMPLATE_PATH = Path(__file__).parent / "template.html"
 MAX_ARTICLES_PER_COMPANY = 5
 
-# NewsAPI free tier: 100 requests/day, 1 req/sec
-REQUEST_DELAY = 1.2  # seconds between requests
+# Stay under Finnhub's 60 calls/min limit.
+REQUEST_DELAY = 1.1  # seconds between requests
 
 
-# Set by fetch_all_news so main() can refuse to overwrite a good page on rate-limit.
+# Set by fetch_all_news so main() can refuse to overwrite a good page on failure.
 RATE_LIMITED = False
 
 
-def fetch_articles_bulk(keywords_batch: list[str], from_date: str, to_date: str) -> list[dict]:
-    """Fetch articles whose TITLE contains one of the keywords (one API call).
-
-    searchIn=title is the key relevance filter: it drops articles that only
-    mention the company in passing (e.g. gaming/deal posts that name 'AMD' in
-    the body but not the headline), keeping articles that are actually about it.
-    """
+def fetch_company_news_finnhub(symbol: str, from_date: str, to_date: str) -> list[dict]:
+    """Fetch finance news for one ticker from Finnhub (already company-specific)."""
     global RATE_LIMITED
-    query = " OR ".join(f'"{kw}"' for kw in keywords_batch[:10])  # API limit
-    url = "https://newsapi.org/v2/everything"
-    params = {
-        "q": query,
-        "searchIn": "title",
-        "from": from_date,
-        "to": to_date,
-        "language": "en",
-        "sortBy": "relevancy",
-        "pageSize": 100,
-        "apiKey": NEWS_API_KEY,
-    }
+    url = "https://finnhub.io/api/v1/company-news"
+    params = {"symbol": symbol, "from": from_date, "to": to_date, "token": FINNHUB_API_KEY}
     try:
         resp = requests.get(url, params=params, timeout=15)
-        data = resp.json()
-        if data.get("status") == "error":
-            if data.get("code") == "rateLimited":
-                RATE_LIMITED = True
-            print(f"  [WARN] API {data.get('code')}: {data.get('message')}", file=sys.stderr)
+        if resp.status_code == 429:
+            RATE_LIMITED = True
+            print(f"  [WARN] Finnhub rate-limited on {symbol}", file=sys.stderr)
             return []
-        return data.get("articles", [])
+        resp.raise_for_status()
+        data = resp.json()
+        return data if isinstance(data, list) else []
     except Exception as e:
-        print(f"  [WARN] API error for batch: {e}", file=sys.stderr)
+        print(f"  [WARN] Finnhub error for {symbol}: {e}", file=sys.stderr)
         return []
+
+
+def _normalize_finnhub(item: dict) -> dict:
+    """Map a Finnhub news item to the internal article shape used downstream."""
+    ts = item.get("datetime") or 0
+    published = (
+        datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        if ts else ""
+    )
+    return {
+        "title": item.get("headline") or "",
+        "description": item.get("summary") or "",
+        "url": item.get("url") or "",
+        "source": {"name": item.get("source") or ""},
+        "publishedAt": published,
+    }
+
+
+def _rank_company_news(articles: list[dict], pats: list) -> list[dict]:
+    """Score, de-duplicate, and keep the top-N most important items for a company.
+
+    Finnhub's per-symbol feed includes loosely-related sector news, so we only
+    keep articles that actually name the company (in headline or summary) and
+    rank headline mentions highest.
+    """
+    seen_urls = set()
+    scored = []
+    for a in articles:
+        if _is_junk_source(a):
+            continue
+        url = a.get("url")
+        if not url or url in seen_urls:
+            continue
+        title = a.get("title") or ""
+        desc = a.get("description") or ""
+        content = title + " " + desc
+        title_hit = any(r.search(title) for r in pats)
+        content_hit = title_hit or any(r.search(content) for r in pats)
+        if not content_hit:
+            continue  # not actually about this company — drop sector noise
+        seen_urls.add(url)
+        score = 12 if title_hit else 4         # headline mention = strongly about it
+        score += _source_score((a.get("source") or {}).get("name"))
+        score += _finance_bonus(content)
+        score += _recency_bonus(a.get("publishedAt") or "")
+        if not desc.strip():
+            score -= 1
+        scored.append((score, a.get("publishedAt") or "", a))
+
+    scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    kept, kept_titles = [], []
+    for _, _, a in scored:
+        if _is_near_duplicate(a.get("title") or "", kept_titles):
+            continue
+        kept.append(a)
+        kept_titles.append(a.get("title") or "")
+        if len(kept) >= MAX_ARTICLES_PER_COMPANY:
+            break
+    return kept
 
 
 # Ticker symbols that are also common English words / ubiquitous acronyms.
@@ -322,39 +370,43 @@ def fetch_stock_prices(target_date: datetime) -> dict:
 
 
 def fetch_all_news(target_date: datetime) -> dict:
-    """Fetch all news and assign to companies."""
-    if not NEWS_API_KEY:
-        print("ERROR: NEWS_API_KEY not set. Export it before running.", file=sys.stderr)
+    """Fetch per-company finance news from Finnhub (keyed by company name)."""
+    if not FINNHUB_API_KEY:
+        print("ERROR: FINNHUB_API_KEY not set. Export it before running.", file=sys.stderr)
         sys.exit(1)
 
-    from_dt = target_date.replace(hour=0, minute=0, second=0)
-    to_dt = target_date.replace(hour=23, minute=59, second=59)
-    from_str = from_dt.strftime("%Y-%m-%dT%H:%M:%S")
-    to_str = to_dt.strftime("%Y-%m-%dT%H:%M:%S")
+    # Finnhub has no 24h delay, so we query the target day directly. We also
+    # include the day before to catch late post-close coverage.
+    from_str = (target_date - timedelta(days=1)).strftime("%Y-%m-%d")
+    to_str = target_date.strftime("%Y-%m-%d")
+    target_str = target_date.strftime("%Y-%m-%d")
 
-    print(f"Fetching news for {target_date.strftime('%Y-%m-%d')}...")
+    print(f"Fetching news for {target_str} (Finnhub)...")
 
-    all_articles: list[dict] = []
-    batches = build_query_batches(AI_COMPANIES, batch_size=5)
+    company_articles: dict[str, list] = {}
+    ticker_cache: dict[str, list] = {}
+    name_to_pats = {c["name"]: pats for c, pats in _build_company_patterns(AI_COMPANIES)}
 
-    for i, batch in enumerate(batches):
-        print(f"  Batch {i+1}/{len(batches)}: {', '.join(batch[:3])}...")
-        articles = fetch_articles_bulk(batch, from_str, to_str)
-        all_articles.extend(articles)
-        if i < len(batches) - 1:
+    for i, company in enumerate(AI_COMPANIES):
+        ticker = company["ticker"]
+        if ticker == "N/A":
+            company_articles[company["name"]] = []  # private co. — no ticker to query
+            continue
+        if ticker not in ticker_cache:
+            items = fetch_company_news_finnhub(ticker, from_str, to_str)
+            # Keep only items actually dated on the target day (UTC)
+            same_day = [it for it in items
+                        if datetime.fromtimestamp(it.get("datetime") or 0, timezone.utc)
+                        .strftime("%Y-%m-%d") == target_str]
+            ticker_cache[ticker] = [_normalize_finnhub(it) for it in (same_day or items)]
+            print(f"  [{i+1}/{len(AI_COMPANIES)}] {ticker}: {len(ticker_cache[ticker])} raw")
             time.sleep(REQUEST_DELAY)
+        company_articles[company["name"]] = _rank_company_news(
+            ticker_cache[ticker], name_to_pats[company["name"]]
+        )
 
-    # Deduplicate by URL
-    seen_urls: set[str] = set()
-    unique_articles = []
-    for a in all_articles:
-        url = a.get("url", "")
-        if url and url not in seen_urls:
-            seen_urls.add(url)
-            unique_articles.append(a)
-
-    print(f"  Total unique articles: {len(unique_articles)}")
-    company_articles = assign_articles_to_companies(unique_articles, AI_COMPANIES)
+    total = sum(len(v) for v in company_articles.values())
+    print(f"  Total ranked articles: {total}")
     return company_articles
 
 
