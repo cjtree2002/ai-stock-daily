@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI美股日报 · 2026年06月28日</title>
+  <style>
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface2: #f8f9fc;
+      --border: #e4e7ef;
+      --border-light: #eef0f7;
+      --accent: #4f46e5;
+      --accent2: #6366f1;
+      --text: #1e2130;
+      --text-muted: #5a6278;
+      --text-dim: #9499b0;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --ticker-bg: #eef0fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+    .header-left h1 span { color: var(--accent2); }
+    .header-date {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .header-stats { display: flex; gap: 28px; }
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Company Card ── */
+    .company-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .company-card:hover {
+      border-color: var(--accent2);
+      box-shadow: 0 2px 16px rgba(99,102,241,0.10);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .company-name {
+      font-weight: 600;
+      font-size: 14px;
+      flex: 1;
+      color: var(--text);
+    }
+    .ticker {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: "SF Mono", "Fira Code", monospace;
+      background: var(--ticker-bg);
+      color: var(--accent);
+      border: 1px solid #d4d8f7;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .ticker.private {
+      background: #f3f4f6;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .article-count {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Stock Price Block ── */
+    .stock-price {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--surface);
+    }
+    .price-current {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--text);
+    }
+    .price-change {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: "SF Mono", "Fira Code", monospace;
+      padding: 1px 7px;
+      border-radius: 4px;
+    }
+    .price-change.up {
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+    }
+    .price-change.down {
+      color: var(--red);
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
+    .price-change.flat {
+      color: var(--text-dim);
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+    }
+    .price-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+    .price-vol {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Articles ── */
+    .articles { padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .article { padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+    .article:last-child { border-bottom: none; padding-bottom: 0; }
+    .article-title {
+      display: block;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .article-title:hover { color: var(--accent); text-decoration: underline; }
+    .article-meta {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .source { color: var(--accent); font-weight: 500; }
+    .pub-time { color: var(--text-dim); }
+    .article-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+
+    /* ── No News Section ── */
+    .no-news-section {
+      margin-top: 24px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .no-news-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+    .no-news-list { font-size: 12px; color: var(--text-dim); line-height: 1.8; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 36px;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .header { padding: 14px 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .container { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>AI 美股 <span>日报</span></h1>
+    <div class="header-date">2026年06月28日（周日）前一日 &nbsp;·&nbsp; 生成于 2026-06-29 22:52 北京时间</div>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-value">20</div>
+      <div class="stat-label">有新闻公司</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">70</div>
+      <div class="stat-label">新闻总条数</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+    
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">美光 Micron</span>
+          <span class="ticker">MU</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$1,132.33</span>
+          <span class="price-change down">▼ -6.69%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=02d966a7ffc2392d975f5135959922a39a1c02be23c268edad8df3aa34d574f8" target="_blank" class="article-title">根据亿万富翁的说法，美光科技公司（MU）是最值得购买的半导体股票之一吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:44 UTC</span>
+              </div>
+              <p class="article-desc">美光科技公司（纳斯达克股票代码：MU）是最佳半导体股票之一。 6 月 24 日，路透社报道称，投资者……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b375c4da0ff4f2a1b2948f76aa7a99d295639f72880a2b7a77befc5e08b476d4" target="_blank" class="article-title">AMD 刚刚收购了 MEXT 以解决内存优化问题。美光和闪迪的投资者应该感到紧张吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:20 UTC</span>
+              </div>
+              <p class="article-desc">AMD 收购 MEXT 是数据中心的效率升级，而不是对 AI 内存市场的干扰。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7fa915dc554ea352c7bba36dc5f2dfce6ff889f49778cf5384382b34257682fa" target="_blank" class="article-title">如果您在 IPO 时投资 1,000 美元购买美光股票，那么您今天将获得多少钱</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 17:30 UTC</span>
+              </div>
+              <p class="article-desc">美光科技股票估值飙升是过去一年投资者最关心的故事之一……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b6ba138ecfc940f6114c5c411a8e9f80627d8210c9279501ba4d8cdb7413be21" target="_blank" class="article-title">第三季度业绩证明美光股票前景光明</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 14:00 UTC</span>
+              </div>
+              <p class="article-desc">今年迄今为止，美光科技的股价上涨了近 297%。难怪 Stifel 重申了其“买入”评级……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=f80cca6f37eef6a0a869cd66f28eb80c758e58cb0e1cbe39d0b814eba62b36e1" target="_blank" class="article-title">人工智能内存超级周期的持续时间可能比投资者预期的要长。这对于美光和闪迪来说是个好消息。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 12:45 UTC</span>
+              </div>
+              <p class="article-desc">在美光公布财报后，很难想象有人会说存储芯片会崩溃。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">闪迪 SanDisk</span>
+          <span class="ticker">SNDK</span>
+          <span class="article-count">3 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$2,090.71</span>
+          <span class="price-change down">▼ -10.46%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b375c4da0ff4f2a1b2948f76aa7a99d295639f72880a2b7a77befc5e08b476d4" target="_blank" class="article-title">AMD 刚刚收购了 MEXT 以解决内存优化问题。美光和闪迪的投资者应该感到紧张吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:20 UTC</span>
+              </div>
+              <p class="article-desc">AMD 收购 MEXT 是数据中心的效率升级，而不是对 AI 内存市场的干扰。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=f80cca6f37eef6a0a869cd66f28eb80c758e58cb0e1cbe39d0b814eba62b36e1" target="_blank" class="article-title">人工智能内存超级周期的持续时间可能比投资者预期的要长。这对于美光和闪迪来说是个好消息。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 12:45 UTC</span>
+              </div>
+              <p class="article-desc">在美光公布财报后，很难想象有人会说存储芯片会崩溃。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5a9205f415765260e85126aa819973b29b3881d43d691fffaf670f080a8d0c63" target="_blank" class="article-title">Sandisk 将在 2026 年压垮所有标准普尔 500 指数股票。有什么可以阻止它吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 14:48 UTC</span>
+              </div>
+              <p class="article-desc">过去两年，人工智能热潮重塑了股市。图形处理器抢占了……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">迈威尔 Marvell</span>
+          <span class="ticker">MRVL</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$266.77</span>
+          <span class="price-change down">▼ -5.15%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5162f4e858af52fcde46d2308b8213203edc032f44ad17f26ce86feba8f6d6c5" target="_blank" class="article-title">Marvell 技术：Jensen Pop 背后的 50 亿美元融资指南</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">06/28 05:56 UTC</span>
+              </div>
+              <p class="article-desc">Marvell Technology 目前预计 2027 财年收入约为 11.5B 美元，互连增长率从 50% 提高到 70% 以上……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">AMD</span>
+          <span class="ticker">AMD</span>
+          <span class="article-count">4 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$521.58</span>
+          <span class="price-change down">▼ -2.06%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b375c4da0ff4f2a1b2948f76aa7a99d295639f72880a2b7a77befc5e08b476d4" target="_blank" class="article-title">AMD 刚刚收购了 MEXT 以解决内存优化问题。美光和闪迪的投资者应该感到紧张吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:20 UTC</span>
+              </div>
+              <p class="article-desc">AMD 收购 MEXT 是数据中心的效率升级，而不是对 AI 内存市场的干扰。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=463dcb39e942d8a17aa1d94639b4fd4825be63e238e5572b0337e0cf9db4e6bf" target="_blank" class="article-title">据时事通讯报道，AMD 是一只可能会飙升的股票</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 06:48 UTC</span>
+              </div>
+              <p class="article-desc">Advanced Micro Devices, Inc.（纳斯达克股票代码：AMD）是涨幅最大的 13 只股票之一。该股票是推介的一部分……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=6c837365ed04918f64f122476aa181be316d394c972d626f7cd7ccc254c53455" target="_blank" class="article-title">SpaceX 的价值真的超过美光和 AMD 的总和吗？这是不加掩饰的真相。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 08:12 UTC</span>
+              </div>
+              <p class="article-desc">今天有一个明确的答案，但未来的答案却很模糊。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a73b8bdb1cb504c400abe21680effa56b313eb26164f18c86c1934db109d3e30" target="_blank" class="article-title">5 只人工智能硬件股票创造了一种新的“狂热”交易，取代了 7 种热门股票。用这 2 只杠杆 ETF 对冲您对热门股票的押注。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 13:00 UTC</span>
+              </div>
+              <p class="article-desc">美光、AMD、英特尔、博通和英伟达是股市的新星。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">Semtech</span>
+          <span class="ticker">SMTC</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$149.75</span>
+          <span class="price-change down">▼ -7.72%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=4fdea7e66ca2371bf48986bbc9eb8e7c290624b6eb27ea15216f3265e18eb80a" target="_blank" class="article-title">Semtech (SMTC) 在提高盈利预期后下跌 5.4% - 发生了什么变化</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/27 07:07 UTC</span>
+              </div>
+              <p class="article-desc">本周早些时候，Semtech 公布了 2027 财年第一季度业绩，超出了盈利预期，并指导……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">英伟达 NVIDIA</span>
+          <span class="ticker">NVDA</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$192.53</span>
+          <span class="price-change down">▼ -1.64%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5bb47a09fa569c2926ec5034220f33aaed7c69266c6e7d7de4ee796dfac0fa2e" target="_blank" class="article-title">CoreWeave (CRWV) 与 Nvidia、Meta、微软和 OpenAI 签订了 990 亿美元的订单订单</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 22:06 UTC</span>
+              </div>
+              <p class="article-desc">CoreWeave（纳斯达克GS：CRWV）披露了与大型人工智能基础设施合同相关的 990 亿美元的积压订单。本公司供应…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a17361f6a597919b3841e2930a28251ad0ca46496409f099741a77afc4e89733" target="_blank" class="article-title">诺基亚 (HLSE:NOKIA) 与 Nvidia 合作构建 AI RAN 6G 网络</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 22:06 UTC</span>
+              </div>
+              <p class="article-desc">诺基亚公司（HLSE：NOKIA）宣布与 Nvidia 合作，为未来移动网络开发 AI RAN 6G 平台。 ……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=03b638de20071fdeea2dcc28b4d04b014cba8f4a899b00846aa4af32efad4dac" target="_blank" class="article-title">这只 Nvidia 支持的人工智能 (AI) 基础设施股票具有多重潜力。目前其估值极具吸引力</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 20:49 UTC</span>
+              </div>
+              <p class="article-desc">尽管 CoreWeave 的股价增长惊人，但今年的表现却不佳，为投资者提供了坚实的选择……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=21ed7f13a7fdad2909b54c77d4da613a064c82eea25ce8895c2b8f31b6169638" target="_blank" class="article-title">根据亿万富翁的说法，英伟达公司（NVDA）是最值得购买的半导体股票之一吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:44 UTC</span>
+              </div>
+              <p class="article-desc">NVIDIA 公司（纳斯达克股票代码：NVDA）是最佳半导体股票之一。 6 月 15 日，CNBC 报道称 NVIDIA 公司...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a50f0a92d32fa98bd4301afc36d2719e930a05414c21425c7f5bdfa7aa5e8abc" target="_blank" class="article-title">澳大利亚 Firmus Technologies 与 Nvidia 达成人工智能访问协议</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 14:02 UTC</span>
+              </div>
+              <p class="article-desc">澳大利亚人工智能基础设施公司 Firmus Technologies 周一表示，已与 Nvid 签署战略合作伙伴关系……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">谷歌 Alphabet</span>
+          <span class="ticker">GOOGL</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$337.39</span>
+          <span class="price-change down">▼ -1.84%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a89a634892ae6f7a4a5b964348353b81cb10fd74f4d68a532fe05791f3669cfb" target="_blank" class="article-title">这支人工智能 (AI) 云股票在 2026 年碾压亚马逊、微软和谷歌。在上涨 184% 后，它可能会继续暴涨</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 16:43 UTC</span>
+              </div>
+              <p class="article-desc">在公司大幅上调指引的推动下，DigitalOcean 的股价今年以来一直在飙升。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=9930bb462c57b0dd912543630972c28f5dd0dafb18079c7179a119973c876ea0" target="_blank" class="article-title">人工智能供不应求——谷歌也跟不上</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 13:13 UTC</span>
+              </div>
+              <p class="article-desc">人工智能已经超越了证明其有效的范围。今天的挑战是产生足够的计算能力来...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2b36f626985883c4826559103472432d5209564799a0c3349e4d38cf26f4ae13" target="_blank" class="article-title">前谷歌工程师表示，拉里·佩奇、谢尔盖·布林和桑达尔·皮查伊拥有相同的特质——这是他作为身价 72 亿美元的人工智能首席执行官所牢记的教训</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 11:05 UTC</span>
+              </div>
+              <p class="article-desc">价值 72 亿美元的 AI 创始人 Arvind Jain 在担任首席执行官之前在 Google 观察了 Sundar Pichai 多年，他了解到你需要……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=66571265f1926c1d57d85e22a7ec6601bda21ba6f3ae5aa2fb65cddde6677d9d" target="_blank" class="article-title">SpaceX、特斯拉和 Alphabet 都陷入了广泛的科技溃败之中。您应该重新平衡您的投资组合吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:05 UTC</span>
+              </div>
+              <p class="article-desc">最近市场最热门股票的疲软让许多投资者突然重新思考一切。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b0b6024f3b4f00bab11177efdc6f678ca9ca869df9c160eeacd4ee2e837db7a9" target="_blank" class="article-title">更好的量子计算股票：Alphabet 与 IonQ</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 11:24 UTC</span>
+              </div>
+              <p class="article-desc">Alphabet 和 IonQ 是量子计算领域的两个热门选择。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">微软 Microsoft</span>
+          <span class="ticker">MSFT</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$372.97</span>
+          <span class="price-change up">▲ +5.71%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5bb47a09fa569c2926ec5034220f33aaed7c69266c6e7d7de4ee796dfac0fa2e" target="_blank" class="article-title">CoreWeave (CRWV) 与 Nvidia、Meta、微软和 OpenAI 签订了 990 亿美元的订单订单</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 22:06 UTC</span>
+              </div>
+              <p class="article-desc">CoreWeave（纳斯达克GS：CRWV）披露了与大型人工智能基础设施合同相关的 990 亿美元的积压订单。本公司供应…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a92e65dc778cf69f8e2672b20eb9e7004223f9cd2deea3805db51af95f220ca6" target="_blank" class="article-title">微软自 2000 年以来最糟糕的一个月：为什么会发生这种情况？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 22:01 UTC</span>
+              </div>
+              <p class="article-desc">微软公司 (Microsoft Corp.) 6 月份股价下跌超过 20%，创 2000 年 12 月以来最大单月跌幅。12 月...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a89a634892ae6f7a4a5b964348353b81cb10fd74f4d68a532fe05791f3669cfb" target="_blank" class="article-title">这支人工智能 (AI) 云股票在 2026 年碾压亚马逊、微软和谷歌。在上涨 184% 后，它可能会继续暴涨</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 16:43 UTC</span>
+              </div>
+              <p class="article-desc">在公司大幅上调指引的推动下，DigitalOcean 的股价今年以来一直在飙升。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a6a0b0e195e9efad752cc564ccc8897547081b27d53d399798645026c1df241b" target="_blank" class="article-title">微软公司 (MSFT) 是理查德·奇尔顿 (Richard Chilton) 顶级人工智能股票</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 10:34 UTC</span>
+              </div>
+              <p class="article-desc">根据亿万富翁理查德·奇尔顿的说法，微软公司（纳斯达克股票代码：MSFT）是十大最值得购买的股票之一。技术…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2bcfcb3028582f0712fdf555838a737549bcc63e40f9ed279bee9be3a9cd38a6" target="_blank" class="article-title">随着人工智能数据中心扩张的不断发展，IREN (NasdaqGS:IREN) 与微软和 Nvidia 达成交易</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 06:07 UTC</span>
+              </div>
+              <p class="article-desc">IREN（纳斯达克GS：IREN）已将重点转向为人工智能工作负载构建大型数据中心......</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">苹果 Apple</span>
+          <span class="ticker">AAPL</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$283.78</span>
+          <span class="price-change up">▲ +3.14%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d0cde8e491d83b7eea7f1cfad4c944fd32d596aac82c2d015fc37595bc64eb20" target="_blank" class="article-title">美国银行支持长期上涨，苹果的人工智能改革将推动升级周期</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 21:18 UTC</span>
+              </div>
+              <p class="article-desc">Investing.com——苹果在 2026 年全球开发者大会上公布了最新的人工智能战略……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2e1eacbc58d06e7737139ceb4b7e1dd91738550389303f9709a605b51bc9a1ae" target="_blank" class="article-title">就连苹果供应链大师蒂姆·库克也无法回避存储芯片“RAM-geddon”危机。这就是今年夏天个人电脑价格飙升的原因</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 09:00 UTC</span>
+              </div>
+              <p class="article-desc">苹果、微软、惠普和其他电子产品制造商被迫在牺牲销售额和利润之间做出选择。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=3a3125fe055bff8e5340e9041a38d2d3c42ed919dcacc46ff03adca7967fb6aa" target="_blank" class="article-title">苹果刚刚向你收取了你从未要求的人工智能扩展费用</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:03 UTC</span>
+              </div>
+              <p class="article-desc">每次繁荣最终都会给某人带来一张账单。钱是在一个地方赚到的，而成本则落在更安静的地方，在……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=979b488480b94ac8d833648ba5f2bb6b67059bf6608ca0147a79c72874032957" target="_blank" class="article-title">迪士尼和苹果几乎合并，这就是交易失败的原因</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:00 UTC</span>
+              </div>
+              <p class="article-desc">媒体巨头华特迪士尼公司在 CE 之前的领导下通过收购多家媒体公司而发展壮大……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2e5117200666d6454a2c44740d48370938950f2d0a8f0594c1c47b96e83de73f" target="_blank" class="article-title">伯尼·桑德斯称 MacBook、iPad 价格上涨是蒂姆·库克“企业贪婪”的一个例子：这是你现在要支付的价格</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 13:31 UTC</span>
+              </div>
+              <p class="article-desc">苹果公司提高 MacBook 和 iPad 价格的决定引发了佛蒙特州参议员伯尼·桑德斯 (Bernie Sanders) 的批评，而韦德布什 (Wedbush)...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">Meta</span>
+          <span class="ticker">META</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$550.25</span>
+          <span class="price-change up">▲ +1.36%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5bb47a09fa569c2926ec5034220f33aaed7c69266c6e7d7de4ee796dfac0fa2e" target="_blank" class="article-title">CoreWeave (CRWV) 与 Nvidia、Meta、微软和 OpenAI 签订了 990 亿美元的订单订单</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 22:06 UTC</span>
+              </div>
+              <p class="article-desc">CoreWeave（纳斯达克GS：CRWV）披露了与大型人工智能基础设施合同相关的 990 亿美元的积压订单。本公司供应…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=913edb9596ade945879f8eecc630cfb3b5c414c414210e4478a2090b3d1306ff" target="_blank" class="article-title">Meta Platforms 刚刚推出了新型智能眼镜。这对 META 股票意味着什么。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 13:30 UTC</span>
+              </div>
+              <p class="article-desc">投资者可能需要密切关注 Meta，因为它刚刚以较低的价格推出了新款智能眼镜。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ef5da64961cb6a481dc4089e754d3deafb0fe30e90943b276f98e038d54f347e" target="_blank" class="article-title">高通 (QCOM) 通过 Meta Microsoft 和 Modular 推出 AI 数据中心推送</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 04:15 UTC</span>
+              </div>
+              <p class="article-desc">高通（NasdaqGS：QCOM）概述了一项广泛的人工智能数据中心计划，其中包括与 Meta 和微软的新合作伙伴关系……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ace64a9d2516db51877d1d98fba5cc3083c88c3ffa604ed9e62992ab2d5af1f0" target="_blank" class="article-title">Virtuix (VTIX) 是否正在利用 Meta 的 Quest 搭配来重新定义其 XR 平台野心？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 00:14 UTC</span>
+              </div>
+              <p class="article-desc">2026 年 6 月，Virtuix Inc. 推出了 Omni One for Quest，将其全向跑步机与 Meta Quest 2 集成，并……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=51d1e29c4a7792cacc4daa5322c96a4d82feba56bf172696e68b1bb8804cd820" target="_blank" class="article-title">Meta 平台与 Snap：比较收入规模和近期发展轨迹</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 19:32 UTC</span>
+              </div>
+              <p class="article-desc">Meta 的收入基础和盈利能力大幅超过 Snap，因为最近的文件突显了不同的财务轨迹……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">亚马逊 Amazon</span>
+          <span class="ticker">AMZN</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$232.69</span>
+          <span class="price-change up">▲ +2.50%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a89a634892ae6f7a4a5b964348353b81cb10fd74f4d68a532fe05791f3669cfb" target="_blank" class="article-title">这支人工智能 (AI) 云股票在 2026 年碾压亚马逊、微软和谷歌。在上涨 184% 后，它可能会继续暴涨</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 16:43 UTC</span>
+              </div>
+              <p class="article-desc">在公司大幅上调指引的推动下，DigitalOcean 的股价今年以来一直在飙升。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=c4fadff5eef03606f2fe8ef837e828cfccf4d4e336d2746ee91a41769c4ea647" target="_blank" class="article-title">忘记黄金日吧。亚马逊的人工智能帝国使其成为世界上最完整的技术平台</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 16:13 UTC</span>
+              </div>
+              <p class="article-desc">黄金日带来数十亿美元的销售额，并成为每年夏天的头条新闻。它刚刚创造了创纪录的 26.4 美元……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=0c9b7ef41bd01e3a40b33090cd3432c58476cb4ac9f4505daf72f100ea5b3a71" target="_blank" class="article-title">亚马逊 (AMZN) 是理查德·奇尔顿 (Richard Chilton) AI 顶级股票</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 10:33 UTC</span>
+              </div>
+              <p class="article-desc">根据亿万富翁理查德·奇尔顿的说法，亚马逊公司（纳斯达克股票代码：AMZN）是十大最值得购买的股票之一。电子商务G…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=1e6802affa18e2787ee2e798ade1a38fc8df39934d03dbc21502b56051df1ef4" target="_blank" class="article-title">亚马逊悄然提高人工智能热潮的价格标签</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 01:37 UTC</span>
+              </div>
+              <p class="article-desc">亚马逊（AMZN）告诉投资者，人工智能的繁荣伴随着非常真实的价格标签。还有华尔街……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=bc7ddb9fda9fd03d41a43fb4ccace04f42831198b476563b0d3518c8f5bcfa3a" target="_blank" class="article-title">SpaceX 刚刚在人工智能 (AI) 上投入了 600 亿美元。埃隆·马斯克能否打造下一个亚马逊？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 17:07 UTC</span>
+              </div>
+              <p class="article-desc">对于 SpaceX 来说，收购人工智能编码初创公司 Cursor 是其成为端到端人工智能公司的又一步。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">特斯拉 Tesla</span>
+          <span class="ticker">TSLA</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$379.71</span>
+          <span class="price-change up">▲ +1.22%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=6072892e409afe98ed91585d5bd4d67759f78ab36deb999522e950a025e82a64" target="_blank" class="article-title">罗斯·格伯表示，随着特斯拉股价下跌，埃隆·马斯克应该“考虑再次销售电动汽车”</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 11:31 UTC</span>
+              </div>
+              <p class="article-desc">投资者罗斯·格伯（Ross Gerber）是投资公司格伯川崎（Gerber Kawasaki）的联合创始人，他为特斯拉公司提出了一份利润丰厚的商业计划……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=66571265f1926c1d57d85e22a7ec6601bda21ba6f3ae5aa2fb65cddde6677d9d" target="_blank" class="article-title">SpaceX、特斯拉和 Alphabet 都陷入了广泛的科技溃败之中。您应该重新平衡您的投资组合吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:05 UTC</span>
+              </div>
+              <p class="article-desc">最近市场最热门股票的疲软让许多投资者突然重新思考一切。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=4e99b47ab1f0e044ecd6718638a8bd1b5da5cdfebef3acf25a2ba6a41a9878fa" target="_blank" class="article-title">中东紧张局势、特斯拉交付和其他本周不容错过的项目</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 17:00 UTC</span>
+              </div>
+              <p class="article-desc">随着伊朗对美国基地发动新的打击，市场进入假期缩短的一周，面临地缘政治升级……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=c036fda3d829483ded69290295cfac3fae08fb3f76848856d1ac40bc1d051a3c" target="_blank" class="article-title">特斯拉在超越汽车行业的过程中完成了人工智能芯片的关键里程碑</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 02:50 UTC</span>
+              </div>
+              <p class="article-desc">这是该公司向机器人和人工智能领域扩张的又一步。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5b7d9cc630f540be9714e05638248f335eff745edcf6323eec0ea9ef3106452b" target="_blank" class="article-title">特斯拉在几天内报告了第二季度的交付情况。这是重要的数字。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 23:23 UTC</span>
+              </div>
+              <p class="article-desc">七月头几天到期的一个数字比目前任何机器人出租车更新都更重要。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">博通 Broadcom</span>
+          <span class="ticker">AVGO</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$365.02</span>
+          <span class="price-change down">▼ -3.67%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=3c15bcd336c87b41848fba9c381cf51baed1c279fc88c50efb14cdfabe87d7a2" target="_blank" class="article-title">Broadcom Inc. (AVGO) 正在避免收购，以支持人工智能的有机发展</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:44 UTC</span>
+              </div>
+              <p class="article-desc">Broadcom Inc.（纳斯达克股票代码：AVGO）是亿万富翁评选的十大最值得购买的半导体股票之一。自从行政长官...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=084f043285ab42950b4dbe5a745014bc1bf1fb9ea0b3798c7515e5e4f2515177" target="_blank" class="article-title">Broadcom (AVGO) 和 OpenAI 在九个月内推出 Jalapeo AI 芯片</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 04:15 UTC</span>
+              </div>
+              <p class="article-desc">OpenAI 和 Broadcom 推出了 Jalapeo，这是一款专为大型语言模型工作负载量身定制的定制 AI 推理芯片。这 …</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a87059b1080816558103c06f856dfc424eeaf9ac43fba61e92b0c6f266d4af98" target="_blank" class="article-title">过早出售 Nvidia 的亿万富翁刚刚购买了 196,000 股 Broadcom 股票——这是轮换背后的论点</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 16:44 UTC</span>
+              </div>
+              <p class="article-desc">Stanley Druckenmiller 于 2026 年第一季度购买了 Broadcom 的新职位。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=945bc803b87e4ef6e3c8e7cf11a4b78269bcbe424bbd3448e01289c1c1720681" target="_blank" class="article-title">亚马逊、台积电、SpaceX 或博通会成为下一个价值 3 万亿美元的公司吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 10:32 UTC</span>
+              </div>
+              <p class="article-desc">这一群体由一个共同的主题联系在一起。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a73b8bdb1cb504c400abe21680effa56b313eb26164f18c86c1934db109d3e30" target="_blank" class="article-title">5 只人工智能硬件股票创造了一种新的“狂热”交易，取代了 7 种热门股票。用这 2 只杠杆 ETF 对冲您对热门股票的押注。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 13:00 UTC</span>
+              </div>
+              <p class="article-desc">美光、AMD、英特尔、博通和英伟达是股市的新星。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">英特尔 Intel</span>
+          <span class="ticker">INTC</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$128.32</span>
+          <span class="price-change down">▼ -3.42%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5d31e46f13b702c6f66f9bb9e5a17c4e10398d8a4530f5d38c5f68e12a2d2247" target="_blank" class="article-title">英特尔首席执行官的另一个人工智能赌注估值刚刚跃升至 100 亿美元</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 20:30 UTC</span>
+              </div>
+              <p class="article-desc">英特尔公司首席执行官陈立武 (Lip-Bu Tan) 在人工智能芯片竞赛中的影响力超出了他领导的公司范围。 ACC…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=26e0be6f4d7a82949049bc393eaa12d7d6a7175fa438e482356bb60dbc90cd5b" target="_blank" class="article-title">英特尔公司（INTC）股价飙升，但需要工程复兴</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:45 UTC</span>
+              </div>
+              <p class="article-desc">英特尔公司（纳斯达克股票代码：INTC）是最佳半导体股票之一。 6月23日，《华尔街日报》报道称...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=cafe9faba207eb82aa820b56ea01de4cb5e1309a5ff3bb38ec3e2be8c0e0517e" target="_blank" class="article-title">英特尔的人工智能赌注终于得到回报——是时候重新考虑这只股票了吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 01:20 UTC</span>
+              </div>
+              <p class="article-desc">英特尔的卷土重来的故事正在变得真实。看看是什么推动了涨势，Foundry 还必须证明什么，以及这个 AI 是否……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5f01b596dd1511e1f4268a14b7dbb2c1c9cad123f183b9cf3e876b724819f44f" target="_blank" class="article-title">托马斯·马西表示，共和党人谴责共产党“参与”民主党，但当特朗普将英特尔、美国钢铁公司的“所有权”收归国有时，他们却另眼相看</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 10:46 UTC</span>
+              </div>
+              <p class="article-desc">众议员托马斯·马西（肯塔基州共和党人）周四指责共和党同僚忽视了他所说的特朗普政府……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7736d40d016275cbd47147971d6e70395c5b78720c6c31b0b25ecdf77d89193a" target="_blank" class="article-title">联想 (SEHK:992) 扩展混合人工智能产品并推出 Tab Plus Gen 2</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 06:07 UTC</span>
+              </div>
+              <p class="article-desc">联想集团（SEHK：992）通过新的人工智能推理解决方案和平台扩展了其混合人工智能优势产品组合……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">高通 Qualcomm</span>
+          <span class="ticker">QCOM</span>
+          <span class="article-count">4 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$189.39</span>
+          <span class="price-change down">▼ -7.57%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=0e1d9554057c9f4d10c6d66985b6910471c4cd8e6d587e42928fdf11473240f5" target="_blank" class="article-title">高通公司 (QCOM) 是否准备收购一家初创公司？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 18:46 UTC</span>
+              </div>
+              <p class="article-desc">高通公司（纳斯达克股票代码：QCOM）是亿万富翁评选的十大最值得购买的半导体股票之一。路透社…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=e9c211463a37e9cdc7c906e0dabc8a4f3ced519e0a80ed95c27b9307f1ede73a" target="_blank" class="article-title">高通在数据中心游戏中姗姗来迟，但已做好准备</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 07:00 UTC</span>
+              </div>
+              <p class="article-desc">高通的目标是实现智能手机以外的多元化，目标是到 2029 年非智能手机芯片占销售额的三分之一。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ef5da64961cb6a481dc4089e754d3deafb0fe30e90943b276f98e038d54f347e" target="_blank" class="article-title">高通 (QCOM) 通过 Meta Microsoft 和 Modular 推出 AI 数据中心推送</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 04:15 UTC</span>
+              </div>
+              <p class="article-desc">高通（NasdaqGS：QCOM）概述了一项广泛的人工智能数据中心计划，其中包括与 Meta 和微软的新合作伙伴关系……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=9be1542491a60c2462b23202a5f49628c765051f2b2a744288bc7da8fcea65c6" target="_blank" class="article-title">DZ 银行给予高通 (QCOM) 买入评级；公司目标是到 2029 年销售额达到 150 亿美元</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 03:29 UTC</span>
+              </div>
+              <p class="article-desc">高通公司（纳斯达克股票代码：QCOM）被列入被动收入十大最佳股息股票之一。 6月26日，...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">Arm</span>
+          <span class="ticker">ARM</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$334.27</span>
+          <span class="price-change down">▼ -3.87%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=09a1b7d6d8e814bce8f5dff111087b8a3449b19816d1fbb2797575e9dc516b22" target="_blank" class="article-title">时事通讯称，Arm Holdings (ARM) 是第二个“1776”的一部分</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/28 06:49 UTC</span>
+              </div>
+              <p class="article-desc">Arm Holdings（纳斯达克股票代码：ARM）是涨幅最大的 13 只股票之一。该股票是波特采访的一部分......</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">AAOI 应用光电</span>
+          <span class="ticker">AAOI</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$135.69</span>
+          <span class="price-change down">▼ -2.06%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=fd8938a667c40ddafc94bd1e04b18709c71feeacf6b6b32fdf45d9ebb81913a2" target="_blank" class="article-title">应用光电子学：产能、需求以及通往数十亿美元的可能之路</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">06/28 10:41 UTC</span>
+              </div>
+              <p class="article-desc">应用光电展望：超大规模和 CATV 需求推动 2026 年收入 >$1.1B。点击了解有关 AAOI 股票的更多信息。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">Astera Labs</span>
+          <span class="ticker">ALAB</span>
+          <span class="article-count">2 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$391.74</span>
+          <span class="price-change down">▼ -1.57%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=dde093438abc07a98c1a326fdc2b9df6c851ef891b50b8123f4a0601f8fc7717" target="_blank" class="article-title">Astera Labs (ALAB) 是我们未来十年值得买入和持有的最佳成长型股票之一</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/27 22:13 UTC</span>
+              </div>
+              <p class="article-desc">Astera Labs, Inc.（纳斯达克股票代码：ALAB）是未来十年最值得购买和持有的最佳成长型股票之一。阿斯特拉实验室公司…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=631770df05177ebb8f8ceb3f76bcf185fdf52abc41ae18c76493d7a6648c3baf" target="_blank" class="article-title">ASTERA LABS INC（纳斯达克股票代码：ALAB）：具有强劲基本面和技术基础的高增长势头突破候选者</a>
+              <div class="article-meta">
+                <span class="source">ChartMill</span>
+                <span class="pub-time">06/27 11:00 UTC</span>
+              </div>
+              <p class="article-desc">Astera Labs（ALAB）高增长动力重重过滤，EPS增长100%，技术研发完善...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">Robinhood</span>
+          <span class="ticker">HOOD</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$98.69</span>
+          <span class="price-change up">▲ +5.58%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=94d89da2a6213a1061e9f228380cbab5445fbe78842087289f23bd05ad590358" target="_blank" class="article-title">SpaceX 刚刚完成了有史以来最大规模的 IPO。这就是为什么罗宾汉可能是真正的赢家。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/27 02:46 UTC</span>
+              </div>
+              <p class="article-desc">SpaceX创纪录的IPO为零售经纪平台创造了一个难得的时刻。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card">
+        <div class="card-header">
+          <span class="company-name">Cloudflare</span>
+          <span class="ticker">NET</span>
+          <span class="article-count">2 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$237.24</span>
+          <span class="price-change up">▲ +4.67%</span>
+          <span class="price-meta">06/26 收盘</span>
+        </div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d5fce5ab4d2712f9ccbb3d29c43e6c0eca819fe37f000254d12766e95b574aef" target="_blank" class="article-title">Cloudflare：一项辉煌的业务却陷入了惩罚性的估值之中</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">06/27 02:48 UTC</span>
+              </div>
+              <p class="article-desc">Cloudflare (NET) 股票分析：30% 的增长对比 28 倍的销售估值、稀释和竞争风险。阅读此处了解…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=546baa64ef7daaa260e8ae555208bdf43364fb77d999aa562320538008fb0057" target="_blank" class="article-title">Cloudflare：代理 AI 流量驱动的结构加速</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">06/27 02:14 UTC</span>
+              </div>
+              <p class="article-desc">Cloudflare (NET) 2026 年第一季度收入增长 34%，自由现金流不断增加。我们给予买入评级和 271 美元的价格目标......</p>
+            </div>
+        </div>
+      </div>
+  </div>
+
+  <div class="no-news-section">
+    <div class="no-news-title">当日无新闻的公司</div>
+    <div class="no-news-list">Nebius, 台积电 TSMC, AXT, 康宁 Corning, Lumentum, 黑莓 BlackBerry</div>
+  </div>
+</div>
+
+<footer class="footer">
+  新闻数据：NewsAPI.org &nbsp;·&nbsp; 股价数据：Yahoo Finance &nbsp;·&nbsp; 仅供参考，不构成投资建议
+</footer>
+
+</body>
+</html>
