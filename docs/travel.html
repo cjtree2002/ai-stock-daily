@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>我的旅行地图</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2129; --line:#2a3540; --text:#e6edf3; --muted:#8b97a3;
+    --accent:#4ea1ff; --visited:#4ea1ff; --travel:#4ea1ff; --business:#f0a020;
+    --transit:#9b7bff; --live:#2ec27e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+  header{padding:16px 20px 0}
+  h1{margin:0;font-size:20px;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:96px}
+  .card .num{font-size:26px;font-weight:700;line-height:1}
+  .card .lab{color:var(--muted);font-size:12px;margin-top:6px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 20px 12px}
+  .toolbar select,.toolbar button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-left:auto}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  #map{height:62vh;min-height:380px;margin:0 20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b1118}
+  .leaflet-popup-content{font-size:13px;line-height:1.5}
+  footer{color:var(--muted);font-size:12px;padding:14px 20px 24px}
+  a{color:var(--accent)}
+  .err{color:#ff6b6b;padding:0 20px}
+  .extra{display:flex;flex-wrap:wrap;gap:10px;padding:0 20px 6px}
+  .extra .item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:13px}
+  .extra .item b{color:var(--accent);font-weight:600}
+  .extra .item .k{color:var(--muted);margin-right:6px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 10px}
+  .badge{background:#1d2730;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px}
+  .badge.on{border-color:var(--accent);background:rgba(78,161,255,.12)}
+  .badge.off{opacity:.4}
+  #playBtn{background:var(--accent);color:#08101a;border:none;font-weight:600}
+  .playyear{color:var(--accent);font-weight:700;font-size:15px;min-width:46px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗺️ 我的旅行地图</h1>
+  <div class="sub">城市打点 + 国家高亮 · 数据来自 <code>places.json</code></div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="extra" id="extremes"></div>
+<div class="badges" id="badges"></div>
+
+<div class="toolbar">
+  <label style="color:var(--muted);font-size:13px">按年份：</label>
+  <select id="yearFilter"><option value="all">全部</option></select>
+  <label style="color:var(--muted);font-size:13px">类型：</label>
+  <select id="typeFilter">
+    <option value="all">全部</option>
+    <option value="travel">旅游</option>
+    <option value="business">出差</option>
+    <option value="transit">转机</option>
+    <option value="live">居住</option>
+  </select>
+  <button id="playBtn">▶ 按年播放</button>
+  <span id="playYear" class="playyear"></span>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--travel)"></i>旅游</span>
+    <span><i class="dot" style="background:var(--business)"></i>出差</span>
+    <span><i class="dot" style="background:var(--transit)"></i>转机</span>
+    <span><i class="dot" style="background:var(--live)"></i>居住</span>
+  </div>
+</div>
+
+<div id="err" class="err"></div>
+<div id="map"></div>
+<footer>
+  更新方式：编辑 <code>docs/places.json</code> 增删条目并 push，几分钟后自动生效。
+  经纬度可在 <a href="https://www.latlong.net" target="_blank">latlong.net</a> 查询。
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const COLORS = { travel:'#4ea1ff', business:'#f0a020', transit:'#9b7bff', live:'#2ec27e' };
+const TYPE_ZH = { travel:'旅游', business:'出差', transit:'转机', live:'居住' };
+// 国家名 -> 大洲（覆盖常见旅行国家；未列出的不计入大洲统计）
+const CONTINENT = {
+  "China":"亚洲","Japan":"亚洲","South Korea":"亚洲","Thailand":"亚洲","Vietnam":"亚洲","Singapore":"亚洲","Malaysia":"亚洲","Indonesia":"亚洲","India":"亚洲","Philippines":"亚洲","Cambodia":"亚洲","Laos":"亚洲","Myanmar":"亚洲","Nepal":"亚洲","Sri Lanka":"亚洲","Maldives":"亚洲","United Arab Emirates":"亚洲","Turkey":"亚洲","Israel":"亚洲","Qatar":"亚洲","Saudi Arabia":"亚洲","Kazakhstan":"亚洲","Mongolia":"亚洲",
+  "France":"欧洲","Germany":"欧洲","United Kingdom":"欧洲","Italy":"欧洲","Spain":"欧洲","Portugal":"欧洲","Netherlands":"欧洲","Belgium":"欧洲","Switzerland":"欧洲","Austria":"欧洲","Greece":"欧洲","Sweden":"欧洲","Norway":"欧洲","Denmark":"欧洲","Finland":"欧洲","Iceland":"欧洲","Ireland":"欧洲","Poland":"欧洲","Czechia":"欧洲","Czech Republic":"欧洲","Hungary":"欧洲","Croatia":"欧洲","Russia":"欧洲",
+  "United States":"北美洲","Canada":"北美洲","Mexico":"北美洲","Cuba":"北美洲","Costa Rica":"北美洲",
+  "Brazil":"南美洲","Argentina":"南美洲","Chile":"南美洲","Peru":"南美洲","Colombia":"南美洲","Bolivia":"南美洲","Ecuador":"南美洲",
+  "Egypt":"非洲","Morocco":"非洲","South Africa":"非洲","Kenya":"非洲","Tanzania":"非洲","Tunisia":"非洲",
+  "Australia":"大洋洲","New Zealand":"大洋洲","Fiji":"大洋洲"
+};
+// 常见别名 -> 地图GeoJSON里的标准英文名
+const ALIAS = {
+  "USA":"United States","US":"United States","UK":"United Kingdom","UAE":"United Arab Emirates",
+  "Korea":"South Korea","Czech Republic":"Czechia"
+};
+const GEOJSON_URL = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
+
+let allPlaces = [], map, markerLayer, countryLayer, geoData;
+let playMaxYear = null, playTimer = null, homePlace = null;
+
+function norm(name){ return ALIAS[name] || name; }
+
+// 大圆距离 (km)
+function haversine(a, b){
+  const R=6371, toR=x=>x*Math.PI/180;
+  const dLat=toR(b.lat-a.lat), dLon=toR(b.lon-a.lon);
+  const s=Math.sin(dLat/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+// 选“家”：优先 type=live，否则去过次数最多的城市
+function pickHome(places){
+  const live = places.find(p=>p.type==='live');
+  if(live) return live;
+  return places.slice().sort((a,b)=>(b.visits||1)-(a.visits||1))[0] || null;
+}
+
+// 当前筛选（年份下拉 / 类型 / 播放进度三者综合）
+function filteredPlaces(){
+  const yr = document.getElementById('yearFilter').value;
+  const tp = document.getElementById('typeFilter').value;
+  return allPlaces.filter(p => {
+    if(tp!=='all' && p.type!==tp) return false;
+    if(playMaxYear!=null) return (p.year||9999) <= playMaxYear; // 播放时累积显示
+    if(yr!=='all' && String(p.year)!==yr) return false;
+    return true;
+  });
+}
+
+function renderStats(places){
+  const countries = new Set(places.map(p=>p.country_zh || p.country));
+  const cities    = new Set(places.map(p=>(p.country)+'|'+p.city));
+  const continents= new Set(places.map(p=>CONTINENT[norm(p.country)]).filter(Boolean));
+  const years     = places.map(p=>p.year).filter(Boolean);
+  const firstYear = years.length ? Math.min(...years) : '—';
+  const totalVisits = places.reduce((s,p)=>s+(p.visits||1),0);
+  const cards = [
+    ['国家', countries.size],
+    ['城市', cities.size],
+    ['大洲', continents.size + ' / 7'],
+    ['首次出行', firstYear],
+    ['累计到访', totalVisits]
+  ];
+  document.getElementById('stats').innerHTML = cards.map(([lab,num])=>
+    `<div class="card"><div class="num">${num}</div><div class="lab">${lab}</div></div>`).join('');
+}
+
+function renderExtremes(places){
+  const el = document.getElementById('extremes');
+  const pts = places.filter(p=>p.lat!=null&&p.lon!=null);
+  if(!pts.length){ el.innerHTML=''; return; }
+  const label = p => `${p.city}·${p.country_zh||p.country}`;
+  const north = pts.reduce((a,b)=>b.lat>a.lat?b:a);
+  const south = pts.reduce((a,b)=>b.lat<a.lat?b:a);
+  // 离家最远 + 累计里程估算（从家到各城市的大圆距离之和，往返×2）
+  let farthest=null, maxD=0, totalKm=0;
+  if(homePlace){
+    pts.forEach(p=>{
+      if(p===homePlace) return;
+      const d = haversine(homePlace, p);
+      totalKm += d*2*(p.visits||1);
+      if(d>maxD){ maxD=d; farthest=p; }
+    });
+  }
+  const hemi = lat => `${Math.abs(lat).toFixed(1)}°${lat>=0?'N':'S'}`;
+  const items = [
+    ['最北', `${label(north)} (${hemi(north.lat)})`],
+    ['最南', `${label(south)} (${hemi(south.lat)})`],
+  ];
+  if(farthest) items.push(['离家最远', `${label(farthest)} ${Math.round(maxD).toLocaleString()} km`]);
+  if(totalKm)  items.push(['累计里程估算', `${Math.round(totalKm).toLocaleString()} km（往返，约绕地球 ${(totalKm/40075).toFixed(1)} 圈）`]);
+  el.innerHTML = items.map(([k,v])=>`<div class="item"><span class="k">${k}</span><b>${v}</b></div>`).join('');
+}
+
+function renderBadges(places){
+  const el = document.getElementById('badges');
+  const nCountries = new Set(places.map(p=>p.country_zh||p.country)).size;
+  const nCities    = new Set(places.map(p=>p.country+'|'+p.city)).size;
+  const continents = new Set(places.map(p=>CONTINENT[norm(p.country)]).filter(Boolean));
+  const pts = places.filter(p=>p.lat!=null);
+  const crossEquator = pts.some(p=>p.lat>0) && pts.some(p=>p.lat<0);
+  const arctic = pts.some(p=>p.lat>=66.5);
+  const defs = [
+    [nCountries>=5,  `🌍 ${nCountries>=5?'已达':'未达'} 5 国`],
+    [nCountries>=10, '🛂 10 国俱乐部'],
+    [nCountries>=25, '✈️ 25 国旅人'],
+    [nCities>=20,    '🏙️ 20 城打卡'],
+    [continents.size>=3, '🧭 三大洲'],
+    [continents.size>=5, '🗺️ 五大洲'],
+    [continents.size>=7, '🏆 七大洲全集'],
+    [crossEquator,   '🌐 跨越赤道'],
+    [arctic,         '❄️ 北极圈'],
+  ];
+  el.innerHTML = defs.map(([on,txt])=>
+    `<span class="badge ${on?'on':'off'}">${on?'':'🔒 '}${txt}</span>`).join('');
+}
+
+function stopPlay(){
+  if(playTimer){ clearInterval(playTimer); playTimer=null; }
+  playMaxYear=null;
+  document.getElementById('playBtn').textContent='▶ 按年播放';
+  document.getElementById('playYear').textContent='';
+  refresh();
+}
+function startPlay(){
+  const years=[...new Set(allPlaces.map(p=>p.year).filter(Boolean))].sort((a,b)=>a-b);
+  if(!years.length) return;
+  let i=0;
+  document.getElementById('playBtn').textContent='⏹ 停止';
+  playMaxYear=years[0];
+  const step=()=>{
+    playMaxYear=years[i];
+    document.getElementById('playYear').textContent=years[i];
+    refresh();
+    i++;
+    if(i>=years.length){ clearInterval(playTimer); playTimer=null;
+      document.getElementById('playBtn').textContent='▶ 重新播放'; }
+  };
+  step();
+  playTimer=setInterval(step, 1100);
+}
+
+function refresh(){
+  const filtered = filteredPlaces();
+
+  renderStats(filtered);
+  renderExtremes(filtered);
+  renderBadges(filtered);
+
+  // 城市点
+  markerLayer.clearLayers();
+  const bounds = [];
+  filtered.forEach(p=>{
+    if(p.lat==null||p.lon==null) return;
+    const color = COLORS[p.type] || COLORS.travel;
+    const m = L.circleMarker([p.lat,p.lon], {
+      radius: 5 + Math.min((p.visits||1),5), color:'#fff', weight:1,
+      fillColor:color, fillOpacity:0.9
+    });
+    m.bindPopup(
+      `<b>${p.city}</b> · ${p.country_zh||p.country}<br>`+
+      `${p.year||''} · ${TYPE_ZH[p.type]||p.type||''} · 去过 ${p.visits||1} 次`+
+      (p.wishMore?' · ⭐想再去':'')+
+      (p.note?`<br><span style="color:#666">${p.note}</span>`:'')
+    );
+    m.addTo(markerLayer);
+    bounds.push([p.lat,p.lon]);
+  });
+
+  // 国家高亮
+  if(countryLayer) countryLayer.setStyle(styleCountry);
+  // 播放时保持视图稳定，不重复缩放
+  if(bounds.length && playMaxYear==null) map.fitBounds(bounds, {padding:[40,40], maxZoom:5});
+}
+
+function visitedCountrySet(){
+  return new Set(filteredPlaces().map(p=>norm(p.country)));
+}
+function styleCountry(feature){
+  const visited = visitedCountrySet();
+  const name = feature.properties.name;
+  const on = visited.has(name);
+  return { fillColor: on?'#4ea1ff':'#222b34', fillOpacity:on?0.35:0.12,
+           color:'#2a3540', weight:0.6 };
+}
+
+async function init(){
+  map = L.map('map', {worldCopyJump:true}).setView([20,10], 2);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:19
+  }).addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
+
+  // 数据
+  try{
+    const res = await fetch('places.json?_=' + Date.now());
+    const data = await res.json();
+    allPlaces = data.places || [];
+    homePlace = pickHome(allPlaces);
+  }catch(e){
+    document.getElementById('err').textContent = '加载 places.json 失败：' + e.message;
+    return;
+  }
+
+  // 年份下拉
+  const years = [...new Set(allPlaces.map(p=>p.year).filter(Boolean))].sort((a,b)=>b-a);
+  const sel = document.getElementById('yearFilter');
+  years.forEach(y=>{ const o=document.createElement('option'); o.value=y; o.textContent=y; sel.appendChild(o); });
+  sel.addEventListener('change', ()=>{ if(playTimer||playMaxYear!=null) return; refresh(); });
+  document.getElementById('typeFilter').addEventListener('change', refresh);
+
+  // 时间轴播放
+  document.getElementById('playBtn').addEventListener('click', ()=>{
+    if(playTimer || playMaxYear!=null) stopPlay(); else startPlay();
+  });
+
+  // 国家边界
+  try{
+    const g = await fetch(GEOJSON_URL);
+    geoData = await g.json();
+    countryLayer = L.geoJSON(geoData, {style:styleCountry}).addTo(map);
+    countryLayer.bringToBack();
+  }catch(e){ /* 高亮失败不影响打点 */ }
+
+  refresh();
+}
+init();
+</script>
+</body>
+</html>

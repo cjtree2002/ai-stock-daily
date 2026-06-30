@@ -58,6 +58,18 @@
       margin-top: 3px;
     }
     .header-stats { display: flex; gap: 28px; }
+    .header-nav { display: flex; gap: 8px; margin-top: 8px; }
+    .header-nav a {
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 12px;
+      background: var(--surface2);
+      transition: border-color .15s;
+    }
+    .header-nav a:hover { border-color: var(--accent); }
     .stat { text-align: center; }
     .stat-value {
       font-size: 26px;
@@ -311,6 +323,10 @@
   <div class="header-left">
     <h1>AI 美股 <span>日报</span></h1>
     <div class="header-date">{{DATE_STR}}（周{{WEEKDAY}}）前一日 &nbsp;·&nbsp; 生成于 {{GENERATED_AT}}</div>
+    <div class="header-nav">
+      <a href="travel.html">🗺️ 旅行地图</a>
+      <a href="add.html">✍️ 录入地点</a>
+    </div>
   </div>
   <div class="header-stats">
     <div class="stat">

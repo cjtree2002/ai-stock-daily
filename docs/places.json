@@ -1,0 +1,11 @@
+{
+  "_说明": "在 places 数组里增删条目即可更新地图。字段：country=国家(英文,用于地图高亮)、country_zh=中文名(显示用)、city=城市、lat/lon=经纬度、year=年份、type=类型(travel旅游/business出差/transit转机/live居住)、visits=去过几次、note=备注、wishMore=是否想再去。lat/lon 可在 https://www.latlong.net 查。",
+  "places": [
+    { "country": "Japan",          "country_zh": "日本",   "city": "Tokyo",     "lat": 35.6762, "lon": 139.6503, "year": 2024, "type": "travel",   "visits": 2, "note": "第一次去，超喜欢", "wishMore": true },
+    { "country": "Japan",          "country_zh": "日本",   "city": "Kyoto",     "lat": 35.0116, "lon": 135.7681, "year": 2024, "type": "travel",   "visits": 1, "note": "红叶季",         "wishMore": true },
+    { "country": "Thailand",       "country_zh": "泰国",   "city": "Bangkok",   "lat": 13.7563, "lon": 100.5018, "year": 2023, "type": "travel",   "visits": 1, "note": "",               "wishMore": false },
+    { "country": "France",         "country_zh": "法国",   "city": "Paris",     "lat": 48.8566, "lon": 2.3522,   "year": 2022, "type": "travel",   "visits": 1, "note": "",               "wishMore": true },
+    { "country": "United States",  "country_zh": "美国",   "city": "New York",  "lat": 40.7128, "lon": -74.0060, "year": 2019, "type": "business", "visits": 3, "note": "出差常去",       "wishMore": false },
+    { "country": "China",          "country_zh": "中国",   "city": "Shanghai",  "lat": 31.2304, "lon": 121.4737, "year": 2018, "type": "live",     "visits": 99, "note": "现居",          "wishMore": false }
+  ]
+}
