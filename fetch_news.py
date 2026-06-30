@@ -325,13 +325,13 @@ def build_query_batches(companies: list[dict], batch_size: int = 8) -> list[list
 
 
 def fetch_stock_prices(target_date: datetime) -> dict:
-    """Fetch closing price and daily change for all companies with real tickers."""
+    """Fetch close, daily change, 52w range and a 20-day sparkline per ticker."""
     tickers = list({c["ticker"] for c in AI_COMPANIES if c["ticker"] != "N/A"})
     print(f"Fetching stock prices for {len(tickers)} tickers...")
 
-    # Fetch 5 days to ensure we get data even around weekends/holidays
+    # ~1 year for the 52-week range and the sparkline tail.
     end = target_date + timedelta(days=1)
-    start = target_date - timedelta(days=5)
+    start = target_date - timedelta(days=370)
 
     prices: dict[str, dict] = {}
     try:
@@ -343,30 +343,113 @@ def fetch_stock_prices(target_date: datetime) -> dict:
             auto_adjust=True,
         )
         close = data["Close"]
+        target_ts = target_date.strftime("%Y-%m-%d")
         for ticker in tickers:
             if ticker not in close.columns:
                 continue
             series = close[ticker].dropna()
-            if len(series) < 1:
-                continue
-            # Most recent close on or before target_date
-            target_ts = target_date.strftime("%Y-%m-%d")
             sub = series[series.index <= target_ts]
             if sub.empty:
                 continue
             price = float(sub.iloc[-1])
             prev = float(sub.iloc[-2]) if len(sub) >= 2 else None
             change = ((price - prev) / prev * 100) if prev else None
+            year = sub[sub.index > (sub.index[-1] - timedelta(days=365))]
             prices[ticker] = {
                 "price": price,
                 "change": change,
                 "date": sub.index[-1].strftime("%m/%d"),
+                "high52": float(year.max()),
+                "low52": float(year.min()),
+                "spark": [round(float(x), 4) for x in sub.iloc[-20:].tolist()],
             }
     except Exception as e:
         print(f"  [WARN] Stock price fetch error: {e}", file=sys.stderr)
 
     print(f"  Got prices for {len(prices)} tickers")
     return prices
+
+
+def fetch_indices(target_date: datetime) -> list[dict]:
+    """Fetch major market indices for the header bar."""
+    index_defs = [
+        ("标普500", "^GSPC"), ("纳斯达克", "^IXIC"), ("道琼斯", "^DJI"),
+        ("费城半导体", "^SOX"), ("VIX恐慌", "^VIX"),
+    ]
+    symbols = [s for _, s in index_defs]
+    print("Fetching market indices...")
+    out = []
+    try:
+        end = target_date + timedelta(days=1)
+        start = target_date - timedelta(days=10)
+        data = yf.download(symbols, start=start.strftime("%Y-%m-%d"),
+                           end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
+        close = data["Close"]
+        target_ts = target_date.strftime("%Y-%m-%d")
+        for label, sym in index_defs:
+            if sym not in close.columns:
+                continue
+            s = close[sym].dropna()
+            s = s[s.index <= target_ts]
+            if len(s) < 2:
+                continue
+            cur, prev = float(s.iloc[-1]), float(s.iloc[-2])
+            out.append({"label": label, "value": cur, "change": (cur - prev) / prev * 100})
+    except Exception as e:
+        print(f"  [WARN] Index fetch error: {e}", file=sys.stderr)
+    return out
+
+
+def fetch_earnings_this_week(target_date: datetime) -> dict:
+    """Map ticker -> earnings date for watchlist companies reporting in the next 7 days."""
+    if not FINNHUB_API_KEY:
+        return {}
+    our = {c["ticker"] for c in AI_COMPANIES if c["ticker"] != "N/A"}
+    frm = target_date.strftime("%Y-%m-%d")
+    to = (target_date + timedelta(days=7)).strftime("%Y-%m-%d")
+    try:
+        r = requests.get("https://finnhub.io/api/v1/calendar/earnings",
+                         params={"from": frm, "to": to, "token": FINNHUB_API_KEY}, timeout=15)
+        rows = r.json().get("earningsCalendar", []) if r.status_code == 200 else []
+        return {row["symbol"]: row["date"] for row in rows if row.get("symbol") in our}
+    except Exception as e:
+        print(f"  [WARN] Earnings calendar error: {e}", file=sys.stderr)
+        return {}
+
+
+def fetch_recommendations() -> dict:
+    """Map ticker -> latest analyst consensus {buy,hold,sell, label}."""
+    if not FINNHUB_API_KEY:
+        return {}
+    tickers = list({c["ticker"] for c in AI_COMPANIES if c["ticker"] != "N/A"})
+    print(f"Fetching analyst ratings for {len(tickers)} tickers...")
+    recs = {}
+    for tk in tickers:
+        try:
+            r = requests.get("https://finnhub.io/api/v1/stock/recommendation",
+                             params={"symbol": tk, "token": FINNHUB_API_KEY}, timeout=15)
+            data = r.json() if r.status_code == 200 else []
+            if not data:
+                continue
+            latest = data[0]
+            buy = latest.get("strongBuy", 0) + latest.get("buy", 0)
+            hold = latest.get("hold", 0)
+            sell = latest.get("sell", 0) + latest.get("strongSell", 0)
+            total = buy + hold + sell
+            if total == 0:
+                continue
+            if buy / total >= 0.6:
+                label = "买入"
+            elif sell > buy:
+                label = "卖出"
+            else:
+                label = "持有"
+            recs[tk] = {"buy": buy, "hold": hold, "sell": sell, "label": label}
+        except Exception:
+            pass
+        time.sleep(REQUEST_DELAY)
+    print(f"  Got ratings for {len(recs)} tickers")
+    return recs
 
 
 def fetch_all_news(target_date: datetime) -> dict:
@@ -465,11 +548,27 @@ def format_time(iso_str: str) -> str:
         return iso_str or ""
 
 
-def render_stock_price(ticker: str, prices: dict) -> str:
+def _sparkline_svg(spark: list, change) -> str:
+    if not spark or len(spark) < 2:
+        return ""
+    w, h = 116, 26
+    lo, hi = min(spark), max(spark)
+    rng = (hi - lo) or 1
+    pts = " ".join(
+        f"{i/(len(spark)-1)*w:.1f},{h-(v-lo)/rng*(h-3)-1.5:.1f}"
+        for i, v in enumerate(spark)
+    )
+    color = "var(--green)" if (change or 0) >= 0 else "var(--red)"
+    return (f'<svg class="spark" viewBox="0 0 {w} {h}" preserveAspectRatio="none">'
+            f'<polyline points="{pts}" fill="none" stroke="{color}" '
+            f'stroke-width="1.5" stroke-linejoin="round"/></svg>')
+
+
+def render_stock_price(company: dict, prices: dict, recs: dict, earnings: dict) -> str:
+    ticker = company["ticker"]
     if ticker == "N/A" or ticker not in prices:
         return ""
     p = prices[ticker]
-    price_str = f"${p['price']:,.2f}"
     change = p.get("change")
     if change is None:
         change_html = '<span class="price-change flat">—</span>'
@@ -477,19 +576,112 @@ def render_stock_price(ticker: str, prices: dict) -> str:
         change_html = f'<span class="price-change up">▲ {change:+.2f}%</span>'
     else:
         change_html = f'<span class="price-change down">▼ {change:.2f}%</span>'
+
+    spark_html = _sparkline_svg(p.get("spark"), change)
+
+    # 52-week position bar
+    lo, hi = p.get("low52"), p.get("high52")
+    pos_html = ""
+    if lo is not None and hi is not None and hi > lo:
+        pos = (p["price"] - lo) / (hi - lo) * 100
+        pos_html = f'''
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">${lo:,.0f}</span>
+            <span class="r52-bar"><i style="left:{pos:.0f}%"></i></span>
+            <span class="r52-hi">${hi:,.0f}</span>
+          </div>'''
+
+    # analyst consensus + earnings flag
+    tags = ""
+    rec = recs.get(ticker)
+    if rec:
+        cls = {"买入": "buy", "持有": "hold", "卖出": "sell"}.get(rec["label"], "hold")
+        tags += (f'<span class="tag rec-{cls}" title="分析师: 买{rec["buy"]}/持{rec["hold"]}/卖{rec["sell"]}">'
+                 f'分析师 {rec["label"]}</span>')
+    ern = earnings.get(ticker)
+    if ern:
+        tags += f'<span class="tag earn">📅 {ern[5:]} 财报</span>'
+    tags_html = f'<div class="stock-tags">{tags}</div>' if tags else ""
+
     return f'''
         <div class="stock-price">
-          <span class="price-current">{price_str}</span>
+          <span class="price-current">${p['price']:,.2f}</span>
           {change_html}
-          <span class="price-meta">{p["date"]} 收盘</span>
-        </div>'''
+          {spark_html}
+        </div>{pos_html}{tags_html}'''
 
 
-def generate_html(company_articles: dict, prices: dict, target_date: datetime) -> str:
+def _render_indices(indices: list) -> str:
+    if not indices:
+        return ""
+    items = ""
+    for ix in indices:
+        cls = "up" if ix["change"] >= 0 else "down"
+        arrow = "▲" if ix["change"] >= 0 else "▼"
+        items += (f'<div class="idx"><span class="idx-name">{ix["label"]}</span>'
+                  f'<span class="idx-val">{ix["value"]:,.2f}</span>'
+                  f'<span class="idx-chg {cls}">{arrow} {ix["change"]:+.2f}%</span></div>')
+    return f'<div class="indices">{items}</div>'
+
+
+def _render_movers(prices: dict) -> str:
+    movers = []
+    for c in AI_COMPANIES:
+        p = prices.get(c["ticker"])
+        if p and p.get("change") is not None:
+            movers.append((c["name"], c["ticker"], p["change"]))
+    if not movers:
+        return ""
+    movers.sort(key=lambda x: x[2], reverse=True)
+    gainers = movers[:5]
+    losers = [m for m in movers[::-1] if m[2] < 0][:5]
+
+    def chips(rows, cls):
+        return "".join(
+            f'<span class="chip {cls}">{n}<b>{ch:+.1f}%</b></span>' for n, t, ch in rows
+        )
+    return f'''
+    <div class="movers">
+      <div class="movers-col"><div class="movers-title up">📈 涨幅榜</div>{chips(gainers, "up")}</div>
+      <div class="movers-col"><div class="movers-title down">📉 跌幅榜</div>{chips(losers, "down")}</div>
+    </div>'''
+
+
+def _build_summary(company_articles: dict, prices: dict, indices: list) -> str:
+    bullets = []
+    if indices:
+        sox = next((i for i in indices if i["label"] == "费城半导体"), None)
+        if sox:
+            tone = "上涨" if sox["change"] >= 0 else "下跌"
+            bullets.append(f"费城半导体指数{tone} {sox['change']:+.2f}%，{'科技股情绪偏暖' if sox['change']>=0 else '芯片股承压'}")
+    movers = [(c["name"], prices[c["ticker"]]["change"]) for c in AI_COMPANIES
+              if prices.get(c["ticker"]) and prices[c["ticker"]].get("change") is not None]
+    movers.sort(key=lambda x: x[1], reverse=True)
+    if movers:
+        bullets.append(f"关注列表涨幅最大：{movers[0][0]} {movers[0][1]:+.1f}%")
+        if movers[-1][1] < 0:
+            bullets.append(f"跌幅最大：{movers[-1][0]} {movers[-1][1]:+.1f}%")
+    most = max(AI_COMPANIES, key=lambda c: len(company_articles.get(c["name"], [])), default=None)
+    if most and company_articles.get(most["name"]):
+        top_art = company_articles[most["name"]][0]
+        headline = translate_text(top_art.get("title") or "")
+        bullets.append(f"{most['name']} 新闻最多——{headline}")
+    if not bullets:
+        return ""
+    lis = "".join(f"<li>{b}</li>" for b in bullets)
+    return f'<div class="summary"><div class="summary-title">📌 今日要点</div><ul>{lis}</ul></div>'
+
+
+def generate_html(company_articles: dict, prices: dict, indices: list,
+                  recs: dict, earnings: dict, target_date: datetime) -> str:
     date_str = target_date.strftime("%Y年%m月%d日")
     weekdays = ["一", "二", "三", "四", "五", "六", "日"]
     weekday_str = weekdays[target_date.weekday()]
     now_str = datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M") + " 北京时间"
+
+    indices_html = _render_indices(indices)
+    summary_html = _build_summary(company_articles, prices, indices)
+    movers_html = _render_movers(prices)
 
     # Build company cards (only companies with news)
     cards_html = ""
@@ -511,7 +703,7 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
             else '<span class="ticker private">私有</span>'
         )
 
-        stock_html = render_stock_price(ticker, prices)
+        stock_html = render_stock_price(company, prices, recs, earnings)
         articles_html = ""
         for art in articles:
             title = translate_text(art.get("title") or "") or "无标题"
@@ -556,6 +748,9 @@ def generate_html(company_articles: dict, prices: dict, target_date: datetime) -
         .replace("{{GENERATED_AT}}", now_str)
         .replace("{{COMPANIES_COUNT}}", str(companies_with_news))
         .replace("{{ARTICLES_COUNT}}", str(total_articles))
+        .replace("{{INDICES_HTML}}", indices_html)
+        .replace("{{SUMMARY_HTML}}", summary_html)
+        .replace("{{MOVERS_HTML}}", movers_html)
         .replace("{{CARDS_HTML}}", cards_html)
         .replace("{{NO_NEWS_LIST}}", no_news_html)
     )
@@ -578,10 +773,13 @@ def main():
         sys.exit(1)
 
     prices = fetch_stock_prices(target)
+    indices = fetch_indices(target)
+    earnings = fetch_earnings_this_week(target)
+    recs = fetch_recommendations()
     pretranslate_displayed(company_articles)
 
     OUTPUT_DIR.mkdir(exist_ok=True)
-    html = generate_html(company_articles, prices, target)
+    html = generate_html(company_articles, prices, indices, recs, earnings, target)
 
     date_slug = target.strftime("%Y-%m-%d")
     out_path = OUTPUT_DIR / f"{date_slug}.html"
