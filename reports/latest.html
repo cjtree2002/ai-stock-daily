@@ -231,10 +231,77 @@
       border-top: 1px solid var(--border);
     }
 
+    /* ── Indices bar ── */
+    .indices {
+      display: flex; flex-wrap: wrap; gap: 0;
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+    }
+    .idx {
+      display: flex; align-items: baseline; gap: 7px;
+      padding: 2px 18px 2px 0; margin-right: 18px;
+      border-right: 1px solid var(--border-light);
+    }
+    .idx-name { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .idx-val { font-size: 14px; font-weight: 700; font-family: "SF Mono", monospace; }
+    .idx-chg { font-size: 12px; font-weight: 600; font-family: "SF Mono", monospace; }
+    .idx-chg.up, .price-change.up, .chip.up b, .movers-title.up { color: var(--green); }
+    .idx-chg.down, .price-change.down, .chip.down b, .movers-title.down { color: var(--red); }
+
+    /* ── Top row: summary + movers ── */
+    .top-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;
+    }
+    .summary, .movers {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 18px;
+    }
+    .summary-title, .movers-title {
+      font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text);
+    }
+    .summary ul { margin: 0; padding-left: 18px; }
+    .summary li { font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+    .movers { display: flex; gap: 18px; }
+    .movers-col { flex: 1; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11.5px; background: var(--surface2); border: 1px solid var(--border-light);
+      border-radius: 6px; padding: 2px 7px; margin: 3px 4px 0 0;
+    }
+    .chip b { font-family: "SF Mono", monospace; }
+
+    /* ── Sparkline + 52w range + tags ── */
+    .spark { width: 116px; height: 26px; margin-left: auto; }
+    .range52 {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 14px 0; font-size: 10px; color: var(--text-dim);
+      font-family: "SF Mono", monospace;
+    }
+    .r52-bar {
+      position: relative; flex: 1; height: 4px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--red), #e5e7eb 50%, var(--green));
+    }
+    .r52-bar i {
+      position: absolute; top: -2px; width: 2px; height: 8px;
+      background: var(--text); border-radius: 1px; transform: translateX(-1px);
+    }
+    .stock-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 14px 0; }
+    .tag {
+      font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+    .tag.rec-buy { color: var(--green); background: var(--green-bg); border-color: var(--green-border); }
+    .tag.rec-hold { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+    .tag.rec-sell { color: var(--red); background: var(--red-bg); border-color: var(--red-border); }
+    .tag.earn { color: var(--accent); background: var(--ticker-bg); border-color: #d4d8f7; }
+
     @media (max-width: 640px) {
       .header { padding: 14px 16px; }
       .grid { grid-template-columns: 1fr; }
       .container { padding: 14px; }
+      .top-row { grid-template-columns: 1fr; }
+      .indices { padding: 10px 14px; gap: 4px; }
+      .idx { margin-right: 10px; padding-right: 10px; }
     }
   </style>
 </head>
@@ -243,7 +310,7 @@
 <header class="header">
   <div class="header-left">
     <h1>AI 美股 <span>日报</span></h1>
-    <div class="header-date">2026年06月29日（周一）前一日 &nbsp;·&nbsp; 生成于 2026-06-30 08:01 北京时间</div>
+    <div class="header-date">2026年06月29日（周一）前一日 &nbsp;·&nbsp; 生成于 2026-06-30 14:12 北京时间</div>
   </div>
   <div class="header-stats">
     <div class="stat">
@@ -251,13 +318,24 @@
       <div class="stat-label">有新闻公司</div>
     </div>
     <div class="stat">
-      <div class="stat-value">84</div>
+      <div class="stat-value">88</div>
       <div class="stat-label">新闻总条数</div>
     </div>
   </div>
 </header>
 
+<div class="indices"><div class="idx"><span class="idx-name">标普500</span><span class="idx-val">7,440.43</span><span class="idx-chg up">▲ +1.18%</span></div><div class="idx"><span class="idx-name">纳斯达克</span><span class="idx-val">25,820.14</span><span class="idx-chg up">▲ +2.07%</span></div><div class="idx"><span class="idx-name">道琼斯</span><span class="idx-val">52,182.74</span><span class="idx-chg up">▲ +0.59%</span></div><div class="idx"><span class="idx-name">费城半导体</span><span class="idx-val">13,709.66</span><span class="idx-chg up">▲ +3.83%</span></div><div class="idx"><span class="idx-name">VIX恐慌</span><span class="idx-val">17.65</span><span class="idx-chg down">▼ -4.13%</span></div></div>
+
 <div class="container">
+  <div class="top-row">
+    <div class="summary"><div class="summary-title">📌 今日要点</div><ul><li>费城半导体指数上涨 +3.83%，科技股情绪偏暖</li><li>关注列表涨幅最大：Astera Labs +16.4%</li><li>跌幅最大：闪迪 SanDisk -1.9%</li><li>美光 Micron 新闻最多——微米摆动。存储芯片制造商是否非法哄抬客户价格？</li></ul></div>
+    
+    <div class="movers">
+      <div class="movers-col"><div class="movers-title up">📈 涨幅榜</div><span class="chip up">Astera Labs<b>+16.4%</b></span><span class="chip up">康宁 Corning<b>+15.7%</b></span><span class="chip up">AAOI 应用光电<b>+10.6%</b></span><span class="chip up">黑莓 BlackBerry<b>+9.5%</b></span><span class="chip up">Nebius<b>+8.7%</b></span></div>
+      <div class="movers-col"><div class="movers-title down">📉 跌幅榜</div><span class="chip down">闪迪 SanDisk<b>-1.9%</b></span><span class="chip down">微软 Microsoft<b>-1.2%</b></span><span class="chip down">苹果 Apple<b>-0.7%</b></span><span class="chip down">高通 Qualcomm<b>-0.4%</b></span></div>
+    </div>
+  </div>
+
   <div class="grid">
     
       <div class="company-card">
@@ -269,8 +347,13 @@
         <div class="stock-price">
           <span class="price-current">$1,145.28</span>
           <span class="price-change up">▲ +1.14%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,13.2 6.1,11.3 12.2,10.3 18.3,15.8 24.4,24.5 30.5,18.9 36.6,19.8 42.7,22.7 48.8,15.8 54.9,16.8 61.1,9.8 67.2,14.2 73.3,12.7 79.4,6.7 85.5,1.6 91.6,12.1 97.7,12.4 103.8,1.5 109.9,6.8 116.0,6.0" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$105</span>
+            <span class="r52-bar"><i style="left:94%"></i></span>
+            <span class="r52-hi">$1,214</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买51/持3/卖1">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=2fca9b159e1f2133962ecc6f2f5cc3fb64b18ce18c9de9db1a4e912fa46a38c3" target="_blank" class="article-title">微米摆动。存储芯片制造商是否非法哄抬客户价格？</a>
@@ -278,7 +361,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 20:36 UTC</span>
               </div>
-              <p class="article-desc">Micron stock wavered Monday on news of a federal civil antitrust lawsuit accusing it and two other memory-chip makers of…</p>
+              <p class="article-desc">美光科技股价周一出现波动，因联邦民事反垄断诉讼指控该公司和另外两家存储芯片制造商……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=3b2e2637e35cf6b3eb8e295a57049c74bf60973768c2249400be1902fcbc4d53" target="_blank" class="article-title">在创纪录的第三季度业绩后买入、持有还是卖出美光 (MU) 股票？</a>
@@ -286,7 +369,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 20:09 UTC</span>
               </div>
-              <p class="article-desc">Micron Technology delivered another blockbuster quarterly report last week, underscoring why the memory-chip maker has b…</p>
+              <p class="article-desc">美光科技上周发布了另一份重磅季度报告，强调了这家存储芯片制造商为何...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=ae9b3beb94e0ed84821ef82478be2fb255be376095c129c70fdab996298a98fe" target="_blank" class="article-title">美光和英特尔引领芯片抛售</a>
@@ -323,9 +406,22 @@
         <div class="stock-price">
           <span class="price-current">$2,050.39</span>
           <span class="price-change down">▼ -1.93%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,18.5 6.1,19.8 12.2,16.4 18.3,18.6 24.4,24.5 30.5,22.0 36.6,21.9 42.7,22.0 48.8,14.9 54.9,12.0 61.1,8.2 67.2,11.7 73.3,12.7 79.4,6.0 85.5,3.3 91.6,12.5 97.7,14.0 103.8,1.5 109.9,8.7 116.0,9.9" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$41</span>
+            <span class="r52-bar"><i style="left:88%"></i></span>
+            <span class="r52-hi">$2,335</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买25/持4/卖0">分析师 买入</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=3c77607258a18b56896725eb2190613973bfb8f228019d1dcb34e4fefe2bfb7e" target="_blank" class="article-title">闪迪股票：这就是分析师悄悄提高价格目标的原因</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 20:43 UTC</span>
+              </div>
+              <p class="article-desc">随着人工智能驱动的内存需求持续飙升，华尔街越来越看好闪迪。</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=6cd0b525e022ae0bf3b67060e1ca42ce87acd63febee5e874d0526d4555731fe" target="_blank" class="article-title">为什么 Sandisk 股票下跌</a>
               <div class="article-meta">
@@ -340,7 +436,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 15:09 UTC</span>
               </div>
-              <p class="article-desc">Shares of Micron Technology (NASDAQ:MU) are down 5% in early trading Monday, while SanDisk (NASDAQ:SNDK) shares have sli…</p>
+              <p class="article-desc">美光科技 (NASDAQ:MU) 的股价在周一早盘交易中下跌 5%，而 SanDisk (NASDAQ:SNDK) 的股价也下跌...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=b314a82942356d99cd21b78e7f0f68c7f76a1fdef61b3da11b8be82812e2673a" target="_blank" class="article-title">花旗银行刚刚为 SanDisk 设定了 2,500 美元的目标价。这就是为什么他们如此看好</a>
@@ -348,23 +444,15 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 17:45 UTC</span>
               </div>
-              <p class="article-desc">Most of the Street holds more moderate views SanDisk (NASDAQ:SNDK), with the consensus 12-month target sitting at $1,912…</p>
+              <p class="article-desc">大多数华尔街人士对闪迪 (NASDAQ:SNDK) 持较为温和的看法，一致认为 12 个月目标为 1,912 美元……</p>
             </div>
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=607dad34d40fa1039d9ed5572ee5489bf08db16e6cd1871b3f440018f60bc5cc" target="_blank" class="article-title">Sandisk (SNDK) Joins Russell Growth Indexes In Broad Reclassification</a>
+              <a href="https://finnhub.io/api/news?id=607dad34d40fa1039d9ed5572ee5489bf08db16e6cd1871b3f440018f60bc5cc" target="_blank" class="article-title">Sandisk (SNDK) 加入罗素增长指数的大范围重新分类行列</a>
               <div class="article-meta">
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 17:14 UTC</span>
               </div>
-              <p class="article-desc">Sandisk (NasdaqGS:SNDK) is undergoing a major rebalancing of its index representation across the Russell index suite.特…</p>
-            </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=4032c97276190390a00767222734afb1a4ab45216c09fa8d766a64fff9f24164" target="_blank" class="article-title">Zacks 分析师博客重点介绍美光科技和 Sandisk</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/29 14:52 UTC</span>
-              </div>
-              <p class="article-desc">Micro's AI memory momentum and Sandisk's pricing power fuel record growth as tight supply and data center demand reshape…</p>
+              <p class="article-desc">Sandisk（纳斯达克GS：SNDK）正在对其罗素指数套件中的指数表示进行重大重新平衡。特…</p>
             </div>
         </div>
       </div>
@@ -372,21 +460,50 @@
         <div class="card-header">
           <span class="company-name">迈威尔 Marvell</span>
           <span class="ticker">MRVL</span>
-          <span class="article-count">3 条</span>
+          <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
           <span class="price-current">$277.75</span>
           <span class="price-change up">▲ +4.12%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,24.5 6.1,7.6 12.2,5.0 18.3,1.5 24.4,14.1 30.5,8.0 36.6,13.2 42.7,16.6 48.8,10.0 54.9,10.2 61.1,3.3 67.2,10.5 73.3,7.9 79.4,2.9 85.5,3.5 91.6,10.4 97.7,10.9 103.8,9.8 109.9,13.3 116.0,10.7" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$62</span>
+            <span class="r52-bar"><i style="left:85%"></i></span>
+            <span class="r52-hi">$316</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买42/持7/卖0">分析师 买入</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=9d662dd17b9c1b86000e299190c37f03e2098603cd47924dd798fc7899c0bc17" target="_blank" class="article-title">15 年前投资 Marvell 技术的 100 美元在今天价值如此之高</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">06/29 19:45 UTC</span>
+              </div>
+              <p class="article-desc">Marvell Technology（纳斯达克股票代码：MRVL）在过去 15 年中的年化产品表现优于市场 9.29%……</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=d49963d629e849c3b880d8a86f42805b92d1e72fc23e20e80912b639df79eb4d" target="_blank" class="article-title">Marvell 技术届时价值将达到 1 万亿美元</a>
               <div class="article-meta">
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 16:40 UTC</span>
               </div>
-              <p class="article-desc">很少有股票能像 Marvell Technology（纳斯达克股票代码：MRVL）那样抓住人工智能基础设施的发展。 After NVIDIA CEO Jensen …</p>
+              <p class="article-desc">很少有股票能像 Marvell Technology（纳斯达克股票代码：MRVL）那样抓住人工智能基础设施的发展。 NVIDIA 首席执行官詹森 (Jensen) ......</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=57c124ad5371dda7e478290508f0d4867c3c277753cca7580678c5fa26656d54" target="_blank" class="article-title">瑞银维持对 Marvell Technology 的买入，并将目标价上调至 340 美元</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">06/29 12:43 UTC</span>
+              </div>
+              <p class="article-desc">瑞银 (UBS) 分析师蒂莫西·阿库里 (Timothy Arcuri) 维持 Marvell Technology (NASDAQ:MRVL) 的买入评级，并将目标价从 23 美元上调……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=15d2cd491602b5dc311e9de75ce201ce6f1d39f85fbad078a68184c14b734906" target="_blank" class="article-title">Cantor Fitzgerald 对 Marvell 技术保持中立，并将目标价提高至 300 美元</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">06/29 10:23 UTC</span>
+              </div>
+              <p class="article-desc">Cantor Fitzgerald 分析师 C.J. Muse 维持 Marvell Technology (NASDAQ:MRVL) 的“中性”评级，并提高了该公司的股价……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=c86ae05fb2b7d8c955ac9ea3d598db7659996ccb526378b5ac5985602fea8995" target="_blank" class="article-title">亚马逊探索外部 Trainium 芯片销售，Marvell (MRVL) 成为焦点</a>
@@ -395,14 +512,6 @@
                 <span class="pub-time">06/29 10:18 UTC</span>
               </div>
               <p class="article-desc">据对冲基金称，Marvell Technology, Inc.（纳斯达克股票代码：MRVL）是最值得购买的快速增长股票之一。 6 月 18 日……</p>
-            </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=b948ac0ef83d8bcc016150d88c49f2bf1a24d074926c8de6dbbac94d3cc60524" target="_blank" class="article-title">Marvell：在 AI 基础设施繁荣和 Nvidia 认可的背景下买入</a>
-              <div class="article-meta">
-                <span class="source">SeekingAlpha</span>
-                <span class="pub-time">06/29 17:27 UTC</span>
-              </div>
-              <p class="article-desc">Marvell Technology, Inc. stock surged 240% since June 2025 as profits and margins soared. Click for this MRVL update and…</p>
             </div>
         </div>
       </div>
@@ -415,8 +524,13 @@
         <div class="stock-price">
           <span class="price-current">$539.49</span>
           <span class="price-change up">▲ +3.43%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,11.1 6.1,8.5 12.2,3.6 18.3,8.1 24.4,21.3 30.5,15.7 36.6,19.1 42.7,24.5 48.8,16.1 54.9,10.8 61.1,2.5 67.2,11.8 73.3,10.6 79.4,4.8 85.5,1.5 91.6,8.9 97.7,8.9 103.8,5.9 109.9,8.5 116.0,4.3" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$135</span>
+            <span class="r52-bar"><i style="left:97%"></i></span>
+            <span class="r52-hi">$552</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买46/持11/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=9038aa881853b952889970b09f1670bef27f00d2ffceb078ae2589922da14034" target="_blank" class="article-title">AMD (AMD) 向英国投入 20 亿英镑，帮助在剑桥建造两台人工智能超级计算机</a>
@@ -424,7 +538,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 10:22 UTC</span>
               </div>
-              <p class="article-desc">据对冲基金称，Advanced Micro Devices, Inc.（纳斯达克股票代码：AMD）是最值得购买的快速增长股票之一。 On June…</p>
+              <p class="article-desc">据对冲基金称，Advanced Micro Devices, Inc.（纳斯达克股票代码：AMD）是最值得购买的快速增长股票之一。六月…</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=52eb02afb0d9aac8957497e34e1865413d896836007942e7fc29d7dc3dfe13b2" target="_blank" class="article-title">Cantor Fitzgerald 维持对 Advanced Micro Devices 的增持，并将目标价提高至 700 美元</a>
@@ -432,7 +546,7 @@
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 10:17 UTC</span>
               </div>
-              <p class="article-desc">Cantor Fitzgerald  analyst C.J. Muse   maintains Advanced Micro Devices (NASDAQ:AMD) with a Overweight and raises the pr…</p>
+              <p class="article-desc">Cantor Fitzgerald 分析师 C.J. Muse 维持 Advanced Micro Devices （纳斯达克股票代码：AMD）的增持，并提高了…</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=fcd3bad9ff5df1bdb415047cade5ccf8c0a7c6cf14698c3d110eaf0081f15097" target="_blank" class="article-title">周一 AMD 股票怎么样？</a>
@@ -469,16 +583,21 @@
         <div class="stock-price">
           <span class="price-current">$261.15</span>
           <span class="price-change up">▲ +8.68%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,8.3 6.1,9.5 12.2,12.2 18.3,9.8 24.4,19.6 30.5,22.6 36.6,21.9 42.7,24.5 48.8,21.3 54.9,18.2 61.1,9.7 67.2,8.1 73.3,3.3 79.4,1.5 85.5,2.4 91.6,5.0 97.7,9.8 103.8,10.7 109.9,15.7 116.0,9.3" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$44</span>
+            <span class="r52-bar"><i style="left:89%"></i></span>
+            <span class="r52-hi">$287</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买15/持6/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=b981e26a75e79cd054f582b0d7e2a80d6bd04d7de91c086840020d2bfd3e2611" target="_blank" class="article-title">If You Invested $1000 In Nebius Group Stock 10 Years Ago, You Would Have This Much Today</a>
+              <a href="https://finnhub.io/api/news?id=b981e26a75e79cd054f582b0d7e2a80d6bd04d7de91c086840020d2bfd3e2611" target="_blank" class="article-title">如果您 10 年前投资 1000 美元购买 Nebius 集团股票，今天您将拥有这么多</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 10:00 UTC</span>
               </div>
-              <p class="article-desc">Nebius Group (NASDAQ:NBIS) has outperformed the market over the past 10 years by 14.64% on an annualized basis producing…</p>
+              <p class="article-desc">Nebius Group（纳斯达克股票代码：NBIS）在过去 10 年中的年化表现优于市场 14.64%，生产……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=3d3d71ff22465a96119d97257b9b4b73e1c956b13eda08c54c045bd8824cb011" target="_blank" class="article-title">Nebius AI Cloud 3.6如何强化AI云优势？</a>
@@ -486,7 +605,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 13:33 UTC</span>
               </div>
-              <p class="article-desc">NBIS unveils AI Cloud Aether 3.6 with Echo, an AI infrastructure assistant, plus upgrades to security, storage and devel…</p>
+              <p class="article-desc">NBIS 推出 AI Cloud Aether 3.6，其中包含 AI 基础设施助手 Echo，以及安全、存储和开发方面的升级……</p>
             </div>
         </div>
       </div>
@@ -499,8 +618,13 @@
         <div class="stock-price">
           <span class="price-current">$194.97</span>
           <span class="price-change up">▲ +1.27%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,2.6 12.2,8.5 18.3,5.5 24.4,15.3 30.5,12.8 36.6,13.1 42.7,18.8 48.8,15.5 54.9,15.3 61.1,10.0 67.2,13.7 73.3,15.7 79.4,11.3 85.5,12.8 91.6,19.0 97.7,19.8 103.8,22.2 109.9,24.5 116.0,22.7" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$153</span>
+            <span class="r52-bar"><i style="left:51%"></i></span>
+            <span class="r52-hi">$235</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买63/持4/卖1">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=ea48cb4fe5cbf1c1547da8cf08a2cc3f877635e26e199c1426a4f15bee638673" target="_blank" class="article-title">Supermicro (SMCI) 在 Nvidia 芯片走私调查中面临台湾突击搜查</a>
@@ -508,7 +632,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 21:07 UTC</span>
               </div>
-              <p class="article-desc">Taiwanese authorities have raided Super Micro Computer (NasdaqGS:SMCI) offices and affiliated sites as part of an invest…</p>
+              <p class="article-desc">作为一项投资的一部分，台湾当局突击搜查了超微电脑（NasdaqGS：SMCI）的办公室和附属场所……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=b9429507f826e1bb6fd7a5cbdd3a195d26a17133d097bb44d6acc234e3c487ab" target="_blank" class="article-title">Palantir 因 Nvidia 主权 AI 协议而飙升 4%，软件击败半决赛</a>
@@ -516,7 +640,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 15:10 UTC</span>
               </div>
-              <p class="article-desc">Investing.com -- Palantir Technologies Inc (NASDAQ:PLTR) is trading up 4.6% at $118.09 on Monday, extending a rebound th…</p>
+              <p class="article-desc">Investing.com——Palantir Technologies Inc（纳斯达克股票代码：PLTR）周一上涨 4.6%，至 118.09 美元，延续了此前的反弹势头。</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=596afd2ce2da71fe01e468d5f97519dd18b38a223009dec497a5278495be0066" target="_blank" class="article-title">Nvidia 和 Firmus 将在印度尼西亚建设 170,000 个 GPU 数据中心</a>
@@ -532,7 +656,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 11:00 UTC</span>
               </div>
-              <p class="article-desc">CHARLOTTE, N.C., June 29, 2026 (GLOBE NEWSWIRE) -- NN, Inc. (“NN” or the “Company”) (NASDAQ: NNBR), a global diversified…</p>
+              <p class="article-desc">北卡罗来纳州夏洛特，2026 年 6 月 29 日（环球通讯社）——NN, Inc.（“NN”或“公司”）（纳斯达克股票代码：NNBR）是一家全球多元化……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=af8d360a7e2758f5320401468b874e03bfbca295418bc8b646062d66118da71c" target="_blank" class="article-title">英伟达股价在经历了艰难的一周后企稳，重点关注人工智能芯片需求</a>
@@ -540,7 +664,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 10:51 UTC</span>
               </div>
-              <p class="article-desc">Nvidia  was edging up early Monday after a difficult week that saw the chip maker’s shares fall below its recent floor o…</p>
+              <p class="article-desc">英伟达在经历了艰难的一周后，周一早盘小幅上涨，这家芯片制造商的股价跌破了最近的底线……</p>
             </div>
         </div>
       </div>
@@ -553,8 +677,13 @@
         <div class="stock-price">
           <span class="price-current">$353.65</span>
           <span class="price-change up">▲ +4.82%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,10.1 12.2,11.8 18.3,4.0 24.4,6.1 30.5,9.1 36.6,8.6 42.7,13.2 48.8,12.4 54.9,11.3 61.1,5.5 67.2,3.2 73.3,8.8 79.4,6.3 85.5,17.2 91.6,19.3 97.7,19.8 103.8,20.7 109.9,24.5 116.0,14.9" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$174</span>
+            <span class="r52-bar"><i style="left:79%"></i></span>
+            <span class="r52-hi">$402</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买61/持9/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=cbaf4c611d4519d18a2c510f1eb1233a6802bfe3791a7bbcf3956e2ba98824e5" target="_blank" class="article-title">Alphabet 股票在道琼斯指数首次亮相时上涨 4%，但这家科技巨头面临重大人工智能问题</a>
@@ -562,15 +691,23 @@
                 <span class="source">CNBC</span>
                 <span class="pub-time">06/29 12:00 UTC</span>
               </div>
-              <p class="article-desc">Alphabet shares rose Monday as the company joined the Dow, but the blue-chip milestone comes as the stock remains under …</p>
+              <p class="article-desc">随着该公司加入道琼斯指数，Alphabet 股价周一上涨，但蓝筹里程碑的到来是因为该股仍处于低位……</p>
             </div>
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=2761d8f7f52cd4dc725837489abc200d90376fa3fe3d9137c737d8ff7bc2ef8e" target="_blank" class="article-title">Alphabet shares 'a good value play', analyst says</a>
+              <a href="https://finnhub.io/api/news?id=2e9501c03373dffd8120ca140cdc63e065c0818730647ac5cd7d1210c87e9bc8" target="_blank" class="article-title">道琼斯指数加法和 850 亿美元的人工智能押注可能会改变 Alphabet 的游戏规则 (GOOGL)</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 22:08 UTC</span>
+              </div>
+              <p class="article-desc">Alphabet 最近加入了道琼斯工业平均指数，取代了 Verizon，并扩大了该指数对数字的敞口……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2761d8f7f52cd4dc725837489abc200d90376fa3fe3d9137c737d8ff7bc2ef8e" target="_blank" class="article-title">分析师表示，Alphabet 股票“具有良好的价值”</a>
               <div class="article-meta">
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 20:39 UTC</span>
               </div>
-              <p class="article-desc">STORY: "A lot of people are kind of worried about their spending habits" regarding AI, Lang said, "but I think today is …</p>
+              <p class="article-desc">故事：关于人工智能，“很多人都有点担心他们的消费习惯”，朗说，“但我认为今天是......</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=ae8f8e4d9eb1d4e115fe86b22fe7b681fe8fb95e25ff6ced2c26f872748d312a" target="_blank" class="article-title">Alphabet 股票投资者：这是需要遵循的最重要指标</a>
@@ -586,15 +723,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 19:04 UTC</span>
               </div>
-              <p class="article-desc">Alphabet Inc (NASDAQ:GOOG) shares climbed about 5% on Monday after the company officially joined the Dow Jones Industria…</p>
-            </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=bb458c8d4e78b8ee4b6321ae0dab8406cafbbba2d945f5cd11a7e535b1fdbf52" target="_blank" class="article-title">新AI冷战？！谷歌真的“限制”了扎克伯格的人工智能访问吗？</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/29 17:27 UTC</span>
-              </div>
-              <p class="article-desc">Alphabet (NASDAQ:GOOGL) is sitting on a Google Cloud backlog that nearly doubled quarter-on-quarter to $462 billion, and…</p>
+              <p class="article-desc">Alphabet Inc（纳斯达克股票代码：GOOG）正式加入道琼斯工业指数后，其股价周一上涨约 5%...</p>
             </div>
         </div>
       </div>
@@ -607,9 +736,22 @@
         <div class="stock-price">
           <span class="price-current">$368.57</span>
           <span class="price-change down">▼ -1.18%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,5.6 12.2,8.6 18.3,8.4 24.4,10.9 30.5,11.9 36.6,13.7 42.7,15.0 48.8,16.5 54.9,16.4 61.1,14.5 67.2,15.7 73.3,18.9 79.4,18.8 85.5,21.4 91.6,20.0 97.7,21.8 103.8,24.5 109.9,20.2 116.0,21.1" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$353</span>
+            <span class="r52-bar"><i style="left:8%"></i></span>
+            <span class="r52-hi">$539</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买61/持5/卖0">分析师 买入</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=75bd1aa4bc8f911c65a69724b70bf43304a963ca995cda0abc1f8c03940ac55d" target="_blank" class="article-title">微软（MSFT）股价因市场上涨而下跌：投资者需要了解什么</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 21:45 UTC</span>
+              </div>
+              <p class="article-desc">在最新的交易日中，微软（MSFT）收于368.57美元，较前一交易日上涨-1.18%。</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=fafeb4e80a026559f99cbab67c6a452522ed6792e58e64825015100cb6c43cdc" target="_blank" class="article-title">人工智能 (AI) 恐慌导致股价下跌 35%：为何聪明的投资者纷纷买入微软股票</a>
               <div class="article-meta">
@@ -624,7 +766,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 16:39 UTC</span>
               </div>
-              <p class="article-desc">Microsoft (NASDAQ:MSFT) is the stock every cloud bull and AI evangelist keeps pointing at, drawn by an AI business that …</p>
+              <p class="article-desc">微软（纳斯达克股票代码：MSFT）是每个云牛和人工智能布道者不断关注的股票，受到人工智能业务的吸引......</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=0f5ada8ed1edcb056441b3c05202544bb78da2c2a5b5cdfa84175a0c7b3b18a2" target="_blank" class="article-title">微软（MSFT）面临欧盟看门人行动和意大利反垄断调查</a>
@@ -632,7 +774,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 13:08 UTC</span>
               </div>
-              <p class="article-desc">The European Commission has issued a preliminary decision to classify Microsoft Azure as a gatekeeper under the Digital …</p>
+              <p class="article-desc">欧盟委员会已发布初步决定，将 Microsoft Azure 归类为数字……的看门人。</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=6b5d223c3d7adbe59a9fa5072395f1a17bc38a7e35821ef4193eef2f043d820d" target="_blank" class="article-title">微软 (MSFT) 通过新的战略合作伙伴关系扩大业务</a>
@@ -640,15 +782,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 12:57 UTC</span>
               </div>
-              <p class="article-desc">微软公司（纳斯达克股票代码：MSFT）是 Chris Hohn 的 TCI 基金投资组合中最值得买入的 9 只股票之一。 On June 24, 2…</p>
-            </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=eb7fe8f77f2877937de5eacc92960a065f21cc3309c2166e119deea50d4dd225" target="_blank" class="article-title">雪佛龙公司 (CVX) 获得德克萨斯太平洋土地公司对微软 Kilby 项目的支持</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/29 11:54 UTC</span>
-              </div>
-              <p class="article-desc">雪佛龙公司（纽约证券交易所股票代码：CVX）是现在最值得购买以获得良好回报的股票之一。 On June 23, Chevron Corporation (N…</p>
+              <p class="article-desc">微软公司（纳斯达克股票代码：MSFT）是 Chris Hohn 的 TCI 基金投资组合中最值得买入的 9 只股票之一。 6月24日，2…</p>
             </div>
         </div>
       </div>
@@ -661,16 +795,37 @@
         <div class="stock-price">
           <span class="price-current">$281.74</span>
           <span class="price-change down">▼ -0.72%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,6.6 6.1,1.5 12.2,4.3 18.3,3.8 24.4,6.0 30.5,9.3 36.6,15.7 42.7,15.1 48.8,12.7 54.9,15.3 61.1,12.3 67.2,10.7 73.3,12.6 79.4,11.4 85.5,11.9 91.6,13.5 97.7,14.2 103.8,24.5 109.9,19.5 116.0,20.7" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$202</span>
+            <span class="r52-bar"><i style="left:71%"></i></span>
+            <span class="r52-hi">$315</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买38/持15/卖2">分析师 买入</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=4d4c45b72abf642f38d2bdc340076cc7f7525c80d64ee0954e0043fc4d850ecc" target="_blank" class="article-title">苹果的赌博刚刚暴露了AI泡沫的致命缺陷</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 23:00 UTC</span>
+              </div>
+              <p class="article-desc">据路透社报道，6 月 25 日，由于存储芯片成本飙升，苹果公司 (AAPL) 提高了 iPad 和 MacBook 的价格。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=034bddc17367b87181f1bd701e910afc048f841bc6143bd49802e771c204f99b" target="_blank" class="article-title">价格上涨可能会给苹果公司的股票带来重大问题</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 19:49 UTC</span>
+              </div>
+              <p class="article-desc">苹果的提价可能会导致其营收增长放缓，从而导致其股价进一步下跌。</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=18e9fc209950e5f46e1a9f76b7f38256722aebd60e5a3d55d684ec70f1a1713e" target="_blank" class="article-title">苹果与微软：企业资本支出泡沫与轻资产消费者堡垒</a>
               <div class="article-meta">
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 16:39 UTC</span>
               </div>
-              <p class="article-desc">Microsoft (NASDAQ:MSFT) is the stock every cloud bull and AI evangelist keeps pointing at, drawn by an AI business that …</p>
+              <p class="article-desc">微软（纳斯达克股票代码：MSFT）是每个云牛和人工智能布道者不断关注的股票，受到人工智能业务的吸引......</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=986c247cdcfc56c121fd3f8fd47fc0842fffb10450356cd64eec3083f6a8bf0b" target="_blank" class="article-title">苹果称印度在反垄断调查中“复制粘贴”竞争对手的主张</a>
@@ -678,7 +833,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 15:11 UTC</span>
               </div>
-              <p class="article-desc">STORY: Apple accused India’s antitrust watchdog of "copy-pasting" rivals' claims in the latest escalation of their ongoi…</p>
+              <p class="article-desc">故事：苹果公司指责印度反垄断监管机构在最近一次升级的竞争中“复制粘贴”竞争对手的主张……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=890cccc6a2be78edceae99b5b1e3e742405d5934aeb1ece628e1a079db08c888" target="_blank" class="article-title">美光勒索供应链，让苹果承受消费者的强烈反对</a>
@@ -687,22 +842,6 @@
                 <span class="pub-time">06/29 14:33 UTC</span>
               </div>
               <p class="article-desc">美光科技（纳斯达克股票代码：MU）和苹果公司（纳斯达克股票代码：AAPL）刚刚公布的财报揭示了谁掌握着人工智能时代的供应……</p>
-            </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=549660625762f88ba0024468c4d58e16e3fe9c4379b42b6e3f39d882f06852ca" target="_blank" class="article-title">苹果 (AAPL) 飙升 3.1%：该股还有进一步上涨空间吗？</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/29 12:24 UTC</span>
-              </div>
-              <p class="article-desc">Apple (AAPL) saw its shares surge in the last session with trading volume being higher than average.最新趋势……</p>
-            </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=964e7dbe5e2737cf62f933853437a3ec8cb860f62def3d9fbbb2ff8186e9eef0" target="_blank" class="article-title">苹果（AAPL）人工智能战略重置在网络安全调查中获得华尔街支持</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/29 11:53 UTC</span>
-              </div>
-              <p class="article-desc">苹果公司（纳斯达克股票代码：AAPL）是现在最值得购买的股票之一，可以获得良好的回报。 On June 23, Apple Inc. (NASDAQ:AAPL) ope…</p>
             </div>
         </div>
       </div>
@@ -715,8 +854,13 @@
         <div class="stock-price">
           <span class="price-current">$562.60</span>
           <span class="price-change up">▲ +2.24%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,8.9 6.1,9.7 12.2,2.8 18.3,1.5 24.4,10.9 30.5,13.0 36.6,13.2 42.7,17.0 48.8,17.7 54.9,18.1 61.1,10.7 67.2,8.8 73.3,17.7 79.4,15.1 85.5,18.8 91.6,19.2 97.7,20.5 103.8,24.5 109.9,22.5 116.0,19.1" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$525</span>
+            <span class="r52-bar"><i style="left:14%"></i></span>
+            <span class="r52-hi">$787</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买63/持9/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=8fb2ba87b0c036167d970c896ae00878be3e7c3b9c025640083b4f548d825ea3" target="_blank" class="article-title">下跌约 29%，Meta 股票是买入、卖出还是持有？</a>
@@ -732,7 +876,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 18:08 UTC</span>
               </div>
-              <p class="article-desc">Vistra (NYSE:VST) agreed to acquire Cogentrix for about US$4b, expanding its power generation footprint. The company sig…</p>
+              <p class="article-desc">Vistra (NYSE:VST) 同意以约 40 亿美元收购 Cogentrix，扩大其发电业务。公司签约…</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=3c37d1e0a5d632aba484ac9dc24c589c81898acde7a2a5b96cf8645b0ab9a1c7" target="_blank" class="article-title">在特朗普的人工智能审查中，Meta (META) 仍然是亿万富翁 Dan Loeb 最值得购买的成长型股票之一吗？</a>
@@ -740,7 +884,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 11:57 UTC</span>
               </div>
-              <p class="article-desc">亿万富翁 Dan Loeb 表示，Meta Platforms, Inc.（纳斯达克股票代码：META）是最值得购买的成长型股票之一。 On June 23…</p>
+              <p class="article-desc">亿万富翁 Dan Loeb 表示，Meta Platforms, Inc.（纳斯达克股票代码：META）是最值得购买的成长型股票之一。 6 月 23 日……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=dc6e68b896403a55a7efb9376e1a33559578d35fcceb4d18f563ecd464d59c58" target="_blank" class="article-title">Meta Platforms (META) 将推出新系列智能眼镜，这次价格更便宜</a>
@@ -748,7 +892,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 07:54 UTC</span>
               </div>
-              <p class="article-desc">Meta Platforms, Inc.（纳斯达克股票代码：META）是未来 3 年内让您致富的股票之一。 On June 23, Reute…</p>
+              <p class="article-desc">Meta Platforms, Inc.（纳斯达克股票代码：META）是未来 3 年内让您致富的股票之一。 6月23日，路透...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=8aeb429c00f172d9ee5f5b72b83628838d08e937224d4d60f274c3ea51f5ba5c" target="_blank" class="article-title">Nvidia、Meta、Uber 和能源股出现在 CNBC 的“最终交易”中</a>
@@ -756,7 +900,7 @@
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 07:18 UTC</span>
               </div>
-              <p class="article-desc">Final trades discussed on CNBC&#39;s Halftime Report include Uber, Nvidia, Enbridge, and Meta. Analysts share outlooks a…</p>
+              <p class="article-desc">CNBC 半场报告中讨论的最终交易包括 Uber、Nvidia、Enbridge 和 Meta。分析师分享前景...</p>
             </div>
         </div>
       </div>
@@ -769,16 +913,21 @@
         <div class="stock-price">
           <span class="price-current">$240.14</span>
           <span class="price-change up">▲ +3.20%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,4.7 12.2,9.0 18.3,6.5 24.4,11.7 30.5,12.3 36.6,13.0 42.7,17.1 48.8,14.8 54.9,16.8 61.1,11.7 67.2,11.7 73.3,17.5 79.4,12.8 85.5,20.6 91.6,19.7 97.7,19.6 103.8,24.5 109.9,20.7 116.0,15.7" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$199</span>
+            <span class="r52-bar"><i style="left:54%"></i></span>
+            <span class="r52-hi">$275</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买71/持5/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=3f9cf9ed6966faaf33dfeea5c414d894d6d5f9fe4e382f07e9a6ce766bcbba66" target="_blank" class="article-title">Amazon climbs as Adobe data points to stronger-than-expected Prime Day demand</a>
+              <a href="https://finnhub.io/api/news?id=3f9cf9ed6966faaf33dfeea5c414d894d6d5f9fe4e382f07e9a6ce766bcbba66" target="_blank" class="article-title">Adobe 数据显示 Prime Day 需求强于预期，亚马逊股价攀升</a>
               <div class="article-meta">
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 17:12 UTC</span>
               </div>
-              <p class="article-desc">Amazon.com Inc (NASDAQ:AMZN) shares rose nearly 4% in trading on Monday following reports indicating stronger-than-expec…</p>
+              <p class="article-desc">亚马逊公司（NASDAQ：AMZN）股价周一上涨近 4%，此前有报道称其业绩强于预期……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=19b8a8e08bfc4a63dd3b7296f7d12088f87f8386174e749cc27d18baf7917539" target="_blank" class="article-title">亚马逊股价飙升 4%：创纪录的 264 亿美元黄金日井喷打破华尔街预期</a>
@@ -786,7 +935,7 @@
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 12:42 UTC</span>
               </div>
-              <p class="article-desc">Amazon (NASDAQ: AMZN) stock jumps more than 4% as record-breaking Prime Day online spending topped $26.4 billion, drivin…</p>
+              <p class="article-desc">亚马逊 (NASDAQ: AMZN) 股价上涨超过 4%，创纪录的 Prime Day 在线支出突破 264 亿美元，推动……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=1f7e0bd0e0167b2eec65df8f0fb98a435cb3beda9920f0df012ad7dac6864750" target="_blank" class="article-title">印第安纳州刚刚通过了亚马逊 (AMZN) 数据中心扩建的完整法律和监管框架</a>
@@ -794,7 +943,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 11:56 UTC</span>
               </div>
-              <p class="article-desc">亿万富翁 Dan Loeb 表示，亚马逊公司（纳斯达克股票代码：AMZN）是最值得购买的成长型股票之一。 On June 23, In…</p>
+              <p class="article-desc">亿万富翁 Dan Loeb 表示，亚马逊公司（纳斯达克股票代码：AMZN）是最值得购买的成长型股票之一。 6月23日，在...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=37288ebd31231c5ea4c1ecf0ead2bef9cbd5c786160ed3a42d38ca08306552ca" target="_blank" class="article-title">分析师认为专有数据具有持久价值，穆迪 (MCO) 扩大了 AWS AI 集成</a>
@@ -802,7 +951,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 11:54 UTC</span>
               </div>
-              <p class="article-desc">穆迪公司（纽约证券交易所股票代码：MCO）是现在最值得购买以获得良好回报的股票之一。 On June 16, Moody’s Corporation (N…</p>
+              <p class="article-desc">穆迪公司（纽约证券交易所股票代码：MCO）是现在最值得购买以获得良好回报的股票之一。 6月16日，穆迪公司（N...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=c86ae05fb2b7d8c955ac9ea3d598db7659996ccb526378b5ac5985602fea8995" target="_blank" class="article-title">亚马逊探索外部 Trainium 芯片销售，Marvell (MRVL) 成为焦点</a>
@@ -823,8 +972,13 @@
         <div class="stock-price">
           <span class="price-current">$411.84</span>
           <span class="price-change up">▲ +8.46%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,5.2 6.1,1.5 12.2,1.5 18.3,4.0 24.4,17.0 30.5,8.5 36.6,14.3 42.7,21.4 48.8,13.1 54.9,9.7 61.1,7.5 67.2,10.5 73.3,14.4 79.4,12.5 85.5,10.3 91.6,21.4 97.7,24.3 103.8,24.5 109.9,22.3 116.0,7.1" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$294</span>
+            <span class="r52-bar"><i style="left:60%"></i></span>
+            <span class="r52-hi">$490</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买29/持23/卖8">分析师 持有</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=504a85038a3fa03c75d6cb05e07fafd18d639cc70838a878b5b292fc62970cb5" target="_blank" class="article-title">特斯拉 (TSLA) 与 Sunrun 和 Renew Home 合作建设 16 吉瓦虚拟发电厂</a>
@@ -832,7 +986,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 21:07 UTC</span>
               </div>
-              <p class="article-desc">Tesla, Sunrun, and Renew Home have agreed to combine residential batteries, rooftop solar, and smart devices into a nati…</p>
+              <p class="article-desc">Tesla、Sunrun 和 Renew Home 已同意将住宅电池、屋顶太阳能和智能设备结合到一个国家……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=8ed597f8fad937afb48910262150467a6e4659273acfc952739f00ba13fc78b6" target="_blank" class="article-title">特斯拉引领七大复苏，分析师对交付量发表看法</a>
@@ -840,7 +994,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 20:05 UTC</span>
               </div>
-              <p class="article-desc">Tesla stock rose over 8% on Monday, after a poor showing the week prior, leading the Magnificent Seven. Elon Musk's auto…</p>
+              <p class="article-desc">继前一周表现不佳后，特斯拉股价周一上涨超过 8%，在七巨头中名列前茅。埃隆·马斯克的汽车...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=65975894ccef21e40f160106a2643923d73deddc3c91dc64e937c06d4c5327ac" target="_blank" class="article-title">特斯拉第二季度交付：从批评报告中可以期待什么</a>
@@ -864,7 +1018,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 18:30 UTC</span>
               </div>
-              <p class="article-desc">Electric vehicle stocks are surging in midday trading on Monday as a broad tech rebound lifts high-beta names across the…</p>
+              <p class="article-desc">周一午盘交易中，电动汽车股飙升，科技股全面反弹提振了全球高贝塔系数股票……</p>
             </div>
         </div>
       </div>
@@ -877,8 +1031,13 @@
         <div class="stock-price">
           <span class="price-current">$372.45</span>
           <span class="price-change up">▲ +2.04%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,5.8 6.1,1.5 12.2,2.0 18.3,13.9 24.4,20.5 30.5,18.4 36.6,19.2 42.7,23.2 48.8,20.5 54.9,21.2 61.1,18.9 67.2,22.3 73.3,19.1 79.4,15.4 85.5,19.1 91.6,21.5 97.7,21.1 103.8,21.7 109.9,24.5 116.0,23.0" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$263</span>
+            <span class="r52-bar"><i style="left:50%"></i></span>
+            <span class="r52-hi">$481</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买52/持4/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=d7f6b4900d51c478d854311f7336134edb780dfa625085c1841f0d1540e010ad" target="_blank" class="article-title">摩根大通反驳了博通 (AVGO) 延迟的担忧，并表示 TPU v9 计划坚定如期进行</a>
@@ -886,7 +1045,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 11:58 UTC</span>
               </div>
-              <p class="article-desc">亿万富翁 Dan Loeb 表示，博通公司（纳斯达克股票代码：AVGO）是最值得购买的成长型股票之一。 On June 17, JPMor…</p>
+              <p class="article-desc">亿万富翁 Dan Loeb 表示，博通公司（纳斯达克股票代码：AVGO）是最值得购买的成长型股票之一。 6月17日，摩根大通...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=bb6f65d14d1a285d2c6f4db5bb6027223cbfc2d3bf795269dd39e3ed7d7acb0e" target="_blank" class="article-title">Broadcom (AVGO) 将要约收购上限提高至 30 亿美元，接受 29 亿美元票据</a>
@@ -894,7 +1053,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 10:24 UTC</span>
               </div>
-              <p class="article-desc">据对冲基金称，博通公司（纳斯达克股票代码：AVGO）是最值得购买的快速增长股票之一。 On June 17, Broadcom …</p>
+              <p class="article-desc">据对冲基金称，博通公司（纳斯达克股票代码：AVGO）是最值得购买的快速增长股票之一。 6 月 17 日，博通…</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=0683098f1cc19b07827898bd013cbf708198c756c0c549bfe3c39106d2c9fcd0" target="_blank" class="article-title">Broadcom (AVGO) 是现在最值得购买的高增长半导体吗？</a>
@@ -902,7 +1061,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 09:58 UTC</span>
               </div>
-              <p class="article-desc">博通公司（纳斯达克股票代码：AVGO）是现在值得购买的高增长半导体股票之一。 On June 24, Reuters reported that…</p>
+              <p class="article-desc">博通公司（纳斯达克股票代码：AVGO）是现在值得购买的高增长半导体股票之一。 6月24日，路透社报道称……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=574469c1ce6979ef49f651ecc4c39cb04990304a4a39eadc08334aa4708cbcf6" target="_blank" class="article-title">Broadcom 忙碌的 6 月：第二季度业绩创纪录，OpenAI 的 Jalapeo 芯片——本月股价下跌 20%</a>
@@ -931,8 +1090,13 @@
         <div class="stock-price">
           <span class="price-current">$131.72</span>
           <span class="price-change up">▲ +2.65%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,18.9 6.1,19.7 12.2,17.0 18.3,17.6 24.4,24.5 30.5,18.4 36.6,19.7 42.7,20.2 48.8,14.7 54.9,10.5 61.1,8.7 67.2,14.7 73.3,12.4 79.4,5.3 85.5,1.5 91.6,6.3 97.7,6.6 103.8,5.9 109.9,8.4 116.0,6.6" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$19</span>
+            <span class="r52-bar"><i style="left:92%"></i></span>
+            <span class="r52-hi">$141</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买17/持32/卖4">分析师 持有</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=c66777428e0f449a1f25c5361a35ebbefa0b84041ad6a09dc6d7abd2dcba88b9" target="_blank" class="article-title">利润紧缩威胁着英特尔股票</a>
@@ -964,7 +1128,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 17:49 UTC</span>
               </div>
-              <p class="article-desc">英特尔 (NASDAQ:INTC) 股价周一中午交易于 130.60 美元，盘中上涨 2%。 The move follows a major price-targ…</p>
+              <p class="article-desc">英特尔 (NASDAQ:INTC) 股价周一中午交易于 130.60 美元，盘中上涨 2%。此举遵循主要价格目标……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=e2b39cea1e0ea8743919c04f1bb49f0fb46f5412098a6d457d2e454a7e3c6401" target="_blank" class="article-title">随着 2000 亿美元的芯片行业萎缩，美光和英特尔股票继续下跌</a>
@@ -985,8 +1149,13 @@
         <div class="stock-price">
           <span class="price-current">$188.72</span>
           <span class="price-change down">▼ -0.35%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,9.5 6.1,5.0 12.2,1.5 18.3,4.0 24.4,14.1 30.5,13.4 36.6,18.1 42.7,23.6 48.8,19.1 54.9,15.7 61.1,12.3 67.2,14.8 73.3,15.3 79.4,10.3 85.5,11.9 91.6,18.6 97.7,21.2 103.8,18.3 109.9,24.2 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$124</span>
+            <span class="r52-bar"><i style="left:51%"></i></span>
+            <span class="r52-hi">$250</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买18/持27/卖4">分析师 持有</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=01438afb3c88e70326d948fee421d669617f575771cafe124c2ba8059ba29f67" target="_blank" class="article-title">高通价格预测：预测远比分析师乐观</a>
@@ -994,10 +1163,10 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 13:58 UTC</span>
               </div>
-              <p class="article-desc">Our Qualcomm (NASDAQ:QCOM) price prediction sits well above where the sell side has landed, and that gap is the entire s…</p>
+              <p class="article-desc">我们的高通（纳斯达克股票代码：QCOM）价格预测远高于卖方的实际价格，而这个差距是整个市场的...</p>
             </div>
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=16599aebd592f5fc74186a7e1cfdfd11d6aae07fcb7960d258a13e3e29181d21" target="_blank" class="article-title">Mizuho Maintains Neutral on Qualcomm, Raises Price Target to $210</a>
+              <a href="https://finnhub.io/api/news?id=16599aebd592f5fc74186a7e1cfdfd11d6aae07fcb7960d258a13e3e29181d21" target="_blank" class="article-title">瑞穗维持对高通的中立态度，并将目标价上调至 210 美元</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 10:08 UTC</span>
@@ -1010,7 +1179,7 @@
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 05:35 UTC</span>
               </div>
-              <p class="article-desc">随着全栈人工智能战略的发展，高通股价上涨 2% 以上。 Check out QCOM's technical outlook, earnings preview…</p>
+              <p class="article-desc">随着全栈人工智能战略的发展，高通股价上涨 2% 以上。查看 QCOM 的技术前景、盈利预览……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=2b166bc228d345c28cb3fa4a1baa120fb9ba9c381737c40778df1cb927c41398" target="_blank" class="article-title">神奇公式对决：为何 CVS 在退休人员方面击败高通和 Valero</a>
@@ -1018,7 +1187,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 11:20 UTC</span>
               </div>
-              <p class="article-desc">Joel Greenblatt's Magic Formula ranks stocks on earnings yield and return on capital, but for retirees those two numbers…</p>
+              <p class="article-desc">乔尔·格林布拉特的神奇公式根据收益率和资本回报率对股票进行排名，但对于退休人员来说这两个数字......</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=f874ab51440ec64b4f6c951a356cc5414333c0a3cece26e2f91271f2b76cbcd2" target="_blank" class="article-title">高通正在将自己转型为一家人工智能公司。它的股票看起来非常便宜。</a>
@@ -1039,8 +1208,13 @@
         <div class="stock-price">
           <span class="price-current">$343.58</span>
           <span class="price-change up">▲ +2.79%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,6.8 6.1,7.9 12.2,6.3 18.3,9.5 24.4,18.3 30.5,17.7 36.6,21.5 42.7,24.5 48.8,18.4 54.9,11.7 61.1,6.2 67.2,9.0 73.3,5.1 79.4,1.5 85.5,7.0 91.6,14.2 97.7,15.5 103.8,17.5 109.9,19.8 116.0,18.2" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$105</span>
+            <span class="r52-bar"><i style="left:71%"></i></span>
+            <span class="r52-hi">$439</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买28/持14/卖2">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=2c781ebe998b2e2610372446258c9e59d67dad45834a0f1c5914fb5e648cf196" target="_blank" class="article-title">Arm Holdings (ARM) 利用 Oracle 云基础设施扩展其 Agentic-AI CPU 生态系统</a>
@@ -1048,7 +1222,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 10:16 UTC</span>
               </div>
-              <p class="article-desc">根据对冲基金的说法，Arm Holdings plc（纳斯达克股票代码：ARM）是最值得购买的快速增长股票之一。 On June 2, at Compu…</p>
+              <p class="article-desc">根据对冲基金的说法，Arm Holdings plc（纳斯达克股票代码：ARM）是最值得购买的快速增长股票之一。 6月2日，在计算机...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=ab329f91848eb3ffd186bdb044622950a239427c753db3f795ae4d12153389d4" target="_blank" class="article-title">Arm Holdings 利用 AGI CPU 拓展人工智能数据中心业务</a>
@@ -1056,7 +1230,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 15:17 UTC</span>
               </div>
-              <p class="article-desc">ARM is expanding its AI infrastructure strategy with the AGI CPU, targeting growing demand for agentic AI data center wo…</p>
+              <p class="article-desc">ARM 正在利用 AGI CPU 扩展其 AI 基础设施战略，以满足对代理 AI 数据中心不断增长的需求……</p>
             </div>
         </div>
       </div>
@@ -1069,8 +1243,13 @@
         <div class="stock-price">
           <span class="price-current">$150.10</span>
           <span class="price-change up">▲ +10.62%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,7.4 6.1,1.7 12.2,7.9 18.3,1.5 24.4,10.4 30.5,3.6 36.6,15.2 42.7,11.0 48.8,11.8 54.9,13.1 61.1,5.4 67.2,12.5 73.3,13.7 79.4,15.5 85.5,12.3 91.6,20.5 97.7,20.6 103.8,23.5 109.9,24.5 116.0,19.6" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$19</span>
+            <span class="r52-bar"><i style="left:64%"></i></span>
+            <span class="r52-hi">$223</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买9/持4/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=fd8938a667c40ddafc94bd1e04b18709c71feeacf6b6b32fdf45d9ebb81913a2" target="_blank" class="article-title">应用光电子学：产能、需求以及通往数十亿美元的可能之路</a>
@@ -1086,21 +1265,34 @@
         <div class="card-header">
           <span class="company-name">Astera Labs</span>
           <span class="ticker">ALAB</span>
-          <span class="article-count">2 条</span>
+          <span class="article-count">4 条</span>
         </div>
         <div class="stock-price">
           <span class="price-current">$455.96</span>
           <span class="price-change up">▲ +16.39%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,24.0 6.1,18.1 12.2,16.8 18.3,17.7 24.4,24.5 30.5,19.7 36.6,20.4 42.7,22.2 48.8,16.2 54.9,16.2 61.1,12.6 67.2,17.1 73.3,15.0 79.4,7.9 85.5,4.2 91.6,11.3 97.7,10.8 103.8,11.1 109.9,12.1 116.0,1.5" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$89</span>
+            <span class="r52-bar"><i style="left:100%"></i></span>
+            <span class="r52-hi">$456</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买21/持9/卖0">分析师 买入</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5e7a4509e5b378e8db13a6fac7552cd3fdcdcce727ff39a3150f03970f930a52" target="_blank" class="article-title">Astera Labs 股票刚刚获得新的市场高价目标。分析师对 2028 年人工智能支出充满信心。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 19:21 UTC</span>
+              </div>
+              <p class="article-desc">随着分析师提高目标，Astera Labs 股价飙升，理由是芯片需求更强劲，而且人工智能支出的可见度更高……</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=9dcdbe446a0728e14a9d74aa8c79c9048d2c248edbd792d902f63eafca401419" target="_blank" class="article-title">瑞银维持 Astera Labs 的中性评级，并将目标价上调至 400 美元</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 12:40 UTC</span>
               </div>
-              <p class="article-desc">UBS  analyst Natalia Winkler   maintains Astera Labs (NASDAQ:ALAB) with a Neutral and raises the price target from $205 …</p>
+              <p class="article-desc">瑞银 (UBS) 分析师 Natalia Winkler 维持 Astera Labs (NASDAQ:ALAB) 的中性评级，并将目标价从 205 美元上调……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=270bd3473aafa08660d4eb1e2570d9cc3fc928af065a0fda1d92b7aadc78e82f" target="_blank" class="article-title">Stifel 提高 Astera Labs (ALAB) 的 PT</a>
@@ -1108,7 +1300,15 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 07:53 UTC</span>
               </div>
-              <p class="article-desc">Astera Labs, Inc.（纳斯达克股票代码：ALAB）是现在值得购买的高增长半导体股票之一。 On June 24, Stifel raised the…</p>
+              <p class="article-desc">Astera Labs, Inc.（纳斯达克股票代码：ALAB）是现在值得购买的高增长半导体股票之一。 6 月 24 日，斯蒂菲尔提出了……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a2db3c06884f5725e3cedb678785a8e4a41b02791f6a2012e5160dd769b90400" target="_blank" class="article-title">Astera Labs (ALAB) 首次亮相 NASDAQ-100 并退出 Russell 对股东意味着什么</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/29 22:08 UTC</span>
+              </div>
+              <p class="article-desc">2026 年 6 月下旬，Astera Labs, Inc. 被纳入 NASDAQ-100 指数，同时被从俄罗斯证券交易所移除……</p>
             </div>
         </div>
       </div>
@@ -1121,8 +1321,13 @@
         <div class="stock-price">
           <span class="price-current">$255.69</span>
           <span class="price-change up">▲ +15.67%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,22.3 6.1,16.0 12.2,15.9 18.3,16.7 24.4,22.0 30.5,19.4 36.6,23.0 42.7,24.5 48.8,22.3 54.9,21.6 61.1,19.3 67.2,22.1 73.3,22.6 79.4,17.5 85.5,13.6 91.6,17.7 97.7,14.6 103.8,8.8 109.9,10.6 116.0,1.5" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$51</span>
+            <span class="r52-bar"><i style="left:100%"></i></span>
+            <span class="r52-hi">$256</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买14/持7/卖0">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=4709d5ca306bbc1855ff81a039eead68fd90197ec3bd3dd346939cc5bdb0782e" target="_blank" class="article-title">最终交易：Vertex Pharma、Verizon、IBM 和康宁</a>
@@ -1130,7 +1335,7 @@
                 <span class="source">CNBC</span>
                 <span class="pub-time">06/29 13:13 UTC</span>
               </div>
-              <p class="article-desc">CNBC’s “Halftime Report” Investment Committee discusses their top stocks to watch for the second half of the day's tradi…</p>
+              <p class="article-desc">CNBC 的“半场报告”投资委员会讨论了下半年值得关注的顶级股票……</p>
             </div>
         </div>
       </div>
@@ -1143,24 +1348,29 @@
         <div class="stock-price">
           <span class="price-current">$12.48</span>
           <span class="price-change up">▲ +9.47%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,17.0 6.1,13.6 12.2,14.4 18.3,13.5 24.4,18.7 30.5,19.4 36.6,21.9 42.7,22.0 48.8,19.4 54.9,20.0 61.1,19.7 67.2,20.1 73.3,22.0 79.4,24.5 85.5,22.2 91.6,22.0 97.7,23.2 103.8,13.5 109.9,7.6 116.0,1.5" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$3</span>
+            <span class="r52-bar"><i style="left:100%"></i></span>
+            <span class="r52-hi">$12</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买8/持6/卖0">分析师 持有</span></div>
         <div class="articles">
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=4578b6323586c7c228efb4057c87a9442564fb9431937e2659fcb679aa9fb715" target="_blank" class="article-title">BlackBerry Stock Is Trending Higher Today: What's Happening?</a>
+              <a href="https://finnhub.io/api/news?id=4578b6323586c7c228efb4057c87a9442564fb9431937e2659fcb679aa9fb715" target="_blank" class="article-title">黑莓股价今日走高：发生了什么？</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 14:33 UTC</span>
               </div>
-              <p class="article-desc">BlackBerry shares are rising Monday after RBC Capital Markets raised its price target, highlighting a stronger start to …</p>
+              <p class="article-desc">在加拿大皇家银行资本市场上调目标价后，黑莓股价周一上涨，突显出更强劲的开局……</p>
             </div>
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=0d28a54cc4f7ae17dcece6f8c6e1dcd3705fbb3f4fe39bd7ad555f3ef4f9246d" target="_blank" class="article-title">RBC Capital Maintains Sector Perform on BlackBerry, Raises Price Target to $9</a>
+              <a href="https://finnhub.io/api/news?id=0d28a54cc4f7ae17dcece6f8c6e1dcd3705fbb3f4fe39bd7ad555f3ef4f9246d" target="_blank" class="article-title">RBC Capital 维持黑莓行业表现不变，将目标价上调至 9 美元</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 11:24 UTC</span>
               </div>
-              <p class="article-desc">RBC Capital  analyst Paul Treiber   maintains BlackBerry (NYSE:BB) with a Sector Perform and raises the price target fro…</p>
+              <p class="article-desc">RBC Capital 分析师 Paul Treiber 维持黑莓 (NYSE:BB) 的行业表现不变，并将价格目标上调……</p>
             </div>
         </div>
       </div>
@@ -1173,8 +1383,13 @@
         <div class="stock-price">
           <span class="price-current">$101.83</span>
           <span class="price-change up">▲ +3.18%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,17.1 6.1,19.4 12.2,24.2 18.3,19.3 24.4,24.5 30.5,22.2 36.6,23.3 42.7,21.0 48.8,15.8 54.9,14.9 61.1,10.5 67.2,11.7 73.3,4.1 79.4,1.5 85.5,3.7 91.6,5.9 97.7,11.3 103.8,14.6 109.9,10.0 116.0,7.2" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$65</span>
+            <span class="r52-bar"><i style="left:42%"></i></span>
+            <span class="r52-hi">$152</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买26/持5/卖1">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
               <a href="https://finnhub.io/api/news?id=c9ec4966cc7fcf3d5b6e295c178a487fdf5c3af4a275e147c3b3e331ec100f16" target="_blank" class="article-title">Robinhood 六月创纪录的业绩赢得了更多分析师的青睐 – HOOD 股票获得另一个看涨价格目标</a>
@@ -1182,7 +1397,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 12:46 UTC</span>
               </div>
-              <p class="article-desc">The bullish call from Goldman Sachs follows BTIG's recent $125 price target, with analysts citing Robinhood's expanding …</p>
+              <p class="article-desc">高盛在 BTIG 最近将目标价定为 125 美元之后发出了看涨的呼吁，分析师称 Robinhood 的扩张......</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=88516d328f84cfbaaf7873d4bca29a20235aefdb9020fed51a81a34c3ce9985b" target="_blank" class="article-title">随着 6 月交易活动创下新高，Robinhood 股价上涨 (HOOD)</a>
@@ -1190,15 +1405,15 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 10:46 UTC</span>
               </div>
-              <p class="article-desc">Robinhood Markets (NASDAQ:HOOD) shares rose 1. 1% in premarket trading on Monday after the company released preliminary …</p>
+              <p class="article-desc">Robinhood Markets（纳斯达克股票代码：HOOD）发布初步业绩后，周一盘前交易中股价上涨 1. 1%...</p>
             </div>
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=625ffd2bb11b0dcc71420b4fbfebffbce6fd392fd403577a393cb67637a84d2f" target="_blank" class="article-title">Goldman Sachs Maintains Buy on Robinhood Markets, Raises Price Target to $121</a>
+              <a href="https://finnhub.io/api/news?id=625ffd2bb11b0dcc71420b4fbfebffbce6fd392fd403577a393cb67637a84d2f" target="_blank" class="article-title">高盛维持对 Robinhood Markets 的买入，并将目标价上调至 121 美元</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 08:37 UTC</span>
               </div>
-              <p class="article-desc">Goldman Sachs  analyst James Yaro   maintains Robinhood Markets (NASDAQ:HOOD) with a Buy and raises the price target fro…</p>
+              <p class="article-desc">高盛分析师 James Yaro 维持 Robinhood Markets （纳斯达克股票代码：HOOD）的买入评级，并将目标价上调……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=e27a3b505d22d7d057da07aba5bc7075348a6d87a1a16907eb36e5c5a63984f8" target="_blank" class="article-title">HOOD 股票正迎来自 9 月份以来最好的季度——一位分析师预计此后上涨 27%</a>
@@ -1209,12 +1424,12 @@
               <p class="article-desc">根据 Inv 的一份报告，BTIG 上周首次对 Robinhood 给予“买入”评级和 125 美元的目标价。</p>
             </div>
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=16f12470d451b7883640a13cd5516e76a8b13b70ead6bae2a9cd97adbad635e9" target="_blank" class="article-title">Robinhood CFO hands off PAO role</a>
+              <a href="https://finnhub.io/api/news?id=16f12470d451b7883640a13cd5516e76a8b13b70ead6bae2a9cd97adbad635e9" target="_blank" class="article-title">Robinhood 首席财务官不再担任 PAO 职务</a>
               <div class="article-meta">
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/29 15:41 UTC</span>
               </div>
-              <p class="article-desc">The stock trading platform’s first Chief Accounting Officer Dara Bazzano has assumed the PAO responsibilities but will s…</p>
+              <p class="article-desc">该股票交易平台首任首席会计官达拉·巴扎诺 (Dara Bazzano) 已承担 PAO 职责，但将...</p>
             </div>
         </div>
       </div>
@@ -1227,11 +1442,16 @@
         <div class="stock-price">
           <span class="price-current">$243.76</span>
           <span class="price-change up">▲ +2.75%</span>
-          <span class="price-meta">06/29 收盘</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,2.3 6.1,1.5 12.2,4.6 18.3,3.2 24.4,11.1 30.5,12.0 36.6,17.0 42.7,24.0 48.8,20.7 54.9,20.2 61.1,17.2 67.2,19.2 73.3,20.9 79.4,22.1 85.5,24.5 91.6,21.7 97.7,22.3 103.8,21.0 109.9,16.5 116.0,13.7" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$160</span>
+            <span class="r52-bar"><i style="left:74%"></i></span>
+            <span class="r52-hi">$273</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买28/持10/卖2">分析师 买入</span></div>
         <div class="articles">
             <div class="article">
-              <a href="https://finnhub.io/api/news?id=9ad799887e58b62f9bf57b950d9e6e0f2cc45f2dda972c51b06994f5384e7323" target="_blank" class="article-title">$100 Invested In Cloudflare 5 Years Ago Would Be Worth This Much Today</a>
+              <a href="https://finnhub.io/api/news?id=9ad799887e58b62f9bf57b950d9e6e0f2cc45f2dda972c51b06994f5384e7323" target="_blank" class="article-title">5 年前投资 Cloudflare 的 100 美元如今值这么多钱</a>
               <div class="article-meta">
                 <span class="source">Benzinga</span>
                 <span class="pub-time">06/29 10:45 UTC</span>
@@ -1249,7 +1469,7 @@
 </div>
 
 <footer class="footer">
-  新闻数据：NewsAPI.org &nbsp;·&nbsp; 股价数据：Yahoo Finance &nbsp;·&nbsp; 仅供参考，不构成投资建议
+  新闻数据：Finnhub &nbsp;·&nbsp; 股价/指数：Yahoo Finance &nbsp;·&nbsp; 评级/财报：Finnhub &nbsp;·&nbsp; 仅供参考，不构成投资建议
 </footer>
 
 </body>
