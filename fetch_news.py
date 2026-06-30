@@ -676,20 +676,22 @@ def _build_summary(company_articles: dict, prices: dict, indices: list) -> str:
     return f'<div class="summary"><div class="summary-title">📌 今日要点</div><ul>{lis}</ul></div>'
 
 
-def push_bark(title: str, body: str, url: str) -> None:
-    """Send the morning digest to the user's phone via Bark (no-op if unset)."""
-    key = os.environ.get("BARK_KEY", "")
-    if not key:
+def push_telegram(title: str, body: str, url: str) -> None:
+    """Send the morning digest to the user via a Telegram bot (no-op if unset)."""
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    chat = os.environ.get("TELEGRAM_CHAT_ID", "")
+    if not token or not chat:
         return
-    base = os.environ.get("BARK_SERVER", "https://api.day.app").rstrip("/")
+    text = f"{title}\n\n{body}\n\n{url}"
     try:
-        r = requests.post(f"{base}/{key}", json={
-            "title": title, "body": body, "url": url,
-            "group": "AI美股日报", "isArchive": 1,
-        }, timeout=10)
-        print(f"  Bark push: {r.status_code}")
+        r = requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={"chat_id": chat, "text": text, "disable_web_page_preview": False},
+            timeout=10,
+        )
+        print(f"  Telegram push: {r.status_code}")
     except Exception as e:
-        print(f"  [WARN] Bark push failed: {e}", file=sys.stderr)
+        print(f"  [WARN] Telegram push failed: {e}", file=sys.stderr)
 
 
 def generate_html(company_articles: dict, prices: dict, indices: list,
@@ -812,11 +814,11 @@ def main():
     print(f"Report saved: {out_path}")
     print(f"Latest:       {latest_path}")
 
-    # Morning push to phone (Bark) — no-op if BARK_KEY not set.
+    # Morning push to phone (Telegram) — no-op if bot token/chat not set.
     bullets = _summary_bullets(company_articles, prices, indices)
     body = "\n".join(f"• {b}" for b in bullets) if bullets else f"{total} 条新闻已更新"
-    push_bark(
-        title=f"AI美股日报 {target.strftime('%m/%d')}",
+    push_telegram(
+        title=f"📈 AI美股日报 {target.strftime('%m/%d')}",
         body=body,
         url="https://cjtree2002.github.io/ai-stock-daily/",
     )
