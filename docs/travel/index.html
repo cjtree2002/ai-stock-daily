@@ -26,6 +26,8 @@
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
   #map{height:62vh;min-height:380px;margin:0 20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#eaeef3}
   .leaflet-popup-content{font-size:13px;line-height:1.5}
+  .city-label{background:transparent;border:none;box-shadow:none;padding:0;color:#1d4ed8;font-size:12px;font-weight:700;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap}
+  .city-label:before{display:none}
   footer{color:var(--muted);font-size:12px;padding:14px 20px 24px}
   a{color:var(--accent)}
   .err{color:#ff6b6b;padding:0 20px}
@@ -247,6 +249,8 @@ function refresh(){
       (p.wishMore?' · ⭐想再去':'')+
       (p.note?`<br><span style="color:#666">${p.note}</span>`:'')
     );
+    // 常驻城市名标签（颜色与底图国家名不同）
+    m.bindTooltip(p.city, {permanent:true, direction:'right', offset:[7,0], className:'city-label'});
     m.addTo(markerLayer);
     bounds.push([p.lat,p.lon]);
   });
