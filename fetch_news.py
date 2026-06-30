@@ -647,7 +647,7 @@ def _render_movers(prices: dict) -> str:
     </div>'''
 
 
-def _build_summary(company_articles: dict, prices: dict, indices: list) -> str:
+def _summary_bullets(company_articles: dict, prices: dict, indices: list) -> list:
     bullets = []
     if indices:
         sox = next((i for i in indices if i["label"] == "费城半导体"), None)
@@ -663,13 +663,33 @@ def _build_summary(company_articles: dict, prices: dict, indices: list) -> str:
             bullets.append(f"跌幅最大：{movers[-1][0]} {movers[-1][1]:+.1f}%")
     most = max(AI_COMPANIES, key=lambda c: len(company_articles.get(c["name"], [])), default=None)
     if most and company_articles.get(most["name"]):
-        top_art = company_articles[most["name"]][0]
-        headline = translate_text(top_art.get("title") or "")
+        headline = translate_text(company_articles[most["name"]][0].get("title") or "")
         bullets.append(f"{most['name']} 新闻最多——{headline}")
+    return bullets
+
+
+def _build_summary(company_articles: dict, prices: dict, indices: list) -> str:
+    bullets = _summary_bullets(company_articles, prices, indices)
     if not bullets:
         return ""
     lis = "".join(f"<li>{b}</li>" for b in bullets)
     return f'<div class="summary"><div class="summary-title">📌 今日要点</div><ul>{lis}</ul></div>'
+
+
+def push_bark(title: str, body: str, url: str) -> None:
+    """Send the morning digest to the user's phone via Bark (no-op if unset)."""
+    key = os.environ.get("BARK_KEY", "")
+    if not key:
+        return
+    base = os.environ.get("BARK_SERVER", "https://api.day.app").rstrip("/")
+    try:
+        r = requests.post(f"{base}/{key}", json={
+            "title": title, "body": body, "url": url,
+            "group": "AI美股日报", "isArchive": 1,
+        }, timeout=10)
+        print(f"  Bark push: {r.status_code}")
+    except Exception as e:
+        print(f"  [WARN] Bark push failed: {e}", file=sys.stderr)
 
 
 def generate_html(company_articles: dict, prices: dict, indices: list,
@@ -791,6 +811,15 @@ def main():
 
     print(f"Report saved: {out_path}")
     print(f"Latest:       {latest_path}")
+
+    # Morning push to phone (Bark) — no-op if BARK_KEY not set.
+    bullets = _summary_bullets(company_articles, prices, indices)
+    body = "\n".join(f"• {b}" for b in bullets) if bullets else f"{total} 条新闻已更新"
+    push_bark(
+        title=f"AI美股日报 {target.strftime('%m/%d')}",
+        body=body,
+        url="https://cjtree2002.github.io/ai-stock-daily/",
+    )
 
 
 if __name__ == "__main__":
