@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>录入旅行地点</title>
 <style>
-  :root{ --bg:#0f1419; --panel:#1a2129; --line:#2a3540; --text:#e6edf3; --muted:#8b97a3; --accent:#4ea1ff; --ok:#2ec27e; --danger:#ff6b6b; }
+  :root{ --bg:#ffffff; --panel:#ffffff; --line:#e4e7ef; --text:#1e2130; --muted:#5a6278; --accent:#2563eb; --ok:#16a34a; --danger:#dc2626; }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);padding:20px;max-width:760px;margin:0 auto}
   h1{font-size:20px;margin:0 0 4px}
   .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
   .sub a{color:var(--accent)}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(20,30,60,.06)}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
   .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
   label{font-size:12px;color:var(--muted)}
-  input,select{background:#0f1419;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
+  input,select{background:#ffffff;color:var(--text);border:1px solid #cbd2de;border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
   input[type=checkbox]{width:auto}
-  button{background:var(--accent);color:#08101a;border:none;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer}
+  button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer}
   button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:500}
   button.ghost:hover{border-color:var(--accent)}
   .msg{font-size:13px;margin-top:8px;min-height:18px}
@@ -28,8 +28,8 @@
   td .del{color:var(--danger);cursor:pointer;background:none;border:none;font-size:13px;padding:0}
   .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
   .count{color:var(--muted);font-size:13px;margin-right:auto}
-  code{background:#0f1419;padding:1px 5px;border-radius:4px}
-  .note{background:#1d2730;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px;display:none}
+  code{background:#f1f3f8;padding:1px 5px;border-radius:4px}
+  .note{background:#eef4ff;border:1px solid #c7dbff;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px;display:none}
   .note button{font-size:12px;padding:3px 10px;margin-left:8px}
 </style>
 </head>

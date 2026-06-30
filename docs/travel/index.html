@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root{
-    --bg:#0f1419; --panel:#1a2129; --line:#2a3540; --text:#e6edf3; --muted:#8b97a3;
-    --accent:#4ea1ff; --visited:#4ea1ff; --travel:#4ea1ff; --business:#f0a020;
-    --transit:#9b7bff; --live:#2ec27e;
+    --bg:#ffffff; --panel:#ffffff; --line:#e4e7ef; --text:#1e2130; --muted:#5a6278;
+    --accent:#2563eb; --visited:#2563eb; --travel:#2563eb; --business:#e8870b;
+    --transit:#7c3aed; --live:#16a34a;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
@@ -17,14 +17,14 @@
   h1{margin:0;font-size:20px;font-weight:600}
   .sub{color:var(--muted);font-size:13px;margin-top:4px}
   .stats{display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:96px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:96px;box-shadow:0 1px 3px rgba(20,30,60,.06)}
   .card .num{font-size:26px;font-weight:700;line-height:1}
   .card .lab{color:var(--muted);font-size:12px;margin-top:6px}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 20px 12px}
   .toolbar select,.toolbar button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
   .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-left:auto}
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
-  #map{height:62vh;min-height:380px;margin:0 20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b1118}
+  #map{height:62vh;min-height:380px;margin:0 20px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#eaeef3}
   .leaflet-popup-content{font-size:13px;line-height:1.5}
   footer{color:var(--muted);font-size:12px;padding:14px 20px 24px}
   a{color:var(--accent)}
@@ -34,10 +34,10 @@
   .extra .item b{color:var(--accent);font-weight:600}
   .extra .item .k{color:var(--muted);margin-right:6px}
   .badges{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 10px}
-  .badge{background:#1d2730;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px}
-  .badge.on{border-color:var(--accent);background:rgba(78,161,255,.12)}
-  .badge.off{opacity:.4}
-  #playBtn{background:var(--accent);color:#08101a;border:none;font-weight:600}
+  .badge{background:#f1f3f8;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px}
+  .badge.on{border-color:var(--accent);background:rgba(37,99,235,.10);color:var(--accent)}
+  .badge.off{opacity:.45}
+  #playBtn{background:var(--accent);color:#fff;border:none;font-weight:600}
   .playyear{color:var(--accent);font-weight:700;font-size:15px;min-width:46px}
 </style>
 </head>
@@ -82,7 +82,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const COLORS = { travel:'#4ea1ff', business:'#f0a020', transit:'#9b7bff', live:'#2ec27e' };
+const COLORS = { travel:'#2563eb', business:'#e8870b', transit:'#7c3aed', live:'#16a34a' };
 const TYPE_ZH = { travel:'旅游', business:'出差', transit:'转机', live:'居住' };
 // 国家名 -> 大洲（覆盖常见旅行国家；未列出的不计入大洲统计）
 const CONTINENT = {
@@ -264,13 +264,13 @@ function styleCountry(feature){
   const visited = visitedCountrySet();
   const name = feature.properties.name;
   const on = visited.has(name);
-  return { fillColor: on?'#4ea1ff':'#222b34', fillOpacity:on?0.35:0.12,
-           color:'#2a3540', weight:0.6 };
+  return { fillColor: on?'#2563eb':'#c9d2dd', fillOpacity:on?0.30:0.10,
+           color:'#aab4c0', weight:0.5 };
 }
 
 async function init(){
   map = L.map('map', {worldCopyJump:true}).setView([20,10], 2);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:19
   }).addTo(map);
   markerLayer = L.layerGroup().addTo(map);
