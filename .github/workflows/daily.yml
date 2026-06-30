@@ -2,9 +2,8 @@ name: Daily AI Stock Report
 
 on:
   schedule:
-    # 08:11 Beijing time = 00:11 UTC (off-the-hour to avoid GitHub's congested top-of-hour queue)
-    - cron: "11 0 * * 1-5"   # weekdays only
-  workflow_dispatch:          # allow manual trigger
+    - cron: "11 0 * * 1-5"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -29,11 +28,10 @@ jobs:
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          run: |
+        run: |
           mkdir -p docs
           python fetch_news.py
           cp reports/latest.html docs/index.html
-          # Keep dated copies in docs/ as archive
           cp reports/latest.html docs/$(date +'%Y-%m-%d').html
 
       - name: Commit and push report
