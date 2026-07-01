@@ -295,6 +295,53 @@
     .tag.rec-sell { color: var(--red); background: var(--red-bg); border-color: var(--red-border); }
     .tag.earn { color: var(--accent); background: var(--ticker-bg); border-color: #d4d8f7; }
 
+    /* ── Interactive toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--bg); padding: 10px 0 8px;
+      margin-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .toolbar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .toolbar-row:last-child { margin-bottom: 0; }
+    .search-box {
+      flex: 1; min-width: 180px; font-size: 14px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+    }
+    .search-box:focus, .sort-select:focus, .history-select:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.12);
+    }
+    .sort-select, .history-select {
+      font-size: 13px; padding: 8px 10px; border: 1px solid var(--border);
+      border-radius: 8px; background: #fff; color: var(--text); cursor: pointer;
+    }
+    .history-label { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .tab-btn {
+      font-size: 12.5px; padding: 5px 12px; border-radius: 16px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .chip-btn {
+      font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    }
+    .chip-btn.active { background: var(--ticker-bg); color: var(--accent); border-color: #c7cbf5; font-weight: 600; }
+    .vis-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+    .empty-hint { text-align: center; color: var(--text-dim); padding: 40px; font-size: 14px; }
+
+    .sector-badge {
+      font-size: 10.5px; color: var(--text-muted); background: var(--surface2);
+      border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 6px;
+    }
+    .article-count.muted { color: var(--text-dim); }
+    .no-articles { font-size: 12.5px; color: var(--text-dim); padding: 6px 2px; }
+
+    .to-top {
+      position: fixed; right: 20px; bottom: 20px; z-index: 30; display: none;
+      width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-size: 20px;
+      align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,.35);
+    }
+
     @media (max-width: 640px) {
       .header { padding: 14px 16px; }
       .grid { grid-template-columns: 1fr; }
@@ -302,6 +349,8 @@
       .top-row { grid-template-columns: 1fr; }
       .indices { padding: 10px 14px; gap: 4px; }
       .idx { margin-right: 10px; padding-right: 10px; }
+      .search-box { min-width: 120px; }
+      .history-label { width: 100%; }
     }
   </style>
 </head>
@@ -310,7 +359,7 @@
 <header class="header">
   <div class="header-left">
     <h1>AI 美股 <span>日报</span></h1>
-    <div class="header-date">2026年06月30日（周二）前一日 &nbsp;·&nbsp; 生成于 2026-07-01 11:43 北京时间</div>
+    <div class="header-date">2026年06月30日（周二）前一日 &nbsp;·&nbsp; 生成于 2026-07-01 18:59 北京时间</div>
   </div>
   <div class="header-stats">
     <div class="stat">
@@ -336,12 +385,39 @@
     </div>
   </div>
 
-  <div class="grid">
+  <!-- ── Interactive toolbar ── -->
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <input id="searchBox" class="search-box" type="text" placeholder="🔍 搜索公司名或代码…" />
+      <select id="sortSelect" class="sort-select">
+        <option value="order">默认顺序</option>
+        <option value="gain">涨幅从高到低</option>
+        <option value="lose">跌幅从高到低</option>
+        <option value="news">新闻最多</option>
+      </select>
+      <label class="history-label">历史：<select id="historySelect" class="history-select"><option value="2026-07-01">2026-07-01</option><option value="2026-06-30" selected>2026-06-30</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-21">2026-06-21</option></select></label>
+    </div>
+    <div class="toolbar-row tabs">
+      <button class="tab-btn active" data-sector="all">全部</button><button class="tab-btn" data-sector="存储">存储</button><button class="tab-btn" data-sector="AI芯片">AI芯片</button><button class="tab-btn" data-sector="云与AI">云与AI</button><button class="tab-btn" data-sector="光通信/材料">光通信/材料</button><button class="tab-btn" data-sector="半导体设备">半导体设备</button><button class="tab-btn" data-sector="其他">其他</button>
+    </div>
+    <div class="toolbar-row chips">
+      <button class="chip-btn active" data-filter="all">全部</button>
+      <button class="chip-btn" data-filter="hasnews">只看有新闻</button>
+      <button class="chip-btn" data-filter="up">只看上涨</button>
+      <button class="chip-btn" data-filter="down">只看下跌</button>
+      <span id="visCount" class="vis-count"></span>
+    </div>
+  </div>
+
+  <div class="grid" id="cardGrid">
     
-      <div class="company-card">
+      <div class="company-card" data-name="美光 micron mu" data-ticker="MU"
+           data-sector="存储" data-change="0.7867"
+           data-news="5" data-order="0">
         <div class="card-header">
           <span class="company-name">美光 Micron</span>
           <span class="ticker">MU</span>
+          <span class="sector-badge">存储</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -362,6 +438,14 @@
                 <span class="pub-time">06/30 21:21 UTC</span>
               </div>
               <p class="article-desc">Investing.com——三大芯片制造商第二季度总市值增加约 2 万亿美元，因为……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=fbde51f25385e508d075373f9be92e82de4af3eb90d5bdb872cd92c318c93177" target="_blank" class="article-title">美光和其他内存制造商因价格操纵指控而被起诉。这只不过是 MU 股票的头条风险。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/30 20:51 UTC</span>
+              </div>
+              <p class="article-desc">美光科技、三星和 SK 海力士面临集体诉讼，指控其合谋操纵 DRAM 价格……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=70dbf0d1a3b480214d68d390850120fe52235f5b034cebeb5939ab737b6d757d" target="_blank" class="article-title">美光科技股票季度表现最佳。为什么一位分析师看到了更多收益。</a>
@@ -387,20 +471,15 @@
               </div>
               <p class="article-desc">美光 (MU) 股价已开始上涨，并可能在短期内继续走高，正如稳健的盈利所表明的那样……</p>
             </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=5eea74d0c9dfef483fa7a25357806f60eaffc62e284b96eeeed43d571822048e" target="_blank" class="article-title">美光遭遇价格垄断诉讼：真正的串通还是简单的供需？</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/30 15:43 UTC</span>
-              </div>
-              <p class="article-desc">人工智能几乎在半导体供应链的每个环节都造成了短缺。 GPU 具有接收...</p>
-            </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="闪迪 sandisk sndk" data-ticker="SNDK"
+           data-sector="存储" data-change="10.8926"
+           data-news="5" data-order="1">
         <div class="card-header">
           <span class="company-name">闪迪 SanDisk</span>
           <span class="ticker">SNDK</span>
+          <span class="sector-badge">存储</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -456,10 +535,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="迈威尔 marvell mrvl" data-ticker="MRVL"
+           data-sector="AI芯片" data-change="7.2511"
+           data-news="5" data-order="2">
         <div class="card-header">
           <span class="company-name">迈威尔 Marvell</span>
           <span class="ticker">MRVL</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -495,7 +577,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/30 14:23 UTC</span>
               </div>
-              <p class="article-desc">从今天的数据来看，这家芯片制造商看起来很昂贵，但真正的问题是你为明天的收益付出了什么......</p>
+              <p class="article-desc">从今天的数据来看，这家芯片制造商看起来很昂贵，但真正的问题是你为明天的收益付出了什么……</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=525e87650d96d599fab0843226f7bfb236b8c08ffc011c65f36c6028742ace28" target="_blank" class="article-title">Marvell 科技股周二上涨：是什么推动了这一走势？</a>
@@ -515,10 +597,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="amd amd" data-ticker="AMD"
+           data-sector="AI芯片" data-change="7.6776"
+           data-news="5" data-order="3">
         <div class="card-header">
           <span class="company-name">AMD</span>
           <span class="ticker">AMD</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -532,6 +617,14 @@
             <span class="r52-hi">$581</span>
           </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买46/持11/卖0">分析师 买入</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=86a21b5a9c761fc79e9bb589ea5f822e778d0981b0d377b9bc5907e513050099" target="_blank" class="article-title">这位分析师刚刚提高了 AMD 股票的目标价格。这就是为什么。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/30 21:26 UTC</span>
+              </div>
+              <p class="article-desc">富国银行将 AMD 股票目标价提高至 615 美元。这就是为什么该公司仍然看好 AMD 股票的剩余时间......</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=0c33935880cb501fa457ec6608dcf929e32411e22c71348a3f66d628d29d52fa" target="_blank" class="article-title">美光、英特尔和 AMD 第二季度股价上涨 2 万亿美元</a>
               <div class="article-meta">
@@ -564,20 +657,15 @@
               </div>
               <p class="article-desc">市场统治主持人 Josh Lipton 追踪了当天的几个热门股票行情，包括 Advanced Micro Devi...</p>
             </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=9768479efed38962b58b3f84e1a23753fa96e06e56e4144435a9928d8b0e3b52" target="_blank" class="article-title">今天大量 Advanced Micro Devices 看涨期权成交量 - AMD 是否被低估？</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/30 17:30 UTC</span>
-              </div>
-              <p class="article-desc">今天，投资者纷纷买入半导体公司 Advanced Micro Devices 的 24 天看涨期权。这可能意味着……</p>
-            </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="nebius nbis" data-ticker="NBIS"
+           data-sector="云与AI" data-change="5.7515"
+           data-news="2" data-order="4">
         <div class="card-header">
           <span class="company-name">Nebius</span>
           <span class="ticker">NBIS</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">2 条</span>
         </div>
         <div class="stock-price">
@@ -609,10 +697,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="astera labs alab" data-ticker="ALAB"
+           data-sector="AI芯片" data-change="5.9347"
+           data-news="3" data-order="5">
         <div class="card-header">
           <span class="company-name">Astera Labs</span>
           <span class="ticker">ALAB</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">3 条</span>
         </div>
         <div class="stock-price">
@@ -652,10 +743,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="康宁 corning glw" data-ticker="GLW"
+           data-sector="光通信/材料" data-change="-0.1017"
+           data-news="5" data-order="6">
         <div class="card-header">
           <span class="company-name">康宁 Corning</span>
           <span class="ticker">GLW</span>
+          <span class="sector-badge">光通信/材料</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -711,10 +805,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="阿斯麦 asml asml" data-ticker="ASML"
+           data-sector="半导体设备" data-change="5.6465"
+           data-news="5" data-order="7">
         <div class="card-header">
           <span class="company-name">阿斯麦 ASML</span>
           <span class="ticker">ASML</span>
+          <span class="sector-badge">半导体设备</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -750,7 +847,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/30 12:14 UTC</span>
               </div>
-              <p class="article-desc">ASML Holding NV（纳斯达克股票代码：ASML）是上涨的 10 只人工智能股票之一。在过去的几个交易日中，ASML Ho…</p>
+              <p class="article-desc">ASML Holding NV（纳斯达克股票代码：ASML）是上涨的 10 只人工智能股票之一。在过去的几个交易日中，ASML Ho...</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=a2a344520fc247a722762d9bc6d331f32e3dcbc0fda6f8266eb1c3a199fb0380" target="_blank" class="article-title">应用材料公司 (AMAT) 继续受到青睐，ASML 成为追赶行业中的佼佼者</a>
@@ -770,10 +867,35 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="东京电子 tokyo electron toely" data-ticker="TOELY"
+           data-sector="半导体设备" data-change="-1.9330"
+           data-news="0" data-order="8">
+        <div class="card-header">
+          <span class="company-name">东京电子 Tokyo Electron</span>
+          <span class="ticker">TOELY</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$243.01</span>
+          <span class="price-change down">▼ -1.93%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,24.5 6.1,20.0 12.2,15.9 18.3,22.4 24.4,21.4 30.5,19.3 36.6,18.9 42.7,12.6 48.8,10.7 54.9,7.4 61.1,10.3 67.2,6.6 73.3,2.2 79.4,1.8 85.5,7.6 91.6,9.9 97.7,5.7 103.8,7.2 109.9,1.5 116.0,3.0" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$67</span>
+            <span class="r52-bar"><i style="left:97%"></i></span>
+            <span class="r52-hi">$248</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买23/持3/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="泛林 lam research lrcx" data-ticker="LRCX"
+           data-sector="半导体设备" data-change="5.4562"
+           data-news="5" data-order="9">
         <div class="card-header">
           <span class="company-name">泛林 Lam Research</span>
           <span class="ticker">LRCX</span>
+          <span class="sector-badge">半导体设备</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -793,7 +915,7 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/30 16:06 UTC</span>
               </div>
-              <p class="article-desc">这家芯片设备制造商在人工智能建设的核心领域公布了创纪录的业绩，但其溢价和历史……</p>
+              <p class="article-desc">这家芯片设备制造商在人工智能建设的核心领域公布了创纪录的业绩，但其溢价和历史......</p>
             </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=7b3d04c5e4ec2147d2c56cce0e4e0b5c61abe71f91a4660fbed39309d1a029f5" target="_blank" class="article-title">ASML 与 LRCX：哪家半导体芯片制造商的股票更有上涨空间？</a>
@@ -829,10 +951,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="应用材料 amat amat" data-ticker="AMAT"
+           data-sector="半导体设备" data-change="4.0827"
+           data-news="5" data-order="10">
         <div class="card-header">
           <span class="company-name">应用材料 AMAT</span>
           <span class="ticker">AMAT</span>
+          <span class="sector-badge">半导体设备</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -888,10 +1013,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="科磊 kla klac" data-ticker="KLAC"
+           data-sector="半导体设备" data-change="8.3767"
+           data-news="2" data-order="11">
         <div class="card-header">
           <span class="company-name">科磊 KLA</span>
           <span class="ticker">KLAC</span>
+          <span class="sector-badge">半导体设备</span>
           <span class="article-count">2 条</span>
         </div>
         <div class="stock-price">
@@ -923,10 +1051,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="爱德万 advantest ateyy" data-ticker="ATEYY"
+           data-sector="半导体设备" data-change="0.6726"
+           data-news="1" data-order="12">
         <div class="card-header">
           <span class="company-name">爱德万 Advantest</span>
           <span class="ticker">ATEYY</span>
+          <span class="sector-badge">半导体设备</span>
           <span class="article-count">1 条</span>
         </div>
         <div class="stock-price">
@@ -950,10 +1081,35 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="semtech smtc" data-ticker="SMTC"
+           data-sector="AI芯片" data-change="3.6570"
+           data-news="0" data-order="13">
+        <div class="card-header">
+          <span class="company-name">Semtech</span>
+          <span class="ticker">SMTC</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$161.85</span>
+          <span class="price-change up">▲ +3.66%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,9.0 6.1,11.8 12.2,6.5 18.3,23.3 24.4,16.2 30.5,17.3 36.6,20.3 42.7,11.8 48.8,8.9 54.9,1.9 61.1,13.6 67.2,24.1 73.3,16.7 79.4,1.5 85.5,12.0 91.6,16.5 97.7,13.0 103.8,24.5 109.9,18.6 116.0,13.4" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$43</span>
+            <span class="r52-bar"><i style="left:90%"></i></span>
+            <span class="r52-hi">$175</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买19/持3/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="英伟达 nvidia nvda" data-ticker="NVDA"
+           data-sector="AI芯片" data-change="2.6260"
+           data-news="5" data-order="14">
         <div class="card-header">
           <span class="company-name">英伟达 NVIDIA</span>
           <span class="ticker">NVDA</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1009,10 +1165,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="谷歌 alphabet googl" data-ticker="GOOGL"
+           data-sector="云与AI" data-change="1.0519"
+           data-news="5" data-order="15">
         <div class="card-header">
           <span class="company-name">谷歌 Alphabet</span>
           <span class="ticker">GOOGL</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1068,10 +1227,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="微软 microsoft msft" data-ticker="MSFT"
+           data-sector="云与AI" data-change="1.2074"
+           data-news="5" data-order="16">
         <div class="card-header">
           <span class="company-name">微软 Microsoft</span>
           <span class="ticker">MSFT</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1123,14 +1285,17 @@
                 <span class="source">Yahoo</span>
                 <span class="pub-time">06/30 10:25 UTC</span>
               </div>
-              <p class="article-desc">微软公司（纳斯达克股票代码：MSFT）是华尔街上 14 只人工智能股票之一：Nvidia、Micron 等。在…</p>
+              <p class="article-desc">微软公司（纳斯达克股票代码：MSFT）是华尔街上 14 只人工智能股票之一：英伟达、美光等。在…</p>
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="苹果 apple aapl" data-ticker="AAPL"
+           data-sector="云与AI" data-change="2.7046"
+           data-news="5" data-order="17">
         <div class="card-header">
           <span class="company-name">苹果 Apple</span>
           <span class="ticker">AAPL</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1186,10 +1351,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="meta meta" data-ticker="META"
+           data-sector="云与AI" data-change="0.1226"
+           data-news="5" data-order="18">
         <div class="card-header">
           <span class="company-name">Meta</span>
           <span class="ticker">META</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1245,10 +1413,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="亚马逊 amazon amzn" data-ticker="AMZN"
+           data-sector="云与AI" data-change="-0.7496"
+           data-news="5" data-order="19">
         <div class="card-header">
           <span class="company-name">亚马逊 Amazon</span>
           <span class="ticker">AMZN</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1304,10 +1475,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="特斯拉 tesla tsla" data-ticker="TSLA"
+           data-sector="云与AI" data-change="2.1270"
+           data-news="5" data-order="20">
         <div class="card-header">
           <span class="company-name">特斯拉 Tesla</span>
           <span class="ticker">TSLA</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1363,10 +1537,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="台积电 tsmc tsm" data-ticker="TSM"
+           data-sector="AI芯片" data-change="4.9374"
+           data-news="2" data-order="21">
         <div class="card-header">
           <span class="company-name">台积电 TSMC</span>
           <span class="ticker">TSM</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">2 条</span>
         </div>
         <div class="stock-price">
@@ -1398,10 +1575,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="博通 broadcom avgo" data-ticker="AVGO"
+           data-sector="AI芯片" data-change="1.4230"
+           data-news="5" data-order="22">
         <div class="card-header">
           <span class="company-name">博通 Broadcom</span>
           <span class="ticker">AVGO</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1457,10 +1637,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="英特尔 intel intc" data-ticker="INTC"
+           data-sector="AI芯片" data-change="6.0052"
+           data-news="5" data-order="23">
         <div class="card-header">
           <span class="company-name">英特尔 Intel</span>
           <span class="ticker">INTC</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1516,10 +1699,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="高通 qualcomm qcom" data-ticker="QCOM"
+           data-sector="AI芯片" data-change="-2.0825"
+           data-news="5" data-order="24">
         <div class="card-header">
           <span class="company-name">高通 Qualcomm</span>
           <span class="ticker">QCOM</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1533,6 +1719,14 @@
             <span class="r52-hi">$250</span>
           </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买18/持27/卖4">分析师 持有</span></div>
         <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=810e177c61373da947c249171a420cb520bec4a2924e03f607f27b46f4a6621b" target="_blank" class="article-title">从零到 150 亿美元，高通的 AI 路线图从模块化收购中获得提升</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">06/30 20:06 UTC</span>
+              </div>
+              <p class="article-desc">几年前还没有数据中心收入的高通公司打算通过……实现 150 亿美元的数据中心销售额。</p>
+            </div>
             <div class="article">
               <a href="https://finnhub.io/api/news?id=bdbf5a70569ff71efba40450fa8174d34dcf4511817f3651813a459f9b92720b" target="_blank" class="article-title">摩根士丹利升级高通 (QCOM) 但对人工智能路线图保持谨慎</a>
               <div class="article-meta">
@@ -1565,20 +1759,15 @@
               </div>
               <p class="article-desc">该公司正在积极进入人工智能芯片领域，并与科技巨头签署利润丰厚的协议。</p>
             </div>
-            <div class="article">
-              <a href="https://finnhub.io/api/news?id=1c13d3ecd5c1579de3cfea5141f5ba7db91002e89eea5653d8f971d9e06879b5" target="_blank" class="article-title">除了为什么高通公司（QCOM）是一只热门股票之外，还需要了解以下内容</a>
-              <div class="article-meta">
-                <span class="source">Yahoo</span>
-                <span class="pub-time">06/30 13:00 UTC</span>
-              </div>
-              <p class="article-desc">Zacks.com 用户最近对高通（QCOM）进行了相当多的关注。因此，值得了解可以……的事实。</p>
-            </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="arm arm" data-ticker="ARM"
+           data-sector="AI芯片" data-change="3.1987"
+           data-news="1" data-order="25">
         <div class="card-header">
           <span class="company-name">Arm</span>
           <span class="ticker">ARM</span>
+          <span class="sector-badge">AI芯片</span>
           <span class="article-count">1 条</span>
         </div>
         <div class="stock-price">
@@ -1602,10 +1791,79 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="aaoi 应用光电 aaoi" data-ticker="AAOI"
+           data-sector="光通信/材料" data-change="-1.2925"
+           data-news="0" data-order="26">
+        <div class="card-header">
+          <span class="company-name">AAOI 应用光电</span>
+          <span class="ticker">AAOI</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$148.16</span>
+          <span class="price-change down">▼ -1.29%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.7 6.1,7.9 12.2,1.5 18.3,10.4 24.4,3.6 30.5,15.2 36.6,11.0 42.7,11.8 48.8,13.1 54.9,5.4 61.1,12.5 67.2,13.7 73.3,15.5 79.4,12.3 85.5,20.5 91.6,20.6 97.7,23.5 103.8,24.5 109.9,19.6 116.0,20.2" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$19</span>
+            <span class="r52-bar"><i style="left:63%"></i></span>
+            <span class="r52-hi">$223</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买9/持4/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="axt axti" data-ticker="AXTI"
+           data-sector="光通信/材料" data-change="0.8676"
+           data-news="0" data-order="27">
+        <div class="card-header">
+          <span class="company-name">AXT</span>
+          <span class="ticker">AXTI</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$72.08</span>
+          <span class="price-change up">▲ +0.87%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,3.8 12.2,4.2 18.3,13.5 24.4,12.5 30.5,19.4 36.6,15.6 42.7,13.9 48.8,9.0 54.9,1.6 61.1,11.3 67.2,11.8 73.3,16.0 79.4,11.6 85.5,19.6 91.6,23.9 97.7,24.5 103.8,23.9 109.9,23.2 116.0,22.8" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$2</span>
+            <span class="r52-bar"><i style="left:51%"></i></span>
+            <span class="r52-hi">$141</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买8/持3/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="lumentum lite" data-ticker="LITE"
+           data-sector="光通信/材料" data-change="0.7822"
+           data-news="0" data-order="28">
+        <div class="card-header">
+          <span class="company-name">Lumentum</span>
+          <span class="ticker">LITE</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$858.06</span>
+          <span class="price-change up">▲ +0.78%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,11.4 12.2,10.6 18.3,19.4 24.4,16.0 30.5,24.0 36.6,20.6 42.7,16.6 48.8,13.2 54.9,9.3 61.1,18.2 67.2,18.8 73.3,20.9 79.4,16.2 85.5,23.3 91.6,21.7 97.7,19.6 103.8,24.5 109.9,20.8 116.0,20.0" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$90</span>
+            <span class="r52-bar"><i style="left:80%"></i></span>
+            <span class="r52-hi">$1,053</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买25/持6/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="黑莓 blackberry bb" data-ticker="BB"
+           data-sector="其他" data-change="1.3622"
+           data-news="1" data-order="29">
         <div class="card-header">
           <span class="company-name">黑莓 BlackBerry</span>
           <span class="ticker">BB</span>
+          <span class="sector-badge">其他</span>
           <span class="article-count">1 条</span>
         </div>
         <div class="stock-price">
@@ -1629,10 +1887,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="robinhood hood" data-ticker="HOOD"
+           data-sector="其他" data-change="-1.5221"
+           data-news="5" data-order="30">
         <div class="card-header">
           <span class="company-name">Robinhood</span>
           <span class="ticker">HOOD</span>
+          <span class="sector-badge">其他</span>
           <span class="article-count">5 条</span>
         </div>
         <div class="stock-price">
@@ -1688,10 +1949,13 @@
             </div>
         </div>
       </div>
-      <div class="company-card">
+      <div class="company-card" data-name="cloudflare net" data-ticker="NET"
+           data-sector="云与AI" data-change="0.6236"
+           data-news="1" data-order="31">
         <div class="card-header">
           <span class="company-name">Cloudflare</span>
           <span class="ticker">NET</span>
+          <span class="sector-badge">云与AI</span>
           <span class="article-count">1 条</span>
         </div>
         <div class="stock-price">
@@ -1716,16 +1980,80 @@
         </div>
       </div>
   </div>
-
-  <div class="no-news-section">
-    <div class="no-news-title">当日无新闻的公司</div>
-    <div class="no-news-list">东京电子 Tokyo Electron, Semtech, AAOI 应用光电, AXT, Lumentum</div>
-  </div>
+  <div id="emptyHint" class="empty-hint" style="display:none">没有符合条件的公司</div>
 </div>
+
+<button id="toTop" class="to-top" title="返回顶部">↑</button>
 
 <footer class="footer">
   新闻数据：Finnhub &nbsp;·&nbsp; 股价/指数：Yahoo Finance &nbsp;·&nbsp; 评级/财报：Finnhub &nbsp;·&nbsp; 仅供参考，不构成投资建议
 </footer>
+
+<script>
+(function () {
+  var grid = document.getElementById('cardGrid');
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.company-card'));
+  var search = document.getElementById('searchBox');
+  var sortSel = document.getElementById('sortSelect');
+  var visCount = document.getElementById('visCount');
+  var emptyHint = document.getElementById('emptyHint');
+  var state = { q: '', sector: 'all', filter: 'all' };
+
+  function num(c, a) { var v = c.getAttribute(a); return v === '' ? null : parseFloat(v); }
+
+  function apply() {
+    // sort
+    var arr = cards.slice();
+    var mode = sortSel.value;
+    arr.sort(function (a, b) {
+      if (mode === 'order') return num(a, 'data-order') - num(b, 'data-order');
+      if (mode === 'news') return num(b, 'data-news') - num(a, 'data-news') || num(a,'data-order')-num(b,'data-order');
+      var ca = num(a, 'data-change'), cb = num(b, 'data-change');
+      if (ca === null) return 1; if (cb === null) return -1;
+      return mode === 'gain' ? cb - ca : ca - cb;
+    });
+    arr.forEach(function (c) { grid.appendChild(c); });
+    // filter
+    var shown = 0;
+    cards.forEach(function (c) {
+      var ok = true;
+      if (state.q && c.getAttribute('data-name').indexOf(state.q) === -1) ok = false;
+      if (state.sector !== 'all' && c.getAttribute('data-sector') !== state.sector) ok = false;
+      if (state.filter === 'hasnews' && num(c, 'data-news') <= 0) ok = false;
+      var ch = num(c, 'data-change');
+      if (state.filter === 'up' && !(ch > 0)) ok = false;
+      if (state.filter === 'down' && !(ch < 0)) ok = false;
+      c.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    visCount.textContent = '显示 ' + shown + ' / ' + cards.length + ' 家';
+    emptyHint.style.display = shown ? 'none' : 'block';
+  }
+
+  search.addEventListener('input', function () { state.q = this.value.trim().toLowerCase(); apply(); });
+  sortSel.addEventListener('change', apply);
+  document.querySelectorAll('.tab-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active'); state.sector = b.getAttribute('data-sector'); apply();
+    });
+  });
+  document.querySelectorAll('.chip-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.chip-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active'); state.filter = b.getAttribute('data-filter'); apply();
+    });
+  });
+  var hist = document.getElementById('historySelect');
+  if (hist) hist.addEventListener('change', function () { window.location.href = './' + this.value + '.html'; });
+
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () { toTop.style.display = window.scrollY > 400 ? 'flex' : 'none'; });
+  toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  apply();
+})();
+</script>
 
 </body>
 </html>
