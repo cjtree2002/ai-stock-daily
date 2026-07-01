@@ -694,6 +694,19 @@ def push_telegram(title: str, body: str, url: str) -> None:
         print(f"  [WARN] Telegram push failed: {e}", file=sys.stderr)
 
 
+def _available_dates(target_date: datetime) -> list:
+    """List archived report dates (YYYY-MM-DD) for the history dropdown, newest first."""
+    import re as _re
+    dates = set()
+    for d in (OUTPUT_DIR, OUTPUT_DIR.parent / "docs"):
+        if d.exists():
+            for f in d.glob("*.html"):
+                if _re.fullmatch(r"\d{4}-\d{2}-\d{2}", f.stem):
+                    dates.add(f.stem)
+    dates.add(target_date.strftime("%Y-%m-%d"))
+    return sorted(dates, reverse=True)
+
+
 def generate_html(company_articles: dict, prices: dict, indices: list,
                   recs: dict, earnings: dict, target_date: datetime) -> str:
     date_str = target_date.strftime("%Y年%m月%d日")
@@ -705,39 +718,42 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
     summary_html = _build_summary(company_articles, prices, indices)
     movers_html = _render_movers(prices)
 
-    # Build company cards (only companies with news)
+    # Build cards for ALL companies (no-news ones show a placeholder) with
+    # data-* attributes so the front-end can search / sort / filter / group.
     cards_html = ""
     companies_with_news = 0
     total_articles = 0
 
-    for company in AI_COMPANIES:
+    for order, company in enumerate(AI_COMPANIES):
         ticker = company["ticker"]
+        sector = company.get("sector", "其他")
         articles = company_articles.get(company["name"], [])
-        if not articles:
-            continue
-
-        companies_with_news += 1
-        total_articles += len(articles)
+        if articles:
+            companies_with_news += 1
+            total_articles += len(articles)
 
         ticker_badge = (
             f'<span class="ticker">{ticker}</span>'
             if ticker != "N/A"
             else '<span class="ticker private">私有</span>'
         )
+        count_badge = (f'<span class="article-count">{len(articles)} 条</span>'
+                       if articles else '<span class="article-count muted">无新闻</span>')
 
         stock_html = render_stock_price(company, prices, recs, earnings)
-        articles_html = ""
-        for art in articles:
-            title = translate_text(art.get("title") or "") or "无标题"
-            url = art.get("url") or "#"
-            source = (art.get("source") or {}).get("name") or ""
-            published = format_time(art.get("publishedAt") or "")
-            description = art.get("description") or ""
-            if len(description) > 120:
-                description = description[:120] + "…"
-            description = translate_text(description)
 
-            articles_html += f"""
+        if articles:
+            articles_html = ""
+            for art in articles:
+                title = translate_text(art.get("title") or "") or "无标题"
+                url = art.get("url") or "#"
+                source = (art.get("source") or {}).get("name") or ""
+                published = format_time(art.get("publishedAt") or "")
+                description = art.get("description") or ""
+                if len(description) > 120:
+                    description = description[:120] + "…"
+                description = translate_text(description)
+                articles_html += f"""
             <div class="article">
               <a href="{url}" target="_blank" class="article-title">{title}</a>
               <div class="article-meta">
@@ -746,21 +762,46 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
               </div>
               {f'<p class="article-desc">{description}</p>' if description else ''}
             </div>"""
+        else:
+            articles_html = '<div class="no-articles">今日无相关新闻</div>'
+
+        p = prices.get(ticker) or {}
+        change = p.get("change")
+        change_attr = f"{change:.4f}" if change is not None else ""
+        search_key = f'{company["name"]} {ticker}'.lower()
 
         cards_html += f"""
-      <div class="company-card">
+      <div class="company-card" data-name="{search_key}" data-ticker="{ticker}"
+           data-sector="{sector}" data-change="{change_attr}"
+           data-news="{len(articles)}" data-order="{order}">
         <div class="card-header">
           <span class="company-name">{company["name"]}</span>
           {ticker_badge}
-          <span class="article-count">{len(articles)} 条</span>
+          <span class="sector-badge">{sector}</span>
+          {count_badge}
         </div>{stock_html}
         <div class="articles">{articles_html}
         </div>
       </div>"""
 
-    # No-news companies list
-    no_news = [c["name"] for c in AI_COMPANIES if not company_articles.get(c["name"])]
-    no_news_html = ", ".join(no_news) if no_news else "（全部有新闻）"
+    # Sector tabs (in list order, de-duplicated)
+    seen, sectors = set(), []
+    for c in AI_COMPANIES:
+        s = c.get("sector", "其他")
+        if s not in seen:
+            seen.add(s)
+            sectors.append(s)
+    tabs_html = '<button class="tab-btn active" data-sector="all">全部</button>'
+    tabs_html += "".join(f'<button class="tab-btn" data-sector="{s}">{s}</button>' for s in sectors)
+
+    # History dropdown from archived dated reports
+    dates = _available_dates(target_date)
+    opts = "".join(
+        f'<option value="{d}"{" selected" if d == target_date.strftime("%Y-%m-%d") else ""}>{d}</option>'
+        for d in dates
+    )
+    history_html = (f'<select id="historySelect" class="history-select">{opts}</select>'
+                    if len(dates) > 1 else "")
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
     return (
@@ -773,8 +814,9 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
         .replace("{{INDICES_HTML}}", indices_html)
         .replace("{{SUMMARY_HTML}}", summary_html)
         .replace("{{MOVERS_HTML}}", movers_html)
+        .replace("{{SECTOR_TABS}}", tabs_html)
+        .replace("{{HISTORY_OPTIONS}}", history_html)
         .replace("{{CARDS_HTML}}", cards_html)
-        .replace("{{NO_NEWS_LIST}}", no_news_html)
     )
 
 

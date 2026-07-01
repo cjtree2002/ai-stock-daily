@@ -295,6 +295,53 @@
     .tag.rec-sell { color: var(--red); background: var(--red-bg); border-color: var(--red-border); }
     .tag.earn { color: var(--accent); background: var(--ticker-bg); border-color: #d4d8f7; }
 
+    /* ── Interactive toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--bg); padding: 10px 0 8px;
+      margin-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .toolbar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .toolbar-row:last-child { margin-bottom: 0; }
+    .search-box {
+      flex: 1; min-width: 180px; font-size: 14px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+    }
+    .search-box:focus, .sort-select:focus, .history-select:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.12);
+    }
+    .sort-select, .history-select {
+      font-size: 13px; padding: 8px 10px; border: 1px solid var(--border);
+      border-radius: 8px; background: #fff; color: var(--text); cursor: pointer;
+    }
+    .history-label { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .tab-btn {
+      font-size: 12.5px; padding: 5px 12px; border-radius: 16px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .chip-btn {
+      font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    }
+    .chip-btn.active { background: var(--ticker-bg); color: var(--accent); border-color: #c7cbf5; font-weight: 600; }
+    .vis-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+    .empty-hint { text-align: center; color: var(--text-dim); padding: 40px; font-size: 14px; }
+
+    .sector-badge {
+      font-size: 10.5px; color: var(--text-muted); background: var(--surface2);
+      border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 6px;
+    }
+    .article-count.muted { color: var(--text-dim); }
+    .no-articles { font-size: 12.5px; color: var(--text-dim); padding: 6px 2px; }
+
+    .to-top {
+      position: fixed; right: 20px; bottom: 20px; z-index: 30; display: none;
+      width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-size: 20px;
+      align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,.35);
+    }
+
     @media (max-width: 640px) {
       .header { padding: 14px 16px; }
       .grid { grid-template-columns: 1fr; }
@@ -302,6 +349,8 @@
       .top-row { grid-template-columns: 1fr; }
       .indices { padding: 10px 14px; gap: 4px; }
       .idx { margin-right: 10px; padding-right: 10px; }
+      .search-box { min-width: 120px; }
+      .history-label { width: 100%; }
     }
   </style>
 </head>
@@ -332,19 +381,107 @@
     {{MOVERS_HTML}}
   </div>
 
-  <div class="grid">
-    {{CARDS_HTML}}
+  <!-- ── Interactive toolbar ── -->
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <input id="searchBox" class="search-box" type="text" placeholder="🔍 搜索公司名或代码…" />
+      <select id="sortSelect" class="sort-select">
+        <option value="order">默认顺序</option>
+        <option value="gain">涨幅从高到低</option>
+        <option value="lose">跌幅从高到低</option>
+        <option value="news">新闻最多</option>
+      </select>
+      <label class="history-label">历史：{{HISTORY_OPTIONS}}</label>
+    </div>
+    <div class="toolbar-row tabs">
+      {{SECTOR_TABS}}
+    </div>
+    <div class="toolbar-row chips">
+      <button class="chip-btn active" data-filter="all">全部</button>
+      <button class="chip-btn" data-filter="hasnews">只看有新闻</button>
+      <button class="chip-btn" data-filter="up">只看上涨</button>
+      <button class="chip-btn" data-filter="down">只看下跌</button>
+      <span id="visCount" class="vis-count"></span>
+    </div>
   </div>
 
-  <div class="no-news-section">
-    <div class="no-news-title">当日无新闻的公司</div>
-    <div class="no-news-list">{{NO_NEWS_LIST}}</div>
+  <div class="grid" id="cardGrid">
+    {{CARDS_HTML}}
   </div>
+  <div id="emptyHint" class="empty-hint" style="display:none">没有符合条件的公司</div>
 </div>
+
+<button id="toTop" class="to-top" title="返回顶部">↑</button>
 
 <footer class="footer">
   新闻数据：Finnhub &nbsp;·&nbsp; 股价/指数：Yahoo Finance &nbsp;·&nbsp; 评级/财报：Finnhub &nbsp;·&nbsp; 仅供参考，不构成投资建议
 </footer>
+
+<script>
+(function () {
+  var grid = document.getElementById('cardGrid');
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.company-card'));
+  var search = document.getElementById('searchBox');
+  var sortSel = document.getElementById('sortSelect');
+  var visCount = document.getElementById('visCount');
+  var emptyHint = document.getElementById('emptyHint');
+  var state = { q: '', sector: 'all', filter: 'all' };
+
+  function num(c, a) { var v = c.getAttribute(a); return v === '' ? null : parseFloat(v); }
+
+  function apply() {
+    // sort
+    var arr = cards.slice();
+    var mode = sortSel.value;
+    arr.sort(function (a, b) {
+      if (mode === 'order') return num(a, 'data-order') - num(b, 'data-order');
+      if (mode === 'news') return num(b, 'data-news') - num(a, 'data-news') || num(a,'data-order')-num(b,'data-order');
+      var ca = num(a, 'data-change'), cb = num(b, 'data-change');
+      if (ca === null) return 1; if (cb === null) return -1;
+      return mode === 'gain' ? cb - ca : ca - cb;
+    });
+    arr.forEach(function (c) { grid.appendChild(c); });
+    // filter
+    var shown = 0;
+    cards.forEach(function (c) {
+      var ok = true;
+      if (state.q && c.getAttribute('data-name').indexOf(state.q) === -1) ok = false;
+      if (state.sector !== 'all' && c.getAttribute('data-sector') !== state.sector) ok = false;
+      if (state.filter === 'hasnews' && num(c, 'data-news') <= 0) ok = false;
+      var ch = num(c, 'data-change');
+      if (state.filter === 'up' && !(ch > 0)) ok = false;
+      if (state.filter === 'down' && !(ch < 0)) ok = false;
+      c.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    visCount.textContent = '显示 ' + shown + ' / ' + cards.length + ' 家';
+    emptyHint.style.display = shown ? 'none' : 'block';
+  }
+
+  search.addEventListener('input', function () { state.q = this.value.trim().toLowerCase(); apply(); });
+  sortSel.addEventListener('change', apply);
+  document.querySelectorAll('.tab-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active'); state.sector = b.getAttribute('data-sector'); apply();
+    });
+  });
+  document.querySelectorAll('.chip-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.chip-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active'); state.filter = b.getAttribute('data-filter'); apply();
+    });
+  });
+  var hist = document.getElementById('historySelect');
+  if (hist) hist.addEventListener('change', function () { window.location.href = './' + this.value + '.html'; });
+
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () { toTop.style.display = window.scrollY > 400 ? 'flex' : 'none'; });
+  toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  apply();
+})();
+</script>
 
 </body>
 </html>
