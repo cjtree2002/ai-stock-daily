@@ -6,6 +6,7 @@ Fetches previous day's news for AI sector companies and generates an HTML report
 import os
 import re
 import sys
+import json
 import time
 import requests
 import yfinance as yf
@@ -355,6 +356,7 @@ def fetch_stock_prices(target_date: datetime) -> dict:
             prev = float(sub.iloc[-2]) if len(sub) >= 2 else None
             change = ((price - prev) / prev * 100) if prev else None
             year = sub[sub.index > (sub.index[-1] - timedelta(days=365))]
+            tail = sub.iloc[-90:]
             prices[ticker] = {
                 "price": price,
                 "change": change,
@@ -362,6 +364,8 @@ def fetch_stock_prices(target_date: datetime) -> dict:
                 "high52": float(year.max()),
                 "low52": float(year.min()),
                 "spark": [round(float(x), 4) for x in sub.iloc[-20:].tolist()],
+                "chart": [[d.strftime("%m/%d"), round(float(v), 2)]
+                          for d, v in zip(tail.index, tail.tolist())],
             }
     except Exception as e:
         print(f"  [WARN] Stock price fetch error: {e}", file=sys.stderr)
@@ -803,6 +807,14 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
     history_html = (f'<select id="historySelect" class="history-select">{opts}</select>'
                     if len(dates) > 1 else "")
 
+    # Embedded price history for the interactive zoom chart (keyed by ticker).
+    chart_data = {
+        c["ticker"]: {"name": c["name"], "pts": prices[c["ticker"]]["chart"]}
+        for c in AI_COMPANIES
+        if prices.get(c["ticker"]) and prices[c["ticker"]].get("chart")
+    }
+    chart_json = json.dumps(chart_data, ensure_ascii=False, separators=(",", ":"))
+
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
     return (
         template
@@ -817,6 +829,7 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
         .replace("{{SECTOR_TABS}}", tabs_html)
         .replace("{{HISTORY_OPTIONS}}", history_html)
         .replace("{{CARDS_HTML}}", cards_html)
+        .replace("{{CHART_DATA}}", chart_json)
     )
 
 

@@ -342,6 +342,32 @@
       align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,.35);
     }
 
+    /* ── Chart zoom modal ── */
+    .spark:hover { opacity: 0.75; }
+    .chart-modal {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(15,17,23,.45); align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .chart-box {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 680px;
+      padding: 18px 18px 14px; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .chart-head { display: flex; align-items: center; justify-content: space-between; }
+    .chart-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .chart-close {
+      border: none; background: var(--surface2); width: 30px; height: 30px;
+      border-radius: 50%; cursor: pointer; font-size: 14px; color: var(--text-muted);
+    }
+    .chart-sub { font-size: 13px; color: var(--text-muted); margin: 4px 0 8px; }
+    .chart-area { position: relative; width: 100%; }
+    .chart-tip {
+      position: absolute; top: 8px; transform: translateX(-50%);
+      background: var(--text); color: #fff; font-size: 11px; line-height: 1.35;
+      padding: 4px 8px; border-radius: 6px; text-align: center; pointer-events: none; white-space: nowrap;
+    }
+    .chart-hint { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 6px; }
+
     @media (max-width: 640px) {
       .header { padding: 14px 16px; }
       .grid { grid-template-columns: 1fr; }
@@ -413,6 +439,19 @@
 
 <button id="toTop" class="to-top" title="返回顶部">↑</button>
 
+<!-- ── Chart zoom modal ── -->
+<div id="chartModal" class="chart-modal" style="display:none">
+  <div class="chart-box">
+    <div class="chart-head">
+      <span id="chartTitle" class="chart-title"></span>
+      <button id="chartClose" class="chart-close">✕</button>
+    </div>
+    <div class="chart-sub" id="chartSub"></div>
+    <div id="chartArea" class="chart-area"></div>
+    <div class="chart-hint">在图上移动鼠标/手指查看每天的价格 · 近 90 个交易日</div>
+  </div>
+</div>
+
 <footer class="footer">
   新闻数据：Finnhub &nbsp;·&nbsp; 股价/指数：Yahoo Finance &nbsp;·&nbsp; 评级/财报：Finnhub &nbsp;·&nbsp; 仅供参考，不构成投资建议
 </footer>
@@ -480,6 +519,110 @@
   toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
   apply();
+})();
+</script>
+
+<script>
+var CHART_DATA = {{CHART_DATA}};
+(function () {
+  var modal = document.getElementById('chartModal');
+  var area = document.getElementById('chartArea');
+  var titleEl = document.getElementById('chartTitle');
+  var subEl = document.getElementById('chartSub');
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function render(ticker) {
+    var data = CHART_DATA[ticker];
+    if (!data || !data.pts || data.pts.length < 2) return;
+    var pts = data.pts;
+    titleEl.textContent = data.name + ' · ' + ticker;
+    var last = pts[pts.length - 1][1], first = pts[0][1];
+    var chg = ((last - first) / first * 100);
+    subEl.innerHTML = '当前 $' + last.toFixed(2) +
+      ' &nbsp; 90日 <b style="color:' + (chg >= 0 ? 'var(--green)' : 'var(--red)') + '">' +
+      (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</b>';
+
+    area.innerHTML = '';
+    var W = area.clientWidth || 640, H = 300, padL = 46, padR = 12, padT = 12, padB = 24;
+    var vals = pts.map(function (p) { return p[1]; });
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    var rng = (hi - lo) || 1;
+    var x = function (i) { return padL + i / (pts.length - 1) * (W - padL - padR); };
+    var y = function (v) { return padT + (1 - (v - lo) / rng) * (H - padT - padB); };
+
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H });
+
+    // horizontal gridlines + y labels
+    for (var g = 0; g <= 3; g++) {
+      var gv = lo + rng * g / 3, gy = y(gv);
+      svg.appendChild(el('line', { x1: padL, y1: gy, x2: W - padR, y2: gy, stroke: 'var(--border-light)', 'stroke-width': 1 }));
+      var lb = el('text', { x: padL - 6, y: gy + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-dim)' });
+      lb.textContent = '$' + gv.toFixed(gv < 10 ? 2 : 0);
+      svg.appendChild(lb);
+    }
+    // area + line
+    var up = last >= first;
+    var col = up ? 'var(--green)' : 'var(--red)';
+    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p[1]).toFixed(1); }).join(' ');
+    var areaD = d + ' L' + x(pts.length - 1) + ' ' + y(lo) + ' L' + x(0) + ' ' + y(lo) + ' Z';
+    svg.appendChild(el('path', { d: areaD, fill: col, 'fill-opacity': 0.08 }));
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: col, 'stroke-width': 1.8 }));
+
+    // x labels (first / mid / last date)
+    [0, Math.floor(pts.length / 2), pts.length - 1].forEach(function (i) {
+      var t = el('text', { x: x(i), y: H - 6, 'text-anchor': i === 0 ? 'start' : (i === pts.length - 1 ? 'end' : 'middle'), 'font-size': 10, fill: 'var(--text-dim)' });
+      t.textContent = pts[i][0]; svg.appendChild(t);
+    });
+
+    // crosshair + dot + tooltip
+    var vline = el('line', { y1: padT, y2: H - padB, stroke: 'var(--text-dim)', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: 0 });
+    var dot = el('circle', { r: 4, fill: col, stroke: '#fff', 'stroke-width': 1.5, opacity: 0 });
+    svg.appendChild(vline); svg.appendChild(dot);
+    var tip = document.createElement('div'); tip.className = 'chart-tip'; tip.style.display = 'none';
+    area.appendChild(svg); area.appendChild(tip);
+
+    function move(ev) {
+      var rect = svg.getBoundingClientRect();
+      var cx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+      var sx = cx / rect.width * W;
+      var i = Math.round((sx - padL) / (W - padL - padR) * (pts.length - 1));
+      i = Math.max(0, Math.min(pts.length - 1, i));
+      var px = x(i), py = y(pts[i][1]);
+      vline.setAttribute('x1', px); vline.setAttribute('x2', px); vline.setAttribute('opacity', 1);
+      dot.setAttribute('cx', px); dot.setAttribute('cy', py); dot.setAttribute('opacity', 1);
+      tip.style.display = 'block';
+      tip.innerHTML = pts[i][0] + '<br><b>$' + pts[i][1].toFixed(2) + '</b>';
+      var tl = px / W * rect.width;
+      tip.style.left = Math.min(Math.max(tl, 34), rect.width - 34) + 'px';
+    }
+    svg.addEventListener('mousemove', move);
+    svg.addEventListener('touchmove', function (e) { move(e); e.preventDefault(); }, { passive: false });
+    svg.addEventListener('mouseleave', function () { vline.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); tip.style.display = 'none'; });
+  }
+
+  function open(ticker) {
+    if (!CHART_DATA[ticker]) return;
+    modal.style.display = 'flex';
+    render(ticker);
+  }
+  function close() { modal.style.display = 'none'; }
+
+  document.querySelectorAll('.company-card .spark').forEach(function (s) {
+    s.style.cursor = 'zoom-in';
+    s.addEventListener('click', function () {
+      var card = s.closest('.company-card');
+      if (card) open(card.getAttribute('data-ticker'));
+    });
+  });
+  document.getElementById('chartClose').addEventListener('click', close);
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 })();
 </script>
 
