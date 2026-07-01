@@ -1,12 +1,20 @@
 # User-curated watchlist. Order here = display order on the page.
-# Private companies (no ticker) are kept for visibility but can't be fetched
-# from Finnhub (which is ticker-based) — they will show no news.
+# Note: Tokyo Electron (TOELY) and Advantest (ATEYY) are US OTC ADRs — prices
+# work but English news coverage from Finnhub is sparse (often none).
 AI_COMPANIES = [
     {"name": "美光 Micron",     "ticker": "MU",    "keywords": ["Micron", "MU"]},
     {"name": "闪迪 SanDisk",    "ticker": "SNDK",  "keywords": ["SanDisk", "SNDK"]},
     {"name": "迈威尔 Marvell",  "ticker": "MRVL",  "keywords": ["Marvell", "MRVL"]},
     {"name": "AMD",             "ticker": "AMD",   "keywords": ["AMD", "Advanced Micro Devices"]},
     {"name": "Nebius",          "ticker": "NBIS",  "keywords": ["Nebius", "NBIS"]},
+    {"name": "Astera Labs",     "ticker": "ALAB",  "keywords": ["Astera Labs", "Astera", "ALAB"]},
+    {"name": "康宁 Corning",    "ticker": "GLW",   "keywords": ["Corning", "GLW"]},
+    {"name": "阿斯麦 ASML",     "ticker": "ASML",  "keywords": ["ASML"]},
+    {"name": "东京电子 Tokyo Electron", "ticker": "TOELY", "keywords": ["Tokyo Electron", "TOELY"]},
+    {"name": "泛林 Lam Research","ticker": "LRCX",  "keywords": ["Lam Research", "LRCX"]},
+    {"name": "应用材料 AMAT",   "ticker": "AMAT",  "keywords": ["Applied Materials", "AMAT"]},
+    {"name": "科磊 KLA",        "ticker": "KLAC",  "keywords": ["KLA", "KLAC"]},
+    {"name": "爱德万 Advantest","ticker": "ATEYY", "keywords": ["Advantest", "ATEYY"]},
     {"name": "Semtech",         "ticker": "SMTC",  "keywords": ["Semtech", "SMTC"]},
     {"name": "英伟达 NVIDIA",   "ticker": "NVDA",  "keywords": ["NVIDIA", "Nvidia", "NVDA"]},
     {"name": "谷歌 Alphabet",   "ticker": "GOOGL", "keywords": ["Google", "Alphabet", "GOOGL", "Gemini", "DeepMind", "Waymo"]},
@@ -21,9 +29,7 @@ AI_COMPANIES = [
     {"name": "高通 Qualcomm",   "ticker": "QCOM",  "keywords": ["Qualcomm", "QCOM", "Snapdragon"]},
     {"name": "Arm",             "ticker": "ARM",   "keywords": ["Arm Holdings", "Arm", "ARM"]},
     {"name": "AAOI 应用光电",   "ticker": "AAOI",  "keywords": ["Applied Optoelectronics", "AAOI"]},
-    {"name": "Astera Labs",     "ticker": "ALAB",  "keywords": ["Astera Labs", "Astera", "ALAB"]},
     {"name": "AXT",             "ticker": "AXTI",  "keywords": ["AXT", "AXTI"]},
-    {"name": "康宁 Corning",    "ticker": "GLW",   "keywords": ["Corning", "GLW"]},
     {"name": "Lumentum",        "ticker": "LITE",  "keywords": ["Lumentum", "LITE"]},
     {"name": "黑莓 BlackBerry", "ticker": "BB",    "keywords": ["BlackBerry", "BB"]},
     {"name": "Robinhood",       "ticker": "HOOD",  "keywords": ["Robinhood", "HOOD"]},
