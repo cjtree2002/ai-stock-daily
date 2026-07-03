@@ -342,6 +342,37 @@
       align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,.35);
     }
 
+    /* ── AI paper portfolio panel ── */
+    .pf-panel {
+      background: linear-gradient(135deg, #eef0fc 0%, #ffffff 45%);
+      border: 1px solid #d4d8f7; border-radius: 14px;
+      padding: 16px 18px 12px; margin-bottom: 18px;
+      box-shadow: 0 2px 12px rgba(79,70,229,.06);
+    }
+    .pf-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .pf-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .pf-sub { font-size: 11px; color: var(--text-dim); }
+    .pf-stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 12px 0 6px; }
+    .pf-stat-label { font-size: 11px; color: var(--text-dim); }
+    .pf-stat-value { font-size: 19px; font-weight: 700; font-family: "SF Mono", "Fira Code", monospace; color: var(--text); }
+    .pf-stat-sm { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .pf-panel .up { color: var(--green); }
+    .pf-panel .down { color: var(--red); }
+    .pf-chart { margin-top: 8px; }
+    .pf-chart-empty { font-size: 12px; color: var(--text-dim); padding: 10px 2px; }
+    .pf-legend { display: flex; gap: 16px; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .pf-legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+    .pf-table-wrap { overflow-x: auto; margin-top: 10px; }
+    .pf-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .pf-table th { text-align: right; color: var(--text-dim); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .pf-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+    .pf-table th:first-child, .pf-table td:first-child { text-align: left; }
+    .pf-table .mono { font-family: "SF Mono", "Fira Code", monospace; }
+    .pf-table .cash-row td { color: var(--text-muted); border-bottom: none; }
+    details.trade-log { margin-top: 10px; font-size: 12px; }
+    details.trade-log summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+    .trade-item { padding: 6px 0; border-bottom: 1px dashed var(--border-light); color: var(--text-muted); line-height: 1.55; }
+
     /* ── Chart zoom modal ── */
     .spark:hover { opacity: 0.75; }
     .chart-modal {
@@ -402,6 +433,8 @@
 {{INDICES_HTML}}
 
 <div class="container">
+  {{PORTFOLIO_HTML}}
+
   <div class="top-row">
     {{SUMMARY_HTML}}
     {{MOVERS_HTML}}

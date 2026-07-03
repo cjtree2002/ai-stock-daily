@@ -2,7 +2,7 @@ name: Daily AI Stock Report
 
 on:
   schedule:
-    - cron: "11 0 * * 1-5"
+    - cron: "40 0 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -38,6 +38,6 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reports/ docs/
+          git add reports/ docs/ portfolio.json
           git diff --cached --quiet || git commit -m "📊 Daily report $(date +'%Y-%m-%d')"
           git push

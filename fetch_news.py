@@ -26,6 +26,7 @@ BEIJING_TZ = timezone(timedelta(hours=8))
 FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY") or os.environ.get("NEWS_API_KEY", "")
 OUTPUT_DIR = Path(__file__).parent / "reports"
 TEMPLATE_PATH = Path(__file__).parent / "template.html"
+PORTFOLIO_PATH = Path(__file__).parent / "portfolio.json"
 MAX_ARTICLES_PER_COMPANY = 5
 
 # Stay under Finnhub's 60 calls/min limit.
@@ -698,6 +699,188 @@ def push_telegram(title: str, body: str, url: str) -> None:
         print(f"  [WARN] Telegram push failed: {e}", file=sys.stderr)
 
 
+# ── AI paper portfolio ───────────────────────────────────────────────────────
+def fetch_postmarket_prices(tickers: list, target_date: datetime) -> dict:
+    """Final traded price of the target date INCLUDING after-hours (per user:
+    盘后结束的最后价格). Minute bars constrained to the target date so results
+    are deterministic no matter when the script runs."""
+    out = {}
+    try:
+        data = yf.download(
+            tickers,
+            start=target_date.strftime("%Y-%m-%d"),
+            end=(target_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+            interval="1m", prepost=True, progress=False, auto_adjust=False,
+        )
+        close = data["Close"]
+        for t in tickers:
+            try:
+                s = close[t].dropna()
+                if len(s):
+                    out[t] = float(s.iloc[-1])
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"  [WARN] post-market price fetch: {e}", file=sys.stderr)
+    return out
+
+
+def _qqq_change(target_date: datetime) -> float:
+    """QQQ daily % change on the target date (benchmark)."""
+    try:
+        h = yf.Ticker("QQQ").history(
+            start=(target_date - timedelta(days=10)).strftime("%Y-%m-%d"),
+            end=(target_date + timedelta(days=1)).strftime("%Y-%m-%d"))
+        s = h["Close"].dropna()
+        try:
+            s.index = s.index.tz_localize(None)
+        except Exception:
+            pass
+        s = s[s.index <= target_date.strftime("%Y-%m-%d")]
+        if len(s) >= 2:
+            return (float(s.iloc[-1]) / float(s.iloc[-2]) - 1) * 100
+    except Exception as e:
+        print(f"  [WARN] QQQ benchmark fetch: {e}", file=sys.stderr)
+    return 0.0
+
+
+def update_portfolio(prices: dict, target_date: datetime):
+    """Mark the paper portfolio to market (post-market final prices) and append
+    the daily equity/benchmark history. Re-runs on the same date replace that
+    date's entry; the inception baseline is never touched."""
+    if not PORTFOLIO_PATH.exists():
+        return None
+    pf = json.loads(PORTFOLIO_PATH.read_text(encoding="utf-8"))
+    init = pf["initial_capital"]
+    print("Updating AI paper portfolio...")
+
+    live = fetch_postmarket_prices([h["ticker"] for h in pf["holdings"]], target_date)
+    px_map, total = {}, pf["cash"]
+    for h in pf["holdings"]:
+        px = live.get(h["ticker"]) or (prices.get(h["ticker"]) or {}).get("price") or h["avg_cost"]
+        px_map[h["ticker"]] = px
+        total += h["shares"] * px
+
+    ds = target_date.strftime("%Y-%m-%d")
+    hist = pf.get("history", [])
+    before = [e for e in hist if e["date"] < ds]
+    base = before[-1] if before else {"value": init, "eq": init, "qqq": init}
+
+    if hist and ds > hist[0]["date"]:
+        changes = [v["change"] for v in prices.values() if v.get("change") is not None]
+        eq_ch = sum(changes) / len(changes) if changes else 0.0
+        entry = {"date": ds, "value": round(total, 2),
+                 "eq": round(base["eq"] * (1 + eq_ch / 100), 2),
+                 "qqq": round(base["qqq"] * (1 + _qqq_change(target_date) / 100), 2)}
+        pf["history"] = before + [entry]
+        PORTFOLIO_PATH.write_text(json.dumps(pf, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    last = pf["history"][-1]
+    stats = {
+        "total": total,
+        "day": total - base["value"],
+        "day_pct": (total / base["value"] - 1) * 100 if base["value"] else 0.0,
+        "cum_pct": (total / init - 1) * 100,
+        "eq_cum": (last["eq"] / init - 1) * 100,
+        "qqq_cum": (last["qqq"] / init - 1) * 100,
+    }
+    print(f"  Portfolio value: ${total:,.0f} ({stats['cum_pct']:+.2f}% cum)")
+    return pf, px_map, stats
+
+
+def _money(x: float) -> str:
+    return ("-" if x < 0 else "") + f"${abs(x):,.0f}"
+
+
+def _pct_span(p: float, digits: int = 2) -> str:
+    cls = "up" if p >= 0 else "down"
+    return f'<span class="{cls}">{p:+.{digits}f}%</span>'
+
+
+def _equity_curve_svg(hist: list, init: float) -> str:
+    if len(hist) < 2:
+        return '<div class="pf-chart-empty">净值曲线将从明日起逐日累积</div>'
+    series = {"value": [], "eq": [], "qqq": []}
+    for e in hist:
+        for k in series:
+            series[k].append((e[k] / init - 1) * 100)
+    W, H, padL, padR, padT, padB = 700, 160, 44, 8, 8, 18
+    allv = series["value"] + series["eq"] + series["qqq"]
+    lo, hi = min(allv), max(allv)
+    if hi - lo < 0.5:
+        lo, hi = lo - 0.5, hi + 0.5
+    n = len(hist)
+
+    def X(i): return padL + i / (n - 1) * (W - padL - padR)
+    def Y(v): return padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB)
+    def line(vals): return " ".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in enumerate(vals))
+
+    parts = [f'<svg viewBox="0 0 {W} {H}" class="pf-chart" width="100%" height="{H}">']
+    for gv in (hi, lo):
+        gy = Y(gv)
+        parts.append(f'<line x1="{padL}" y1="{gy:.1f}" x2="{W - padR}" y2="{gy:.1f}" stroke="var(--border-light)"/>')
+        parts.append(f'<text x="{padL - 4}" y="{gy + 3:.1f}" text-anchor="end" font-size="9" fill="var(--text-dim)">{gv:+.1f}%</text>')
+    if lo <= 0 <= hi:
+        parts.append(f'<line x1="{padL}" y1="{Y(0):.1f}" x2="{W - padR}" y2="{Y(0):.1f}" stroke="var(--border)" stroke-dasharray="4 3"/>')
+    parts.append(f'<polyline points="{line(series["eq"])}" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 3"/>')
+    parts.append(f'<polyline points="{line(series["qqq"])}" fill="none" stroke="#f59e0b" stroke-width="1.3"/>')
+    parts.append(f'<polyline points="{line(series["value"])}" fill="none" stroke="var(--accent)" stroke-width="2.2"/>')
+    parts.append(f'<text x="{padL}" y="{H - 4}" font-size="9" fill="var(--text-dim)">{hist[0]["date"][5:]}</text>')
+    parts.append(f'<text x="{W - padR}" y="{H - 4}" text-anchor="end" font-size="9" fill="var(--text-dim)">{hist[-1]["date"][5:]}</text>')
+    parts.append('</svg>')
+    parts.append('<div class="pf-legend"><span><i style="background:var(--accent)"></i>AI模拟盘</span>'
+                 '<span><i style="background:#94a3b8"></i>32股等权基准</span>'
+                 '<span><i style="background:#f59e0b"></i>纳指100(QQQ)</span></div>')
+    return "".join(parts)
+
+
+def render_portfolio(pf: dict, px_map: dict, stats: dict) -> str:
+    name_map = {c["ticker"]: c["name"] for c in AI_COMPANIES}
+    total = stats["total"]
+
+    rows = ""
+    for h in sorted(pf["holdings"], key=lambda h: -h["shares"] * px_map[h["ticker"]]):
+        t = h["ticker"]
+        px = px_map[t]
+        mv = h["shares"] * px
+        pnl = (px / h["avg_cost"] - 1) * 100
+        rows += (f'<tr><td>{name_map.get(t, t)}</td><td class="mono">{t}</td>'
+                 f'<td>{mv / total * 100:.1f}%</td><td class="mono">${h["avg_cost"]:,.2f}</td>'
+                 f'<td class="mono">${px:,.2f}</td><td>{_pct_span(pnl, 1)}</td>'
+                 f'<td class="mono">{_money(mv)}</td></tr>')
+    rows += (f'<tr class="cash-row"><td>💵 现金</td><td></td><td>{pf["cash"] / total * 100:.1f}%</td>'
+             f'<td></td><td></td><td></td><td class="mono">{_money(pf["cash"])}</td></tr>')
+
+    trades = list(reversed(pf.get("trades", [])))
+    titems = "".join(
+        f'<div class="trade-item"><b>{tr["date"]}</b> {tr["action"]} '
+        f'{name_map.get(tr["ticker"], tr["ticker"])} {tr["shares"]}股 @ ${tr["price"]:,.2f}'
+        f' — {tr["reason"]}</div>' for tr in trades)
+
+    alpha = stats["cum_pct"] - stats["eq_cum"]
+    return f'''
+  <div class="pf-panel">
+    <div class="pf-head">
+      <span class="pf-title">🤖 AI 模拟盘</span>
+      <span class="pf-sub">初始 $1,000,000 · {pf["inception"]} 起 · {pf["strategy"]} · 盘后最终价估值 · 纯多头不加杠杆 · 模拟盘不构成投资建议</span>
+    </div>
+    <div class="pf-stats">
+      <div><div class="pf-stat-label">总资产</div><div class="pf-stat-value">{_money(total)}</div></div>
+      <div><div class="pf-stat-label">当日盈亏</div><div class="pf-stat-value">{_pct_span(stats["day_pct"])} <span class="pf-stat-sm">{_money(stats["day"])}</span></div></div>
+      <div><div class="pf-stat-label">累计收益</div><div class="pf-stat-value">{_pct_span(stats["cum_pct"])}</div></div>
+      <div><div class="pf-stat-label">32股等权基准</div><div class="pf-stat-value">{_pct_span(stats["eq_cum"])}</div></div>
+      <div><div class="pf-stat-label">纳指100(QQQ)</div><div class="pf-stat-value">{_pct_span(stats["qqq_cum"])}</div></div>
+      <div><div class="pf-stat-label">超额收益(vs等权)</div><div class="pf-stat-value">{_pct_span(alpha)}</div></div>
+    </div>
+    {_equity_curve_svg(pf["history"], pf["initial_capital"])}
+    <div class="pf-table-wrap"><table class="pf-table">
+      <tr><th>持仓</th><th>代码</th><th>仓位</th><th>成本</th><th>现价</th><th>盈亏</th><th>市值</th></tr>
+      {rows}
+    </table></div>
+    <details class="trade-log"><summary>📒 调仓日志（{len(trades)} 笔，含每笔理由）</summary>{titems}</details>
+  </div>'''
+
+
 def _available_dates(target_date: datetime) -> list:
     """List archived report dates (YYYY-MM-DD) for the history dropdown, newest first."""
     import re as _re
@@ -712,7 +895,8 @@ def _available_dates(target_date: datetime) -> list:
 
 
 def generate_html(company_articles: dict, prices: dict, indices: list,
-                  recs: dict, earnings: dict, target_date: datetime) -> str:
+                  recs: dict, earnings: dict, target_date: datetime,
+                  portfolio_html: str = "") -> str:
     date_str = target_date.strftime("%Y年%m月%d日")
     weekdays = ["一", "二", "三", "四", "五", "六", "日"]
     weekday_str = weekdays[target_date.weekday()]
@@ -829,6 +1013,7 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
         .replace("{{SECTOR_TABS}}", tabs_html)
         .replace("{{HISTORY_OPTIONS}}", history_html)
         .replace("{{CARDS_HTML}}", cards_html)
+        .replace("{{PORTFOLIO_HTML}}", portfolio_html)
         .replace("{{CHART_DATA}}", chart_json)
     )
 
@@ -855,8 +1040,19 @@ def main():
     recs = fetch_recommendations()
     pretranslate_displayed(company_articles)
 
+    # AI paper portfolio (fails soft — the report must never break because of it)
+    portfolio_html, pf_stats = "", None
+    try:
+        res = update_portfolio(prices, target)
+        if res:
+            pf, px_map, pf_stats = res
+            portfolio_html = render_portfolio(pf, px_map, pf_stats)
+    except Exception as e:
+        print(f"  [WARN] portfolio update failed: {e}", file=sys.stderr)
+
     OUTPUT_DIR.mkdir(exist_ok=True)
-    html = generate_html(company_articles, prices, indices, recs, earnings, target)
+    html = generate_html(company_articles, prices, indices, recs, earnings, target,
+                         portfolio_html)
 
     date_slug = target.strftime("%Y-%m-%d")
     out_path = OUTPUT_DIR / f"{date_slug}.html"
@@ -872,6 +1068,9 @@ def main():
     # Morning push to phone (Telegram) — no-op if bot token/chat not set.
     bullets = _summary_bullets(company_articles, prices, indices)
     body = "\n".join(f"• {b}" for b in bullets) if bullets else f"{total} 条新闻已更新"
+    if pf_stats:
+        body += (f"\n\n💼 AI模拟盘 {_money(pf_stats['total'])}"
+                 f"（当日 {pf_stats['day_pct']:+.2f}% · 累计 {pf_stats['cum_pct']:+.2f}%）")
     push_telegram(
         title=f"📈 AI美股日报 {target.strftime('%m/%d')}",
         body=body,

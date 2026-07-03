@@ -1,0 +1,179 @@
+{
+ "name": "AI模拟盘",
+ "strategy": "AI基建超级周期 · 基本面动量",
+ "initial_capital": 1000000,
+ "inception": "2026-07-01",
+ "cash": 184311.22,
+ "holdings": [
+  {
+   "ticker": "NVDA",
+   "shares": 699,
+   "avg_cost": 200.09,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "MU",
+   "shares": 103,
+   "avg_cost": 1154.29,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "TSM",
+   "shares": 209,
+   "avg_cost": 477.57,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "AVGO",
+   "shares": 211,
+   "avg_cost": 377.75,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "GOOGL",
+   "shares": 223,
+   "avg_cost": 357.37,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "SNDK",
+   "shares": 26,
+   "avg_cost": 2273.73,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "AMAT",
+   "shares": 82,
+   "avg_cost": 723.0,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "LRCX",
+   "shares": 138,
+   "avg_cost": 433.33,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "MRVL",
+   "shares": 167,
+   "avg_cost": 297.89,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "KLAC",
+   "shares": 132,
+   "avg_cost": 301.71,
+   "opened": "2026-07-01"
+  },
+  {
+   "ticker": "ALAB",
+   "shares": 62,
+   "avg_cost": 483.02,
+   "opened": "2026-07-01"
+  }
+ ],
+ "trades": [
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "NVDA",
+   "shares": 699,
+   "price": 200.09,
+   "reason": "AI基建核心：2027年1万亿美元AI基础设施需求指引，产业地位与盈利确定性最高"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "MU",
+   "shares": 103,
+   "price": 1154.29,
+   "reason": "内存超级周期主升浪：HBM4产能全年售罄，财报大超预期、数据中心占收入56%+，前瞻市盈率不足9倍"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "TSM",
+   "shares": 209,
+   "price": 477.57,
+   "reason": "先进制程独占的代工咽喉，所有AI芯片绕不开，估值相对温和"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "AVGO",
+   "shares": 211,
+   "price": 377.75,
+   "reason": "OpenAI定制ASIC落地，AI网络+定制芯片双引擎"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "GOOGL",
+   "shares": 223,
+   "price": 357.37,
+   "reason": "AI大盘股中估值最合理，云+Gemini商业化加速；微软因$1900亿capex被市场惩罚，谷歌相对性价比更高"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "SNDK",
+   "shares": 26,
+   "price": 2273.73,
+   "reason": "NAND涨价周期高弹性：2026年NAND收入预计+45%，量价齐升被财报验证"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "AMAT",
+   "shares": 82,
+   "price": 723.0,
+   "reason": "存储扩产资本开支周期，设备龙头订单能见度上行"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "LRCX",
+   "shares": 138,
+   "price": 433.33,
+   "reason": "存储设备敞口最纯，NAND/DRAM扩产双受益"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "MRVL",
+   "shares": 167,
+   "price": 297.89,
+   "reason": "定制ASIC+光互联双主题，云厂自研芯片趋势受益"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "KLAC",
+   "shares": 132,
+   "price": 301.71,
+   "reason": "量测检测环节近垄断，先进制程良率投资受益"
+  },
+  {
+   "date": "2026-07-01",
+   "action": "买入",
+   "ticker": "ALAB",
+   "shares": 62,
+   "price": 483.02,
+   "reason": "AI互联（PCIe/CXL）高弹性卫星仓"
+  }
+ ],
+ "history": [
+  {
+   "date": "2026-06-30",
+   "value": 1000000,
+   "eq": 1000000,
+   "qqq": 1000000
+  },
+  {
+   "date": "2026-07-01",
+   "value": 947202.57,
+   "eq": 948277.0,
+   "qqq": 984750.08
+  }
+ ]
+}
