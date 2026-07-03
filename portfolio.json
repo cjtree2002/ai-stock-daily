@@ -3,7 +3,7 @@
  "strategy": "AI基建超级周期 · 基本面动量",
  "initial_capital": 1000000,
  "inception": "2026-07-01",
- "cash": 184311.22,
+ "cash": 271228.24,
  "holdings": [
   {
    "ticker": "NVDA",
@@ -36,12 +36,6 @@
    "opened": "2026-07-01"
   },
   {
-   "ticker": "SNDK",
-   "shares": 26,
-   "avg_cost": 2273.73,
-   "opened": "2026-07-01"
-  },
-  {
    "ticker": "AMAT",
    "shares": 82,
    "avg_cost": 723.0,
@@ -61,14 +55,8 @@
   },
   {
    "ticker": "KLAC",
-   "shares": 132,
+   "shares": 66,
    "avg_cost": 301.71,
-   "opened": "2026-07-01"
-  },
-  {
-   "ticker": "ALAB",
-   "shares": 62,
-   "avg_cost": 483.02,
    "opened": "2026-07-01"
   }
  ],
@@ -160,6 +148,30 @@
    "shares": 62,
    "price": 483.02,
    "reason": "AI互联（PCIe/CXL）高弹性卫星仓"
+  },
+  {
+   "date": "2026-07-03",
+   "action": "卖出",
+   "ticker": "SNDK",
+   "shares": 26,
+   "price": 1762.07,
+   "reason": "防御性复评：-22.5%触发止损纪律。SK海力士放缓HBM扩产+美银泡沫警示引发存储动量瓦解，NAND纯标的为组合内最高beta，全部退出；存储核心敞口保留在基本面最硬的美光"
+  },
+  {
+   "date": "2026-07-03",
+   "action": "卖出",
+   "ticker": "KLAC",
+   "shares": 66,
+   "price": 238.0,
+   "reason": "防御性复评：-21.1%为设备持仓中破位最深。设备敞口(AMAT/LRCX/KLAC共16%)过度集中于存储capex，减半最弱一只，现金升至30%风控上限"
+  },
+  {
+   "date": "2026-07-03",
+   "action": "卖出",
+   "ticker": "ALAB",
+   "shares": 62,
+   "price": 409.6,
+   "reason": "防御性复评：卫星仓-15.2%触发重估线。高beta互联标的在板块动量破位期先退出，待费半企稳后再考虑回补"
   }
  ],
  "history": [
