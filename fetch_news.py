@@ -360,6 +360,7 @@ def fetch_stock_prices(target_date: datetime) -> dict:
             tail = sub.iloc[-90:]
             prices[ticker] = {
                 "price": price,
+                "prev_close": prev,
                 "change": change,
                 "date": sub.index[-1].strftime("%m/%d"),
                 "high52": float(year.max()),
@@ -370,6 +371,30 @@ def fetch_stock_prices(target_date: datetime) -> dict:
             }
     except Exception as e:
         print(f"  [WARN] Stock price fetch error: {e}", file=sys.stderr)
+
+    # Post-market overlay: per user request, ALL quoted prices are the target
+    # day's after-hours FINAL price; change becomes vs previous close (i.e. the
+    # full-day move including extended hours). Falls back to close silently.
+    try:
+        pm = fetch_postmarket_prices(tickers, target_date)
+        applied = 0
+        for t, p in prices.items():
+            px = pm.get(t)
+            if not px:
+                continue
+            p["price"] = px
+            if p.get("prev_close"):
+                p["change"] = (px / p["prev_close"] - 1) * 100
+            p["high52"] = max(p["high52"], px)
+            p["low52"] = min(p["low52"], px)
+            if p.get("spark"):
+                p["spark"][-1] = round(px, 4)
+            if p.get("chart"):
+                p["chart"][-1][1] = round(px, 2)
+            applied += 1
+        print(f"  Post-market final prices applied to {applied}/{len(prices)} tickers")
+    except Exception as e:
+        print(f"  [WARN] post-market overlay failed: {e}", file=sys.stderr)
 
     print(f"  Got prices for {len(prices)} tickers")
     return prices
@@ -726,7 +751,8 @@ def fetch_postmarket_prices(tickers: list, target_date: datetime) -> dict:
 
 
 def _qqq_change(target_date: datetime) -> float:
-    """QQQ daily % change on the target date (benchmark)."""
+    """QQQ % change on the target date, using its post-market final price
+    (consistent with how the portfolio itself is valued)."""
     try:
         h = yf.Ticker("QQQ").history(
             start=(target_date - timedelta(days=10)).strftime("%Y-%m-%d"),
@@ -738,7 +764,11 @@ def _qqq_change(target_date: datetime) -> float:
             pass
         s = s[s.index <= target_date.strftime("%Y-%m-%d")]
         if len(s) >= 2:
-            return (float(s.iloc[-1]) / float(s.iloc[-2]) - 1) * 100
+            prev = float(s.iloc[-2])
+            # two tickers requested so yfinance returns the multi-column shape
+            cur = fetch_postmarket_prices(["QQQ", "SPY"], target_date).get("QQQ") \
+                or float(s.iloc[-1])
+            return (cur / prev - 1) * 100
     except Exception as e:
         print(f"  [WARN] QQQ benchmark fetch: {e}", file=sys.stderr)
     return 0.0
@@ -754,10 +784,11 @@ def update_portfolio(prices: dict, target_date: datetime):
     init = pf["initial_capital"]
     print("Updating AI paper portfolio...")
 
-    live = fetch_postmarket_prices([h["ticker"] for h in pf["holdings"]], target_date)
+    # Card prices already carry the post-market overlay — reuse them so the
+    # portfolio valuation matches the displayed quotes exactly.
     px_map, total = {}, pf["cash"]
     for h in pf["holdings"]:
-        px = live.get(h["ticker"]) or (prices.get(h["ticker"]) or {}).get("price") or h["avg_cost"]
+        px = (prices.get(h["ticker"]) or {}).get("price") or h["avg_cost"]
         px_map[h["ticker"]] = px
         total += h["shares"] * px
 
