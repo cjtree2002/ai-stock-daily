@@ -342,6 +342,15 @@
       align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,.35);
     }
 
+    /* ── AI morning commentary ── */
+    .ai-comm p { font-size: 13px; line-height: 1.75; color: var(--text-muted); margin: 0 0 7px; }
+    .ai-comm p:last-child { margin-bottom: 0; }
+    .ai-comm-tag {
+      font-size: 10px; color: var(--accent); background: var(--ticker-bg);
+      border: 1px solid #d4d8f7; border-radius: 4px; padding: 1px 6px;
+      margin-left: 8px; font-weight: 600; vertical-align: 1px;
+    }
+
     /* ── AI paper portfolio panel ── */
     .pf-panel {
       background: linear-gradient(135deg, #eef0fc 0%, #ffffff 45%);
@@ -369,6 +378,8 @@
     .pf-table th:first-child, .pf-table td:first-child { text-align: left; }
     .pf-table .mono { font-family: "SF Mono", "Fira Code", monospace; }
     .pf-table .cash-row td { color: var(--text-muted); border-bottom: none; }
+    .pf-table .dim { color: var(--text-dim); }
+    .pf-alert { color: var(--red); font-weight: 700; cursor: help; }
     details.trade-log { margin-top: 10px; font-size: 12px; }
     details.trade-log summary { cursor: pointer; color: var(--accent); font-weight: 600; }
     .trade-item { padding: 6px 0; border-bottom: 1px dashed var(--border-light); color: var(--text-muted); line-height: 1.55; }

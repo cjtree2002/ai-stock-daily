@@ -179,19 +179,56 @@
    "date": "2026-06-30",
    "value": 1000000,
    "eq": 1000000,
-   "qqq": 1000000
+   "qqq": 1000000,
+   "sox": 1000000.0
   },
   {
    "date": "2026-07-01",
    "value": 947202.57,
    "eq": 948224.72,
-   "qqq": 983650.16
+   "qqq": 983650.16,
+   "sox": 937272.25
   },
   {
    "date": "2026-07-02",
    "value": 911173.17,
    "eq": 899489.69,
-   "qqq": 968749.68
+   "qqq": 968749.68,
+   "sox": 886239.57
   }
+ ],
+ "benchmark_tickers": [
+  "MU",
+  "SNDK",
+  "MRVL",
+  "AMD",
+  "NBIS",
+  "ALAB",
+  "GLW",
+  "ASML",
+  "TOELY",
+  "LRCX",
+  "AMAT",
+  "KLAC",
+  "ATEYY",
+  "SMTC",
+  "NVDA",
+  "GOOGL",
+  "MSFT",
+  "AAPL",
+  "META",
+  "AMZN",
+  "TSLA",
+  "TSM",
+  "AVGO",
+  "INTC",
+  "QCOM",
+  "ARM",
+  "AAOI",
+  "AXTI",
+  "LITE",
+  "BB",
+  "HOOD",
+  "NET"
  ]
 }

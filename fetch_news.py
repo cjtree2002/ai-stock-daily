@@ -27,6 +27,27 @@ FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY") or os.environ.get("NEWS_API_
 OUTPUT_DIR = Path(__file__).parent / "reports"
 TEMPLATE_PATH = Path(__file__).parent / "template.html"
 PORTFOLIO_PATH = Path(__file__).parent / "portfolio.json"
+COMMENTARY_PATH = Path(__file__).parent / "commentary.json"
+# Sentinel the workflow checks before copying/archiving pages: absent on
+# non-trading days so the site keeps the last trading day's report.
+GENERATED_FLAG = OUTPUT_DIR / ".generated"
+
+
+def _is_trading_day(target_date: datetime) -> bool:
+    """True if the US market actually traded on the target date.
+
+    NOTE: yfinance pads empty ranges with the nearest PRIOR session's bar, so
+    a non-empty result is not enough — the returned bar's date must equal the
+    target date. Fail-open: if the check errors, assume trading so we never
+    silently skip a real day."""
+    try:
+        h = yf.Ticker("QQQ").history(
+            start=(target_date - timedelta(days=1)).strftime("%Y-%m-%d"),
+            end=(target_date + timedelta(days=1)).strftime("%Y-%m-%d"))
+        dates = {d.strftime("%Y-%m-%d") for d in h.index}
+        return target_date.strftime("%Y-%m-%d") in dates
+    except Exception:
+        return True
 MAX_ARTICLES_PER_COMPANY = 5
 
 # Stay under Finnhub's 60 calls/min limit.
@@ -72,12 +93,13 @@ def _normalize_finnhub(item: dict) -> dict:
     }
 
 
-def _rank_company_news(articles: list[dict], pats: list) -> list[dict]:
-    """Score, de-duplicate, and keep the top-N most important items for a company.
+def _score_company_articles(articles: list[dict], pats: list) -> list:
+    """Score every article that actually mentions the company.
 
     Finnhub's per-symbol feed includes loosely-related sector news, so we only
-    keep articles that actually name the company (in headline or summary) and
-    rank headline mentions highest.
+    keep articles that name the company (headline scores highest). Returns
+    (score, publishedAt, article) tuples — selection happens later, after a
+    GLOBAL ownership pass assigns each article to its most-relevant company.
     """
     seen_urls = set()
     scored = []
@@ -91,8 +113,7 @@ def _rank_company_news(articles: list[dict], pats: list) -> list[dict]:
         desc = a.get("description") or ""
         content = title + " " + desc
         title_hit = any(r.search(title) for r in pats)
-        content_hit = title_hit or any(r.search(content) for r in pats)
-        if not content_hit:
+        if not (title_hit or any(r.search(content) for r in pats)):
             continue  # not actually about this company — drop sector noise
         seen_urls.add(url)
         score = 12 if title_hit else 4         # headline mention = strongly about it
@@ -102,8 +123,12 @@ def _rank_company_news(articles: list[dict], pats: list) -> list[dict]:
         if not desc.strip():
             score -= 1
         scored.append((score, a.get("publishedAt") or "", a))
+    return scored
 
-    scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+
+def _select_top(scored: list) -> list[dict]:
+    """Sort by importance, drop near-duplicate stories, keep top N."""
+    scored = sorted(scored, key=lambda x: (x[0], x[1]), reverse=True)
     kept, kept_titles = [], []
     for _, _, a in scored:
         if _is_near_duplicate(a.get("title") or "", kept_titles):
@@ -496,14 +521,14 @@ def fetch_all_news(target_date: datetime) -> dict:
 
     print(f"Fetching news for {target_str} (Finnhub)...")
 
-    company_articles: dict[str, list] = {}
     ticker_cache: dict[str, list] = {}
     name_to_pats = {c["name"]: pats for c, pats in _build_company_patterns(AI_COMPANIES)}
+    scored_by_company: dict[str, list] = {}
 
     for i, company in enumerate(AI_COMPANIES):
         ticker = company["ticker"]
         if ticker == "N/A":
-            company_articles[company["name"]] = []  # private co. — no ticker to query
+            scored_by_company[company["name"]] = []  # private co. — no ticker to query
             continue
         if ticker not in ticker_cache:
             items = fetch_company_news_finnhub(ticker, from_str, to_str)
@@ -514,12 +539,26 @@ def fetch_all_news(target_date: datetime) -> dict:
             ticker_cache[ticker] = [_normalize_finnhub(it) for it in (same_day or items)]
             print(f"  [{i+1}/{len(AI_COMPANIES)}] {ticker}: {len(ticker_cache[ticker])} raw")
             time.sleep(REQUEST_DELAY)
-        company_articles[company["name"]] = _rank_company_news(
+        scored_by_company[company["name"]] = _score_company_articles(
             ticker_cache[ticker], name_to_pats[company["name"]]
         )
 
+    # Global ownership: each article (by URL) belongs only to the company that
+    # scores it highest, so one big story can't flood multiple cards.
+    owner: dict[str, tuple] = {}
+    for name, lst in scored_by_company.items():
+        for sc, _, art in lst:
+            u = art["url"]
+            if u not in owner or sc > owner[u][0]:
+                owner[u] = (sc, name)
+
+    company_articles = {
+        name: _select_top([t for t in lst if owner[t[2]["url"]][1] == name])
+        for name, lst in scored_by_company.items()
+    }
+
     total = sum(len(v) for v in company_articles.values())
-    print(f"  Total ranked articles: {total}")
+    print(f"  Total ranked articles: {total} (cross-company duplicates removed)")
     return company_articles
 
 
@@ -750,6 +789,26 @@ def fetch_postmarket_prices(tickers: list, target_date: datetime) -> dict:
     return out
 
 
+def _close_change(symbol: str, target_date: datetime):
+    """Close-vs-previous-close % change of any symbol on the target date.
+    Returns None on failure."""
+    try:
+        h = yf.Ticker(symbol).history(
+            start=(target_date - timedelta(days=10)).strftime("%Y-%m-%d"),
+            end=(target_date + timedelta(days=1)).strftime("%Y-%m-%d"))
+        s = h["Close"].dropna()
+        try:
+            s.index = s.index.tz_localize(None)
+        except Exception:
+            pass
+        s = s[s.index <= target_date.strftime("%Y-%m-%d")]
+        if len(s) >= 2:
+            return (float(s.iloc[-1]) / float(s.iloc[-2]) - 1) * 100
+    except Exception:
+        pass
+    return None
+
+
 def _qqq_change(target_date: datetime) -> float:
     """QQQ % change on the target date, using its post-market final price
     (consistent with how the portfolio itself is valued)."""
@@ -798,11 +857,23 @@ def update_portfolio(prices: dict, target_date: datetime):
     base = before[-1] if before else {"value": init, "eq": init, "qqq": init}
 
     if hist and ds > hist[0]["date"]:
-        changes = [v["change"] for v in prices.values() if v.get("change") is not None]
+        # Equal-weight benchmark uses the FROZEN inception composition so later
+        # watchlist edits can't retroactively change the yardstick.
+        bench = pf.get("benchmark_tickers") or [c["ticker"] for c in AI_COMPANIES
+                                                if c["ticker"] != "N/A"]
+        changes = []
+        for tk in bench:
+            ch = (prices.get(tk) or {}).get("change")
+            if ch is None:
+                ch = _close_change(tk, target_date)
+            if ch is not None:
+                changes.append(ch)
         eq_ch = sum(changes) / len(changes) if changes else 0.0
+        sox_ch = _close_change("^SOX", target_date) or 0.0
         entry = {"date": ds, "value": round(total, 2),
                  "eq": round(base["eq"] * (1 + eq_ch / 100), 2),
-                 "qqq": round(base["qqq"] * (1 + _qqq_change(target_date) / 100), 2)}
+                 "qqq": round(base["qqq"] * (1 + _qqq_change(target_date) / 100), 2),
+                 "sox": round(base.get("sox", init) * (1 + sox_ch / 100), 2)}
         pf["history"] = before + [entry]
         PORTFOLIO_PATH.write_text(json.dumps(pf, ensure_ascii=False, indent=1), encoding="utf-8")
 
@@ -814,6 +885,7 @@ def update_portfolio(prices: dict, target_date: datetime):
         "cum_pct": (total / init - 1) * 100,
         "eq_cum": (last["eq"] / init - 1) * 100,
         "qqq_cum": (last["qqq"] / init - 1) * 100,
+        "sox_cum": (last.get("sox", init) / init - 1) * 100,
     }
     print(f"  Portfolio value: ${total:,.0f} ({stats['cum_pct']:+.2f}% cum)")
     return pf, px_map, stats
@@ -831,12 +903,12 @@ def _pct_span(p: float, digits: int = 2) -> str:
 def _equity_curve_svg(hist: list, init: float) -> str:
     if len(hist) < 2:
         return '<div class="pf-chart-empty">净值曲线将从明日起逐日累积</div>'
-    series = {"value": [], "eq": [], "qqq": []}
+    series = {"value": [], "eq": [], "qqq": [], "sox": []}
     for e in hist:
         for k in series:
-            series[k].append((e[k] / init - 1) * 100)
+            series[k].append((e.get(k, init) / init - 1) * 100)
     W, H, padL, padR, padT, padB = 700, 160, 44, 8, 8, 18
-    allv = series["value"] + series["eq"] + series["qqq"]
+    allv = series["value"] + series["eq"] + series["qqq"] + series["sox"]
     lo, hi = min(allv), max(allv)
     if hi - lo < 0.5:
         lo, hi = lo - 0.5, hi + 0.5
@@ -855,17 +927,19 @@ def _equity_curve_svg(hist: list, init: float) -> str:
         parts.append(f'<line x1="{padL}" y1="{Y(0):.1f}" x2="{W - padR}" y2="{Y(0):.1f}" stroke="var(--border)" stroke-dasharray="4 3"/>')
     parts.append(f'<polyline points="{line(series["eq"])}" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 3"/>')
     parts.append(f'<polyline points="{line(series["qqq"])}" fill="none" stroke="#f59e0b" stroke-width="1.3"/>')
+    parts.append(f'<polyline points="{line(series["sox"])}" fill="none" stroke="#a855f7" stroke-width="1.3"/>')
     parts.append(f'<polyline points="{line(series["value"])}" fill="none" stroke="var(--accent)" stroke-width="2.2"/>')
     parts.append(f'<text x="{padL}" y="{H - 4}" font-size="9" fill="var(--text-dim)">{hist[0]["date"][5:]}</text>')
     parts.append(f'<text x="{W - padR}" y="{H - 4}" text-anchor="end" font-size="9" fill="var(--text-dim)">{hist[-1]["date"][5:]}</text>')
     parts.append('</svg>')
     parts.append('<div class="pf-legend"><span><i style="background:var(--accent)"></i>AI模拟盘</span>'
                  '<span><i style="background:#94a3b8"></i>32股等权基准</span>'
-                 '<span><i style="background:#f59e0b"></i>纳指100(QQQ)</span></div>')
+                 '<span><i style="background:#f59e0b"></i>纳指100(QQQ)</span>'
+                 '<span><i style="background:#a855f7"></i>费城半导体</span></div>')
     return "".join(parts)
 
 
-def render_portfolio(pf: dict, px_map: dict, stats: dict) -> str:
+def render_portfolio(pf: dict, px_map: dict, stats: dict, prices: dict) -> str:
     name_map = {c["ticker"]: c["name"] for c in AI_COMPANIES}
     total = stats["total"]
 
@@ -875,12 +949,15 @@ def render_portfolio(pf: dict, px_map: dict, stats: dict) -> str:
         px = px_map[t]
         mv = h["shares"] * px
         pnl = (px / h["avg_cost"] - 1) * 100
-        rows += (f'<tr><td>{name_map.get(t, t)}</td><td class="mono">{t}</td>'
+        day_ch = (prices.get(t) or {}).get("change")
+        day_cell = _pct_span(day_ch, 1) if day_ch is not None else '<span class="dim">—</span>'
+        alert = ' <span class="pf-alert" title="触发-15%重估线">⚠</span>' if pnl <= -15 else ''
+        rows += (f'<tr><td>{name_map.get(t, t)}{alert}</td><td class="mono">{t}</td>'
                  f'<td>{mv / total * 100:.1f}%</td><td class="mono">${h["avg_cost"]:,.2f}</td>'
-                 f'<td class="mono">${px:,.2f}</td><td>{_pct_span(pnl, 1)}</td>'
+                 f'<td class="mono">${px:,.2f}</td><td>{day_cell}</td><td>{_pct_span(pnl, 1)}</td>'
                  f'<td class="mono">{_money(mv)}</td></tr>')
     rows += (f'<tr class="cash-row"><td>💵 现金</td><td></td><td>{pf["cash"] / total * 100:.1f}%</td>'
-             f'<td></td><td></td><td></td><td class="mono">{_money(pf["cash"])}</td></tr>')
+             f'<td></td><td></td><td></td><td></td><td class="mono">{_money(pf["cash"])}</td></tr>')
 
     trades = list(reversed(pf.get("trades", [])))
     titems = "".join(
@@ -901,11 +978,12 @@ def render_portfolio(pf: dict, px_map: dict, stats: dict) -> str:
       <div><div class="pf-stat-label">累计收益</div><div class="pf-stat-value">{_pct_span(stats["cum_pct"])}</div></div>
       <div><div class="pf-stat-label">32股等权基准</div><div class="pf-stat-value">{_pct_span(stats["eq_cum"])}</div></div>
       <div><div class="pf-stat-label">纳指100(QQQ)</div><div class="pf-stat-value">{_pct_span(stats["qqq_cum"])}</div></div>
+      <div><div class="pf-stat-label">费城半导体</div><div class="pf-stat-value">{_pct_span(stats["sox_cum"])}</div></div>
       <div><div class="pf-stat-label">超额收益(vs等权)</div><div class="pf-stat-value">{_pct_span(alpha)}</div></div>
     </div>
     {_equity_curve_svg(pf["history"], pf["initial_capital"])}
     <div class="pf-table-wrap"><table class="pf-table">
-      <tr><th>持仓</th><th>代码</th><th>仓位</th><th>成本</th><th>现价</th><th>盈亏</th><th>市值</th></tr>
+      <tr><th>持仓</th><th>代码</th><th>仓位</th><th>成本</th><th>现价</th><th>当日</th><th>盈亏</th><th>市值</th></tr>
       {rows}
     </table></div>
     <details class="trade-log"><summary>📒 调仓日志（{len(trades)} 笔，含每笔理由）</summary>{titems}</details>
@@ -925,6 +1003,28 @@ def _available_dates(target_date: datetime) -> list:
     return sorted(dates, reverse=True)
 
 
+def _load_commentary(target_date: datetime) -> str:
+    """Morning commentary written by the daily auto-research task. Only shown
+    when it matches the report's target trading day; otherwise falls back to
+    the template summary."""
+    try:
+        if not COMMENTARY_PATH.exists():
+            return ""
+        d = json.loads(COMMENTARY_PATH.read_text(encoding="utf-8"))
+        if d.get("date") != target_date.strftime("%Y-%m-%d"):
+            return ""
+        text = (d.get("text") or "").strip()
+        if not text:
+            return ""
+        text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        paras = "".join(f"<p>{ln.strip()}</p>" for ln in text.splitlines() if ln.strip())
+        return (f'<div class="summary ai-comm"><div class="summary-title">🤖 AI 晨评'
+                f'<span class="ai-comm-tag">每日自动研究</span></div>{paras}</div>')
+    except Exception as e:
+        print(f"  [WARN] commentary load failed: {e}", file=sys.stderr)
+        return ""
+
+
 def generate_html(company_articles: dict, prices: dict, indices: list,
                   recs: dict, earnings: dict, target_date: datetime,
                   portfolio_html: str = "") -> str:
@@ -934,7 +1034,7 @@ def generate_html(company_articles: dict, prices: dict, indices: list,
     now_str = datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M") + " 北京时间"
 
     indices_html = _render_indices(indices)
-    summary_html = _build_summary(company_articles, prices, indices)
+    summary_html = _load_commentary(target_date) or _build_summary(company_articles, prices, indices)
     movers_html = _render_movers(prices)
 
     # Build cards for ALL companies (no-news ones show a placeholder) with
@@ -1055,6 +1155,20 @@ def main():
     if len(sys.argv) > 1:
         target = datetime.strptime(sys.argv[1], "%Y-%m-%d")
 
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    GENERATED_FLAG.unlink(missing_ok=True)
+
+    # Non-trading day (weekend/holiday): keep the last trading day's report as
+    # is — no stale regeneration, no fake flat day in the equity curve.
+    if not _is_trading_day(target):
+        print(f"{target.strftime('%Y-%m-%d')} 非交易日（周末/休市），跳过生成，页面保留上一交易日内容。")
+        push_telegram(
+            title="😴 美股休市",
+            body=f"{target.strftime('%m/%d')} 无交易（周末或假日），日报保持上一交易日内容。",
+            url="https://cjtree2002.github.io/ai-stock-daily/",
+        )
+        return
+
     company_articles = fetch_all_news(target)
 
     # Safety guard: if the news API was rate-limited and we got essentially
@@ -1077,11 +1191,10 @@ def main():
         res = update_portfolio(prices, target)
         if res:
             pf, px_map, pf_stats = res
-            portfolio_html = render_portfolio(pf, px_map, pf_stats)
+            portfolio_html = render_portfolio(pf, px_map, pf_stats, prices)
     except Exception as e:
         print(f"  [WARN] portfolio update failed: {e}", file=sys.stderr)
 
-    OUTPUT_DIR.mkdir(exist_ok=True)
     html = generate_html(company_articles, prices, indices, recs, earnings, target,
                          portfolio_html)
 
@@ -1093,6 +1206,7 @@ def main():
     latest_path = OUTPUT_DIR / "latest.html"
     latest_path.write_text(html, encoding="utf-8")
 
+    GENERATED_FLAG.touch()
     print(f"Report saved: {out_path}")
     print(f"Latest:       {latest_path}")
 

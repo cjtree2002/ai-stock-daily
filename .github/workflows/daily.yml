@@ -31,8 +31,12 @@ jobs:
         run: |
           mkdir -p docs
           python fetch_news.py
-          cp reports/latest.html docs/index.html
-          cp reports/latest.html docs/$(date +'%Y-%m-%d').html
+          if [ -f reports/.generated ]; then
+            cp reports/latest.html docs/index.html
+            cp reports/latest.html docs/$(date +'%Y-%m-%d').html
+          else
+            echo "Non-trading day - site left unchanged."
+          fi
 
       - name: Commit and push report
         run: |
@@ -41,3 +45,13 @@ jobs:
           git add reports/ docs/ portfolio.json
           git diff --cached --quiet || git commit -m "📊 Daily report $(date +'%Y-%m-%d')"
           git push
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode chat_id="${TELEGRAM_CHAT_ID}" \
+            --data-urlencode text="❌ AI美股日报生成失败，点击查看原因：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

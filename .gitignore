@@ -3,3 +3,5 @@ logs/
 __pycache__/
 *.pyc
 .claude/
+journal.md
+reports/.generated
