@@ -54,6 +54,12 @@ EVENT_KW = [
     "见面会", "粉丝见面", "签售", "见面签售", "路演", "舞台剧", "话剧", "音乐剧",
 ]
 
+# 微博专用"实锤信号词":只有含这些词的微博才保留(过滤海量粉丝闲聊)
+WEIBO_SIGNAL = ["官宣", "开票", "预售", "公开发售", "发售", "开售", "启售", "售票",
+                "门票", "购票", "抢票", "售罄", "退票", "退款", "加场", "增场",
+                "新增场", "定档", "巡演", "世界巡回", "巡回演唱会", "演出资讯",
+                "开票信息", "票务", "延期", "改期", "座位表", "票价", "预订"]
+
 # 判定"已经有开票信息了"的关键词(触发第二段「开票」提醒)
 ONSALE_KW = ["开票", "开售", "公开发售", "预售", "开抢", "正式发售", "公售", "启售",
              "发售时间", "on sale", "on-sale", "sale starts", "tickets available",
@@ -137,6 +143,7 @@ def source_weibo(artists):
         except Exception as e:
             log(f"  ⚠️ 微博搜索失败 [{a['zh']}] -> {e}")
             continue
+        kept, seen_prefix = 0, set()
         for c in cards:
             mb = c.get("mblog")
             if not mb and c.get("card_group"):
@@ -144,7 +151,14 @@ def source_weibo(artists):
             if not mb:
                 continue
             text = re.sub("<[^>]+>", "", mb.get("text", ""))
-            bid  = mb.get("bid", "")
+            # 关键降噪:微博搜索会带出大量粉丝闲聊,只保留含"实锤信号词"的帖子
+            # (官宣/开票/加场/门票/延期等),把 90% 噪音挡掉。
+            if not any(k in text for k in WEIBO_SIGNAL):
+                continue
+            prefix = re.sub(r"[#\s]", "", text)[:16]     # 去重:同一事件的相似帖只留一条
+            if prefix in seen_prefix:
+                continue
+            seen_prefix.add(prefix)
             out.append({
                 "title":   text[:50],
                 "link":    f"https://m.weibo.cn/detail/{mb.get('id','')}" if mb.get("id") else "",
@@ -152,6 +166,9 @@ def source_weibo(artists):
                 "date":    mb.get("created_at", ""),
                 "source":  "微博",
             })
+            kept += 1
+            if kept >= 4:                                # 每个艺人最多留 4 条,避免刷屏
+                break
         time.sleep(0.8)
     return out
 
