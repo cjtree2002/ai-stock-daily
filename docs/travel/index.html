@@ -130,7 +130,11 @@ function parseCSV(text){
 function csvToPlaces(text){
   const rows=parseCSV(text).filter(r=>r.some(c=>c.trim()!==''));
   if(rows.length<2) return [];
-  const header=rows[0].map(h=>h.trim().toLowerCase());
+  // 表头兼容：英文字段名 或 表单里的中文问题标题都能识别
+  const HALIAS={'国家英文':'country','国家（英文）':'country','国家中文':'country_zh','城市':'city',
+    '纬度':'lat','经度':'lon','年份':'year','类型':'type','去过几次':'visits','次数':'visits',
+    '备注':'note','想再去':'wishmore','想再去吗':'wishmore'};
+  const header=rows[0].map(h=>{ const raw=h.trim(); return HALIAS[raw] || raw.toLowerCase(); });
   const idx=n=>header.indexOf(n);
   const iC=idx('country'),iCz=idx('country_zh'),iCity=idx('city'),iLat=idx('lat'),iLon=idx('lon'),
         iY=idx('year'),iT=idx('type'),iV=idx('visits'),iN=idx('note'),iW=idx('wishmore');
