@@ -21,6 +21,11 @@
     { "zh": "黄子华", "trad": "黃子華", "en": "Dayo Wong",    "aliases": ["子华", "子華"],    "type": "栋笃笑/演员" },
     { "zh": "林峰",   "trad": "林峯",   "en": "Raymond Lam",  "aliases": ["林峯"],           "type": "歌手/演员" },
     { "zh": "张家辉", "trad": "張家輝", "en": "Nick Cheung",  "aliases": [],                 "type": "演员" },
-    { "zh": "吴镇宇", "trad": "吳鎮宇", "en": "Francis Ng",   "aliases": [],                 "type": "演员" }
+    { "zh": "吴镇宇", "trad": "吳鎮宇", "en": "Francis Ng",   "aliases": [],                 "type": "演员" },
+    { "zh": "古天乐", "trad": "古天樂", "en": "Louis Koo",    "aliases": ["古仔"],           "type": "演员/歌手" },
+    { "zh": "陈伟霆", "trad": "陳偉霆", "en": "William Chan", "aliases": [],                 "type": "歌手/演员" },
+    { "zh": "古巨基", "trad": "古巨基", "en": "Leo Ku",       "aliases": ["基仔"],           "type": "歌手" },
+    { "zh": "任贤齐", "trad": "任賢齊", "en": "Richie Jen",   "aliases": ["小齐", "小齊"],    "type": "歌手" },
+    { "zh": "庾澄庆", "trad": "庾澄慶", "en": "Harlem Yu",    "aliases": ["哈林"],           "type": "歌手" }
   ]
 }

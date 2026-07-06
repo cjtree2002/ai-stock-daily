@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-06 20:03",
+  "updated": "2026-07-06 20:32",
   "events": [
     {
       "key": "8cb3eb6ab1e8e13b",
@@ -11,7 +11,7 @@
       "source": "TicketHK香港",
       "date": "",
       "stage": "announce",
-      "found_at": "2026-07-06 19:56"
+      "found_at": "2026-07-06 20:32"
     },
     {
       "key": "33407e3d2a5d002f",
@@ -23,7 +23,7 @@
       "source": "TicketHK香港",
       "date": "",
       "stage": "announce",
-      "found_at": "2026-07-06 19:56"
+      "found_at": "2026-07-06 20:32"
     },
     {
       "key": "eec6429e401c3b45",
@@ -35,7 +35,19 @@
       "source": "SISTIC新加坡",
       "date": "Thu, 20 Aug - Thu, 20 Aug 2026",
       "stage": "announce",
-      "found_at": "2026-07-06 19:56"
+      "found_at": "2026-07-06 20:32"
+    },
+    {
+      "key": "5a558409fae3ce8b",
+      "artist": "古天乐",
+      "type": "演员/歌手",
+      "title": "古天樂 紅館演唱會 2026 ｜門票價錢、座位表、公開發售時間、紅磡香港體育館、附官方購票連結",
+      "link": "https://www.tickethk.com/concert-ticket/1791",
+      "summary": "",
+      "source": "TicketHK香港",
+      "date": "",
+      "stage": "announce",
+      "found_at": "2026-07-06 20:32"
     },
     {
       "key": "4e185b7ad13349f7",
