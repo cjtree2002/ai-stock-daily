@@ -150,15 +150,33 @@ def source_weibo(artists):
 
 
 def source_sina(artists):
-    """新浪娱乐:抓娱乐新闻流,后面统一按艺人名过滤。"""
+    """新浪娱乐:直接调新浪滚动新闻 JSON 接口(feed.mix.sina.com.cn)。
+    注意:新浪目前只有"电影"等少数频道是新鲜的,专门的"明星/演唱会"频道已废弃(返回旧闻),
+    搜索接口对服务器也封锁。因此本源只作兜底 —— 靠后面的"艺人名+演出关键词"过滤,
+    平时基本静默,真出现相关演出消息时才命中。"""
     out = []
-    for path in ["/sina/rollnews/", "/sina/ent"]:      # 两个候选路由,能通哪个用哪个
-        got = fetch_rss(f"{RSSHUB}{path}")
-        for it in got:
-            it["source"] = "新浪娱乐"
-            out.append(it)
-        if got:
-            break
+    hdr = {**UA, "Referer": "https://roll.ent.sina.com.cn/"}
+    ENT_CHANNELS = [2513]                              # 已实测的新鲜娱乐频道(pageid=153)
+    for lid in ENT_CHANNELS:
+        for page in (1, 2):
+            url = (f"https://feed.mix.sina.com.cn/api/roll/get"
+                   f"?pageid=153&lid={lid}&num=50&page={page}")
+            try:
+                data = requests.get(url, headers=hdr, timeout=TIMEOUT)\
+                       .json().get("result", {}).get("data", [])
+            except Exception as e:
+                log(f"  ⚠️ 新浪抓取失败 lid={lid} -> {e}")
+                break
+            if not data:
+                break
+            for it in data:
+                out.append({
+                    "title":   (it.get("title") or "").strip(),
+                    "link":    it.get("url") or it.get("wapurl") or "",
+                    "summary": (it.get("intro") or "").strip(),
+                    "date":    it.get("ctime", ""),
+                    "source":  "新浪娱乐",
+                })
     return out
 
 
@@ -217,8 +235,8 @@ def source_damai(artists):
 
 
 # 数据源清单:想开关某个源,把它从这里去掉即可。
-# 说明:source_sina / source_damai 依赖已失效的公共 RSSHub,暂不启用(第三阶段:自建 RSSHub 后恢复)。
-SOURCES = [source_weibo, source_tickethk, source_sistic]
+# 说明:source_damai 依赖已失效的公共 RSSHub,暂不启用(第三阶段:自建 RSSHub 后恢复)。
+SOURCES = [source_weibo, source_sina, source_tickethk, source_sistic]
 
 # 哪些源属于"票务平台"(标题里出现艺人名即算命中,不强制要演出关键词)
 TICKETING_SOURCES = {"TicketHK香港", "SISTIC新加坡", "大麦"}
