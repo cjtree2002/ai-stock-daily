@@ -46,7 +46,7 @@
 <body>
 <header>
   <h1>🗺️ 我的旅行地图</h1>
-  <div class="sub">城市打点 + 国家高亮 · 数据来自 <code>places.json</code></div>
+  <div class="sub">城市打点 + 国家高亮 · 数据来自你的 Google 表格（城市坐标自动定位）</div>
 </header>
 
 <div class="stats" id="stats"></div>
@@ -76,10 +76,11 @@
 </div>
 
 <div id="err" class="err"></div>
+<div id="status" style="color:#5a6278;font-size:13px;padding:0 20px"></div>
 <div id="map"></div>
 <footer>
-  更新方式：编辑 <code>docs/travel/places.json</code> 增删条目并 push，几分钟后自动生效。
-  经纬度可在 <a href="https://www.latlong.net" target="_blank">latlong.net</a> 查询。
+  更新方式：在你的 Google 表格里加一行（城市、国家、年份等），保存后过几分钟刷新本页即可，
+  <b>经纬度两列可留空</b>，地图会自动定位城市坐标。
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -101,11 +102,85 @@ const ALIAS = {
   "Korea":"South Korea","Czech Republic":"Czechia"
 };
 const GEOJSON_URL = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
+// 你的 Google 表格（发布为 CSV）
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbqSxtEgE1cjZjp_s6X7KI0Ek20W56mwc8bGLzpRpQhR1aDSg6jlq8Vnu_AnFXx4OQOwxMZmNv8GqO/pub?output=csv";
+const GEO_CACHE_KEY = "travel_geocache_v1";
 
 let allPlaces = [], map, markerLayer, countryLayer, geoData;
 let playMaxYear = null, playTimer = null, homePlace = null;
 
 function norm(name){ return ALIAS[name] || name; }
+
+// ── CSV 解析（支持引号、逗号、换行）──
+function parseCSV(text){
+  const rows=[]; let row=[], field='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; }
+      else field+=c;
+    } else if(c==='"'){ inQ=true; }
+    else if(c===','){ row.push(field); field=''; }
+    else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+    else if(c!=='\r'){ field+=c; }
+  }
+  if(field.length||row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+function csvToPlaces(text){
+  const rows=parseCSV(text).filter(r=>r.some(c=>c.trim()!==''));
+  if(rows.length<2) return [];
+  const header=rows[0].map(h=>h.trim().toLowerCase());
+  const idx=n=>header.indexOf(n);
+  const iC=idx('country'),iCz=idx('country_zh'),iCity=idx('city'),iLat=idx('lat'),iLon=idx('lon'),
+        iY=idx('year'),iT=idx('type'),iV=idx('visits'),iN=idx('note'),iW=idx('wishmore');
+  const g=(r,i)=> i>=0&&i<r.length ? r[i].trim() : '';
+  const num=v=>{ const n=parseFloat(v); return isFinite(n)?n:null; };
+  return rows.slice(1).map(r=>({
+    country:g(r,iC), country_zh:g(r,iCz), city:g(r,iCity),
+    lat:num(g(r,iLat)), lon:num(g(r,iLon)),
+    year:parseInt(g(r,iY))||null,
+    type:(g(r,iT)||'travel').toLowerCase(),
+    visits:parseInt(g(r,iV))||1,
+    note:g(r,iN),
+    wishMore:/^(true|1|yes|是)$/i.test(g(r,iW))
+  })).filter(p=>p.country && p.city);
+}
+
+// ── 缺坐标的城市自动定位（缓存到浏览器，只查一次）──
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const geoKey=p=>(p.city+'|'+p.country).toLowerCase();
+function loadGeoCache(){ try{ return JSON.parse(localStorage.getItem(GEO_CACHE_KEY))||{}; }catch(e){ return {}; } }
+function saveGeoCache(c){ try{ localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(c)); }catch(e){} }
+async function geocodeMissing(){
+  const cache=loadGeoCache();
+  const missing=allPlaces.filter(p=>p.lat==null||p.lon==null);
+  // 先套用缓存
+  missing.forEach(p=>{ const k=geoKey(p); if(cache[k]){ p.lat=cache[k].lat; p.lon=cache[k].lon; } });
+  homePlace=pickHome(allPlaces); refresh();
+  const todo=allPlaces.filter(p=>p.lat==null||p.lon==null);
+  const status=document.getElementById('status');
+  for(let i=0;i<todo.length;i++){
+    const p=todo[i];
+    status.textContent=`正在定位城市 ${i+1}/${todo.length}：${p.city} …`;
+    try{
+      const q=p.city+(p.country?(', '+p.country):'');
+      const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=en&q='+encodeURIComponent(q);
+      const r=await fetch(url,{headers:{'Accept':'application/json'}});
+      const d=await r.json();
+      if(d.length){
+        p.lat=+(+d[0].lat).toFixed(4); p.lon=+(+d[0].lon).toFixed(4);
+        cache[geoKey(p)]={lat:p.lat,lon:p.lon}; saveGeoCache(cache);
+        homePlace=pickHome(allPlaces); refresh();
+      }
+    }catch(e){}
+    await sleep(1100); // 遵守 Nominatim 每秒1次限制
+  }
+  const failed=allPlaces.filter(p=>p.lat==null||p.lon==null);
+  status.textContent = failed.length
+    ? `⚠️ 有 ${failed.length} 个城市没定位到（${failed.map(p=>p.city).join('、')}），可在表格里手动填 lat/lon`
+    : '';
+}
 
 // 大圆距离 (km)
 function haversine(a, b){
@@ -279,14 +354,15 @@ async function init(){
   }).addTo(map);
   markerLayer = L.layerGroup().addTo(map);
 
-  // 数据
+  // 数据（来自 Google 表格 CSV）
   try{
-    const res = await fetch('places.json?_=' + Date.now());
-    const data = await res.json();
-    allPlaces = data.places || [];
+    const res = await fetch(CSV_URL + '&_=' + Date.now());
+    const text = await res.text();
+    allPlaces = csvToPlaces(text);
     homePlace = pickHome(allPlaces);
+    if(!allPlaces.length) document.getElementById('err').textContent = '表格里还没有有效数据（至少要填 country 和 city）';
   }catch(e){
-    document.getElementById('err').textContent = '加载 places.json 失败：' + e.message;
+    document.getElementById('err').textContent = '加载表格失败：' + e.message;
     return;
   }
 
@@ -311,6 +387,7 @@ async function init(){
   }catch(e){ /* 高亮失败不影响打点 */ }
 
   refresh();
+  geocodeMissing();   // 给缺坐标的城市自动定位
 }
 init();
 </script>
