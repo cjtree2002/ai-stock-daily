@@ -27,7 +27,8 @@ jobs:
         env:
           GMAIL_USER:         ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          RSSHUB_BASE:        ${{ secrets.RSSHUB_BASE }}   # 可选:自建 RSSHub 地址
+          WEIBO_COOKIE:       ${{ secrets.WEIBO_COOKIE }}   # 可选:微博登录 cookie,配了才抓微博
+          RSSHUB_BASE:        ${{ secrets.RSSHUB_BASE }}     # 可选:自建 RSSHub 地址(第三阶段)
         run: python ticket_watch.py
 
       - name: Commit results

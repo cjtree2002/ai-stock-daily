@@ -105,14 +105,47 @@ def fetch_html(url):
 
 # ================================================================ 各数据源
 def source_weibo(artists):
-    """微博关键词搜索:每个艺人搜一次名字,拿到最新相关微博。"""
+    """微博:直接调手机版搜索接口 m.weibo.cn,按"艺人名 演唱会"搜。
+    需要登录 cookie(环境变量 WEIBO_COOKIE),否则微博会拒绝返回。没配就跳过。"""
+    import time
+    cookie = os.environ.get("WEIBO_COOKIE", "").strip()
+    if not cookie:
+        log("  · 微博:未配置 WEIBO_COOKIE,跳过(见说明如何获取 cookie)。")
+        return []
     out = []
+    hdr = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) "
+                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+        "Referer": "https://m.weibo.cn/", "MWeibo-Pwa": "1",
+        "X-Requested-With": "XMLHttpRequest", "Accept": "application/json",
+        "Cookie": cookie,
+    }
     for a in artists:
-        kw = a["zh"]
-        url = f"{RSSHUB}/weibo/keyword/{requests.utils.quote(kw)}"
-        for it in fetch_rss(url):
-            it["source"] = "微博"
-            out.append(it)
+        q = f"{a['zh']} 演唱会"
+        url = "https://m.weibo.cn/api/container/getIndex"
+        params = {"containerid": f"100103type=1&q={q}", "page_type": "searchall"}
+        try:
+            cards = requests.get(url, headers=hdr, params=params, timeout=TIMEOUT)\
+                    .json().get("data", {}).get("cards", [])
+        except Exception as e:
+            log(f"  ⚠️ 微博搜索失败 [{a['zh']}] -> {e}")
+            continue
+        for c in cards:
+            mb = c.get("mblog")
+            if not mb and c.get("card_group"):
+                mb = next((g.get("mblog") for g in c["card_group"] if g.get("mblog")), None)
+            if not mb:
+                continue
+            text = re.sub("<[^>]+>", "", mb.get("text", ""))
+            bid  = mb.get("bid", "")
+            out.append({
+                "title":   text[:50],
+                "link":    f"https://m.weibo.cn/detail/{mb.get('id','')}" if mb.get("id") else "",
+                "summary": text,
+                "date":    mb.get("created_at", ""),
+                "source":  "微博",
+            })
+        time.sleep(0.8)
     return out
 
 
@@ -141,12 +174,34 @@ def source_tickethk(artists):
 
 
 def source_sistic(artists):
-    """新加坡 SISTIC:抓活动列表页,正则解析活动名与链接。"""
-    out = []
-    htm = fetch_html("https://www.sistic.com.sg/events")
-    for m in re.finditer(r'<a[^>]+href="(/events/[^"]+)"[^>]*>([^<]{3,90})</a>', htm):
-        link, title = "https://www.sistic.com.sg" + m.group(1), html.unescape(m.group(2)).strip()
-        out.append({"title": title, "link": link, "summary": "", "date": "", "source": "SISTIC新加坡"})
+    """新加坡 SISTIC:直接调它的后台 JSON 接口(client=1),分页拉全部活动。
+    标题里含中/英文艺人名,可直接匹配;附场馆、日期、票价。"""
+    import time
+    out, api = [], "https://cms.sistic.com.sg/sistic/docroot/api/events"
+    hdr = {**UA, "Accept": "application/json", "Referer": "https://www.sistic.com.sg/"}
+    for first in range(0, 400, 20):                    # 最多约 400 个活动,足够覆盖
+        url = f"{api}?first={first}&limit=20&sort_type=date&sort_order=ASC&index=global&client=1"
+        try:
+            data = requests.get(url, headers=hdr, timeout=TIMEOUT).json().get("data", [])
+        except Exception as e:
+            log(f"  ⚠️ SISTIC 抓取失败 first={first} -> {e}")
+            break
+        if not data:
+            break
+        for e in data:
+            venue = e.get("venue_name", "")
+            date  = e.get("event_date", "")
+            price = f"{e.get('currency_code','')}{e.get('min_price','')}" if e.get("min_price") else ""
+            out.append({
+                "title":   (e.get("title") or "").strip(),
+                "link":    "https://www.sistic.com.sg/events/" + (e.get("alias") or ""),
+                "summary": " · ".join(x for x in [venue, date, price] if x),
+                "date":    date,
+                "source":  "SISTIC新加坡",
+            })
+        if len(data) < 20:
+            break
+        time.sleep(1.0)                                # 温和一点,避免被限流
     return out
 
 
@@ -161,8 +216,9 @@ def source_damai(artists):
     return out
 
 
-# 数据源清单:想开关某个源,把它从这里去掉即可
-SOURCES = [source_weibo, source_sina, source_tickethk, source_sistic, source_damai]
+# 数据源清单:想开关某个源,把它从这里去掉即可。
+# 说明:source_sina / source_damai 依赖已失效的公共 RSSHub,暂不启用(第三阶段:自建 RSSHub 后恢复)。
+SOURCES = [source_weibo, source_tickethk, source_sistic]
 
 # 哪些源属于"票务平台"(标题里出现艺人名即算命中,不强制要演出关键词)
 TICKETING_SOURCES = {"TicketHK香港", "SISTIC新加坡", "大麦"}
