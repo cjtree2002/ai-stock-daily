@@ -213,7 +213,7 @@ function filteredPlaces(){
 }
 
 function renderStats(places){
-  const countries = new Set(places.map(p=>p.country_zh || p.country));
+  const countries = new Set(places.map(p=>norm(p.country)));
   const cities    = new Set(places.map(p=>(p.country)+'|'+p.city));
   const continents= new Set(places.map(p=>CONTINENT[norm(p.country)]).filter(Boolean));
   const years     = places.map(p=>p.year).filter(Boolean);
@@ -259,7 +259,7 @@ function renderExtremes(places){
 
 function renderBadges(places){
   const el = document.getElementById('badges');
-  const nCountries = new Set(places.map(p=>p.country_zh||p.country)).size;
+  const nCountries = new Set(places.map(p=>norm(p.country))).size;
   const nCities    = new Set(places.map(p=>p.country+'|'+p.city)).size;
   const continents = new Set(places.map(p=>CONTINENT[norm(p.country)]).filter(Boolean));
   const pts = places.filter(p=>p.lat!=null);
@@ -312,21 +312,31 @@ function refresh(){
   renderExtremes(filtered);
   renderBadges(filtered);
 
-  // 城市点
+  // 城市点（同一城市的多条记录合并为一个点，弹窗按年份列出）
   markerLayer.clearLayers();
   const bounds = [];
+  const groups = {};
   filtered.forEach(p=>{
     if(p.lat==null||p.lon==null) return;
+    const k = geoKey(p);
+    (groups[k]=groups[k]||[]).push(p);
+  });
+  Object.values(groups).forEach(g=>{
+    g.sort((a,b)=>(b.year||0)-(a.year||0));   // 最近一次在前
+    const p = g[0];
+    const totalV = g.reduce((s,x)=>s+(x.visits||1),0);
     const color = COLORS[p.type] || COLORS.travel;
     const m = L.circleMarker([p.lat,p.lon], {
-      radius: 5 + Math.min((p.visits||1),5), color:'#fff', weight:1,
+      radius: 5 + Math.min(totalV,5), color:'#fff', weight:1,
       fillColor:color, fillOpacity:0.9
     });
+    const lines = g.map(x=>
+      `${x.year||''} · ${TYPE_ZH[x.type]||x.type||''} · ${x.visits||1} 次`+
+      (x.note?` <span style="color:#666">${x.note}</span>`:''));
     m.bindPopup(
-      `<b>${p.city}</b> · ${p.country_zh||p.country}<br>`+
-      `${p.year||''} · ${TYPE_ZH[p.type]||p.type||''} · 去过 ${p.visits||1} 次`+
-      (p.wishMore?' · ⭐想再去':'')+
-      (p.note?`<br><span style="color:#666">${p.note}</span>`:'')
+      `<b>${p.city}</b> · ${p.country_zh||p.country}`+
+      (g.some(x=>x.wishMore)?' ⭐想再去':'')+
+      '<br>'+lines.join('<br>')
     );
     // 常驻城市名标签（颜色与底图国家名不同）
     m.bindTooltip(p.city, {permanent:true, direction:'right', offset:[7,0], className:'city-label'});
