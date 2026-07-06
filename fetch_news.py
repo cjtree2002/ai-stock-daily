@@ -31,6 +31,23 @@ COMMENTARY_PATH = Path(__file__).parent / "commentary.json"
 # Sentinel the workflow checks before copying/archiving pages: absent on
 # non-trading days so the site keeps the last trading day's report.
 GENERATED_FLAG = OUTPUT_DIR / ".generated"
+# Committed marker holding the last date a Telegram push was sent, so repeated
+# triggers on the same day never spam (defense against a mis-set cron interval).
+PUSH_STATE = OUTPUT_DIR / "last_push.txt"
+
+
+def _already_pushed(date_str: str) -> bool:
+    try:
+        return PUSH_STATE.exists() and PUSH_STATE.read_text(encoding="utf-8").strip() == date_str
+    except Exception:
+        return False
+
+
+def _mark_pushed(date_str: str) -> None:
+    try:
+        PUSH_STATE.write_text(date_str, encoding="utf-8")
+    except Exception:
+        pass
 
 
 def _is_trading_day(target_date: datetime) -> bool:
@@ -1159,14 +1176,10 @@ def main():
     GENERATED_FLAG.unlink(missing_ok=True)
 
     # Non-trading day (weekend/holiday): keep the last trading day's report as
-    # is — no stale regeneration, no fake flat day in the equity curve.
+    # is — no regeneration, and crucially NO Telegram push (so weekend triggers
+    # never send anything, however often they fire).
     if not _is_trading_day(target):
-        print(f"{target.strftime('%Y-%m-%d')} 非交易日（周末/休市），跳过生成，页面保留上一交易日内容。")
-        push_telegram(
-            title="😴 美股休市",
-            body=f"{target.strftime('%m/%d')} 无交易（周末或假日），日报保持上一交易日内容。",
-            url="https://cjtree2002.github.io/ai-stock-daily/",
-        )
+        print(f"{target.strftime('%Y-%m-%d')} 非交易日（周末/休市），跳过生成与推送，页面保留上一交易日内容。")
         return
 
     company_articles = fetch_all_news(target)
@@ -1210,17 +1223,22 @@ def main():
     print(f"Report saved: {out_path}")
     print(f"Latest:       {latest_path}")
 
-    # Morning push to phone (Telegram) — no-op if bot token/chat not set.
-    bullets = _summary_bullets(company_articles, prices, indices)
-    body = "\n".join(f"• {b}" for b in bullets) if bullets else f"{total} 条新闻已更新"
-    if pf_stats:
-        body += (f"\n\n💼 AI模拟盘 {_money(pf_stats['total'])}"
-                 f"（当日 {pf_stats['day_pct']:+.2f}% · 累计 {pf_stats['cum_pct']:+.2f}%）")
-    push_telegram(
-        title=f"📈 AI美股日报 {target.strftime('%m/%d')}",
-        body=body,
-        url="https://cjtree2002.github.io/ai-stock-daily/",
-    )
+    # Morning push to phone (Telegram) — at most ONCE per trading day, so
+    # repeated triggers never spam. No-op if bot token/chat not set.
+    if _already_pushed(date_slug):
+        print(f"  Telegram already pushed for {date_slug}; skipping duplicate push.")
+    else:
+        bullets = _summary_bullets(company_articles, prices, indices)
+        body = "\n".join(f"• {b}" for b in bullets) if bullets else f"{total} 条新闻已更新"
+        if pf_stats:
+            body += (f"\n\n💼 AI模拟盘 {_money(pf_stats['total'])}"
+                     f"（当日 {pf_stats['day_pct']:+.2f}% · 累计 {pf_stats['cum_pct']:+.2f}%）")
+        push_telegram(
+            title=f"📈 AI美股日报 {target.strftime('%m/%d')}",
+            body=body,
+            url="https://cjtree2002.github.io/ai-stock-daily/",
+        )
+        _mark_pushed(date_slug)
 
 
 if __name__ == "__main__":
