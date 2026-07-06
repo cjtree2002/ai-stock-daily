@@ -144,7 +144,7 @@ function csvToPlaces(text){
     country:g(r,iC), country_zh:g(r,iCz), city:g(r,iCity),
     lat:num(g(r,iLat)), lon:num(g(r,iLon)),
     year:parseInt(g(r,iY))||null,
-    type:(g(r,iT)||'travel').toLowerCase(),
+    type:({'旅游':'travel','出差':'business','转机':'transit','居住':'live'}[g(r,iT)] || g(r,iT) || 'travel').toLowerCase(),
     visits:parseInt(g(r,iV))||1,
     note:g(r,iN),
     wishMore:/^(true|1|yes|是)$/i.test(g(r,iW))
