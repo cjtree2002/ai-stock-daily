@@ -1,0 +1,26 @@
+{
+  "_说明": "这是你要盯的艺人名单。以后加人只要照着格式复制一行即可。zh=中文简体名, trad=繁体名(香港/台湾平台用), en=英文名(新加坡等), aliases=别名, type=类型。改完保存、推送到 GitHub 即可生效。",
+  "邮箱": "jingcui160@gmail.com",
+  "每天查询次数": 1,
+  "artists": [
+    { "zh": "郑秀文", "trad": "鄭秀文", "en": "Sammi Cheng",  "aliases": ["Sammi"],          "type": "歌手" },
+    { "zh": "苏醒",   "trad": "蘇醒",   "en": "Allen Su",     "aliases": [],                 "type": "歌手" },
+    { "zh": "尚雯婕", "trad": "尚雯婕", "en": "Laure Shang",  "aliases": [],                 "type": "歌手" },
+    { "zh": "大张伟", "trad": "大張偉", "en": "Da Zhangwei",  "aliases": ["大老师", "大張偉"], "type": "歌手" },
+    { "zh": "庞博",   "trad": "龐博",   "en": "Pang Bo",      "aliases": [],                 "type": "脱口秀" },
+    { "zh": "鲁豫",   "trad": "魯豫",   "en": "Chen Luyu",    "aliases": ["陈鲁豫", "陳魯豫"], "type": "主持/脱口秀" },
+    { "zh": "李诞",   "trad": "李誕",   "en": "Li Dan",       "aliases": [],                 "type": "脱口秀" },
+    { "zh": "刘旸教主","trad": "劉旸教主","en": "Liu Yang",    "aliases": ["刘旸", "劉旸", "教主"], "type": "脱口秀" },
+    { "zh": "汪德发", "trad": "汪德發", "en": "Wang Defa",    "aliases": [],                 "type": "脱口秀" },
+    { "zh": "小块",   "trad": "小塊",   "en": "Xiao Kuai",    "aliases": [],                 "type": "脱口秀" },
+    { "zh": "何广智", "trad": "何廣智", "en": "He Guangzhi",  "aliases": ["志胜"],           "type": "脱口秀" },
+    { "zh": "徐志胜", "trad": "徐志勝", "en": "Xu Zhisheng",  "aliases": ["志胜"],           "type": "脱口秀" },
+    { "zh": "小北",   "trad": "小北",   "en": "Xiao Bei",     "aliases": [],                 "type": "脱口秀" },
+    { "zh": "刘德华", "trad": "劉德華", "en": "Andy Lau",     "aliases": ["华仔", "華仔"],    "type": "歌手/演员" },
+    { "zh": "张学友", "trad": "張學友", "en": "Jacky Cheung", "aliases": ["歌神"],           "type": "歌手" },
+    { "zh": "黄子华", "trad": "黃子華", "en": "Dayo Wong",    "aliases": ["子华", "子華"],    "type": "栋笃笑/演员" },
+    { "zh": "林峰",   "trad": "林峯",   "en": "Raymond Lam",  "aliases": ["林峯"],           "type": "歌手/演员" },
+    { "zh": "张家辉", "trad": "張家輝", "en": "Nick Cheung",  "aliases": [],                 "type": "演员" },
+    { "zh": "吴镇宇", "trad": "吳鎮宇", "en": "Francis Ng",   "aliases": [],                 "type": "演员" }
+  ]
+}
