@@ -41,6 +41,19 @@
   .badge.off{opacity:.45}
   #playBtn{background:var(--accent);color:#fff;border:none;font-weight:600}
   .playyear{color:var(--accent);font-weight:700;font-size:15px;min-width:46px}
+  .chk{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13px;cursor:pointer}
+  .city-label.wish{color:#8b97a3;font-weight:600}
+  .charts{display:flex;flex-wrap:wrap;gap:12px;padding:12px 20px 0}
+  .chart-card{flex:1;min-width:250px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(20,30,60,.06)}
+  .chart-card h3{font-size:14px;margin:0 0 12px;font-weight:600}
+  .bars{display:flex;align-items:flex-end;gap:8px;height:110px}
+  .bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;flex:1;height:100%}
+  .bar{width:70%;max-width:36px;background:var(--accent);border-radius:4px 4px 0 0;min-height:4px}
+  .bar-num{font-size:11px;color:var(--accent);font-weight:600}
+  .bar-year{font-size:11px;color:var(--muted)}
+  .rank{font-size:13px;line-height:2.1}
+  .rank .pos{color:var(--muted);margin-right:6px}
+  .rank .cnt{color:var(--muted);float:right}
 </style>
 </head>
 <body>
@@ -64,7 +77,11 @@
     <option value="business">出差</option>
     <option value="transit">转机</option>
     <option value="live">居住</option>
+    <option value="wish">想去</option>
   </select>
+  <label style="color:var(--muted);font-size:13px">国家：</label>
+  <select id="countryFilter"><option value="all">全部</option></select>
+  <label class="chk"><input type="checkbox" id="wishOnly"> ⭐只看想再去</label>
   <button id="playBtn">▶ 按年播放</button>
   <span id="playYear" class="playyear"></span>
   <div class="legend">
@@ -72,21 +89,24 @@
     <span><i class="dot" style="background:var(--business)"></i>出差</span>
     <span><i class="dot" style="background:var(--transit)"></i>转机</span>
     <span><i class="dot" style="background:var(--live)"></i>居住</span>
+    <span><i class="dot" style="background:#fff;border:2px dashed #9aa4b2"></i>想去</span>
   </div>
 </div>
 
 <div id="err" class="err"></div>
 <div id="status" style="color:#5a6278;font-size:13px;padding:0 20px"></div>
 <div id="map"></div>
+<div class="charts" id="charts"></div>
 <footer>
   更新方式：在你的 Google 表格里加一行（城市、国家、年份等），保存后过几分钟刷新本页即可，
   <b>经纬度两列可留空</b>，地图会自动定位城市坐标。
+  类型可填：旅游 / 出差 / 转机 / 居住 / <b>想去</b>（想去的地方会以虚线空心点显示，不计入统计）。
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const COLORS = { travel:'#2563eb', business:'#e8870b', transit:'#7c3aed', live:'#16a34a' };
-const TYPE_ZH = { travel:'旅游', business:'出差', transit:'转机', live:'居住' };
+const TYPE_ZH = { travel:'旅游', business:'出差', transit:'转机', live:'居住', wish:'想去' };
 // 国家名 -> 大洲（覆盖常见旅行国家；未列出的不计入大洲统计）
 const CONTINENT = {
   "China":"亚洲","Japan":"亚洲","South Korea":"亚洲","Thailand":"亚洲","Vietnam":"亚洲","Singapore":"亚洲","Malaysia":"亚洲","Indonesia":"亚洲","India":"亚洲","Philippines":"亚洲","Cambodia":"亚洲","Laos":"亚洲","Myanmar":"亚洲","Nepal":"亚洲","Sri Lanka":"亚洲","Maldives":"亚洲","United Arab Emirates":"亚洲","Turkey":"亚洲","Israel":"亚洲","Qatar":"亚洲","Saudi Arabia":"亚洲","Kazakhstan":"亚洲","Mongolia":"亚洲",
@@ -144,7 +164,7 @@ function csvToPlaces(text){
     country:g(r,iC), country_zh:g(r,iCz), city:g(r,iCity),
     lat:num(g(r,iLat)), lon:num(g(r,iLon)),
     year:parseInt(g(r,iY))||null,
-    type:({'旅游':'travel','出差':'business','转机':'transit','居住':'live'}[g(r,iT)] || g(r,iT) || 'travel').toLowerCase(),
+    type:({'旅游':'travel','出差':'business','转机':'transit','居住':'live','想去':'wish'}[g(r,iT)] || g(r,iT) || 'travel').toLowerCase(),
     visits:parseInt(g(r,iV))||1,
     note:g(r,iN),
     wishMore:/^(true|1|yes|是)$/i.test(g(r,iW))
@@ -193,26 +213,31 @@ function haversine(a, b){
   const s=Math.sin(dLat/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(s));
 }
-// 选“家”：优先 type=live，否则去过次数最多的城市
+// 选“家”：优先 type=live，否则去过次数最多的城市（想去的不算）
 function pickHome(places){
-  const live = places.find(p=>p.type==='live');
+  const been = places.filter(p=>p.type!=='wish');
+  const live = been.find(p=>p.type==='live');
   if(live) return live;
-  return places.slice().sort((a,b)=>(b.visits||1)-(a.visits||1))[0] || null;
+  return been.slice().sort((a,b)=>(b.visits||1)-(a.visits||1))[0] || null;
 }
 
-// 当前筛选（年份下拉 / 类型 / 播放进度三者综合）
+// 当前筛选（年份 / 类型 / 国家 / 只看想再去 / 播放进度综合）
 function filteredPlaces(){
   const yr = document.getElementById('yearFilter').value;
   const tp = document.getElementById('typeFilter').value;
+  const cf = document.getElementById('countryFilter').value;
+  const wOnly = document.getElementById('wishOnly').checked;
   return allPlaces.filter(p => {
     if(tp!=='all' && p.type!==tp) return false;
+    if(cf!=='all' && norm(p.country)!==cf) return false;
+    if(wOnly && !p.wishMore) return false;
     if(playMaxYear!=null) return (p.year||9999) <= playMaxYear; // 播放时累积显示
     if(yr!=='all' && String(p.year)!==yr) return false;
     return true;
   });
 }
 
-function renderStats(places){
+function renderStats(places, wishCount){
   const countries = new Set(places.map(p=>norm(p.country)));
   const cities    = new Set(places.map(p=>(p.country)+'|'+p.city));
   const continents= new Set(places.map(p=>CONTINENT[norm(p.country)]).filter(Boolean));
@@ -226,6 +251,7 @@ function renderStats(places){
     ['首次出行', firstYear],
     ['累计到访', totalVisits]
   ];
+  if(wishCount) cards.push(['想去', wishCount]);
   document.getElementById('stats').innerHTML = cards.map(([lab,num])=>
     `<div class="card"><div class="num">${num}</div><div class="lab">${lab}</div></div>`).join('');
 }
@@ -280,6 +306,59 @@ function renderBadges(places){
     `<span class="badge ${on?'on':'off'}">${on?'':'🔒 '}${txt}</span>`).join('');
 }
 
+// ── 年度图表 + 排行榜（基于全部去过的数据，不随筛选变化）──
+function renderCharts(){
+  const el = document.getElementById('charts');
+  const been = allPlaces.filter(p=>p.type!=='wish');
+  if(!been.length){ el.innerHTML=''; return; }
+
+  // 每个城市/国家的“首访年份”
+  const cityFirst = {}, countryFirst = {};
+  been.forEach(p=>{
+    if(!p.year) return;
+    const ck = geoKey(p), nk = norm(p.country);
+    if(!(ck in cityFirst)   || p.year < cityFirst[ck])   cityFirst[ck]   = p.year;
+    if(!(nk in countryFirst)|| p.year < countryFirst[nk]) countryFirst[nk] = p.year;
+  });
+  const perYear = {};
+  Object.values(cityFirst).forEach(y=>{ perYear[y]=perYear[y]||{c:0,n:0}; perYear[y].c++; });
+  Object.values(countryFirst).forEach(y=>{ perYear[y]=perYear[y]||{c:0,n:0}; perYear[y].n++; });
+  const years = Object.keys(perYear).map(Number).sort((a,b)=>a-b);
+  const maxC = Math.max(...years.map(y=>perYear[y].c), 1);
+  const barsHtml = years.map(y=>{
+    const d = perYear[y];
+    const h = Math.max(8, Math.round(d.c/maxC*90));
+    return `<div class="bar-col">
+      <div class="bar-num">${d.c}${d.n?`<span style="color:#16a34a"> +${d.n}国`:''}${d.n?'</span>':''}</div>
+      <div class="bar" style="height:${h}px" title="${y}年：新到 ${d.c} 城${d.n?'、'+d.n+' 个新国家':''}"></div>
+      <div class="bar-year">${y}</div>
+    </div>`;
+  }).join('');
+
+  // 排行榜：最常去的城市（按累计次数）/ 城市最多的国家
+  const cityAgg = {}, countryAgg = {};
+  been.forEach(p=>{
+    const ck = geoKey(p);
+    cityAgg[ck] = cityAgg[ck] || {label:`${p.city}·${p.country_zh||p.country}`, v:0};
+    cityAgg[ck].v += (p.visits||1);
+    const nk = norm(p.country);
+    countryAgg[nk] = countryAgg[nk] || {label:p.country_zh||p.country, cities:new Set()};
+    countryAgg[nk].cities.add(p.city.toLowerCase());
+  });
+  const medal = i => ['🥇','🥈','🥉'][i] || (i+1)+'.';
+  const topCities = Object.values(cityAgg).sort((a,b)=>b.v-a.v).slice(0,3)
+    .map((c,i)=>`<div><span class="pos">${medal(i)}</span><b>${c.label}</b><span class="cnt">${c.v} 次</span></div>`).join('');
+  const topCountries = Object.values(countryAgg)
+    .map(c=>({label:c.label, n:c.cities.size}))
+    .sort((a,b)=>b.n-a.n).slice(0,3)
+    .map((c,i)=>`<div><span class="pos">${medal(i)}</span><b>${c.label}</b><span class="cnt">${c.n} 城</span></div>`).join('');
+
+  el.innerHTML =
+    (years.length ? `<div class="chart-card"><h3>📅 每年新到城市</h3><div class="bars">${barsHtml}</div></div>` : '') +
+    `<div class="chart-card"><h3>🏅 最常去的城市</h3><div class="rank">${topCities}</div></div>` +
+    `<div class="chart-card"><h3>🌍 城市最多的国家</h3><div class="rank">${topCountries}</div></div>`;
+}
+
 function stopPlay(){
   if(playTimer){ clearInterval(playTimer); playTimer=null; }
   playMaxYear=null;
@@ -307,10 +386,12 @@ function startPlay(){
 
 function refresh(){
   const filtered = filteredPlaces();
+  const visited  = filtered.filter(p=>p.type!=='wish');   // 想去的不计入统计
 
-  renderStats(filtered);
-  renderExtremes(filtered);
-  renderBadges(filtered);
+  renderStats(visited, filtered.length - visited.length);
+  renderExtremes(visited);
+  renderBadges(visited);
+  renderCharts();
 
   // 城市点（同一城市的多条记录合并为一个点，弹窗按年份列出）
   markerLayer.clearLayers();
@@ -322,24 +403,27 @@ function refresh(){
     (groups[k]=groups[k]||[]).push(p);
   });
   Object.values(groups).forEach(g=>{
-    g.sort((a,b)=>(b.year||0)-(a.year||0));   // 最近一次在前
+    g.sort((a,b)=>(b.year||0)-(a.year||0));   // 最近一次在前，想去(无年份)排最后
     const p = g[0];
+    const isWish = g.every(x=>x.type==='wish');
     const totalV = g.reduce((s,x)=>s+(x.visits||1),0);
     const color = COLORS[p.type] || COLORS.travel;
-    const m = L.circleMarker([p.lat,p.lon], {
-      radius: 5 + Math.min(totalV,5), color:'#fff', weight:1,
-      fillColor:color, fillOpacity:0.9
-    });
-    const lines = g.map(x=>
-      `${x.year||''} · ${TYPE_ZH[x.type]||x.type||''} · ${x.visits||1} 次`+
-      (x.note?` <span style="color:#666">${x.note}</span>`:''));
+    const m = L.circleMarker([p.lat,p.lon], isWish
+      ? { radius:6, color:'#9aa4b2', weight:1.5, dashArray:'3,3', fillColor:'#fff', fillOpacity:0.7 }
+      : { radius: 5 + Math.min(totalV,5), color:'#fff', weight:1, fillColor:color, fillOpacity:0.9 });
+    const lines = isWish
+      ? ['🌟 想去的地方' + (p.note?` · <span style="color:#666">${p.note}</span>`:'')]
+      : g.map(x=>
+        `${x.year||''} · ${TYPE_ZH[x.type]||x.type||''} · ${x.visits||1} 次`+
+        (x.note?` <span style="color:#666">${x.note}</span>`:''));
     m.bindPopup(
       `<b>${p.city}</b> · ${p.country_zh||p.country}`+
       (g.some(x=>x.wishMore)?' ⭐想再去':'')+
       '<br>'+lines.join('<br>')
     );
     // 常驻城市名标签（颜色与底图国家名不同）
-    m.bindTooltip(p.city, {permanent:true, direction:'right', offset:[7,0], className:'city-label'});
+    m.bindTooltip(p.city, {permanent:true, direction:'right', offset:[7,0],
+      className:'city-label'+(isWish?' wish':'')});
     m.addTo(markerLayer);
     bounds.push([p.lat,p.lon]);
   });
@@ -351,7 +435,7 @@ function refresh(){
 }
 
 function visitedCountrySet(){
-  return new Set(filteredPlaces().map(p=>norm(p.country)));
+  return new Set(filteredPlaces().filter(p=>p.type!=='wish').map(p=>norm(p.country)));
 }
 function styleCountry(feature){
   const visited = visitedCountrySet();
@@ -386,6 +470,16 @@ async function init(){
   years.forEach(y=>{ const o=document.createElement('option'); o.value=y; o.textContent=y; sel.appendChild(o); });
   sel.addEventListener('change', ()=>{ if(playTimer||playMaxYear!=null) return; refresh(); });
   document.getElementById('typeFilter').addEventListener('change', refresh);
+
+  // 国家下拉（用中文名显示，按出现顺序去重后排序）
+  const cSel = document.getElementById('countryFilter');
+  const seen = new Map();
+  allPlaces.forEach(p=>{ const k=norm(p.country); if(!seen.has(k)) seen.set(k, p.country_zh||p.country); });
+  [...seen.entries()].sort((a,b)=>a[1].localeCompare(b[1],'zh')).forEach(([k,label])=>{
+    const o=document.createElement('option'); o.value=k; o.textContent=label; cSel.appendChild(o);
+  });
+  cSel.addEventListener('change', refresh);
+  document.getElementById('wishOnly').addEventListener('change', refresh);
 
   // 时间轴播放
   document.getElementById('playBtn').addEventListener('click', ()=>{
