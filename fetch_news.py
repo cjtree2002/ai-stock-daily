@@ -55,8 +55,11 @@ def _is_trading_day(target_date: datetime) -> bool:
 
     NOTE: yfinance pads empty ranges with the nearest PRIOR session's bar, so
     a non-empty result is not enough — the returned bar's date must equal the
-    target date. Fail-open: if the check errors, assume trading so we never
-    silently skip a real day."""
+    target date. Weekends are decided by the calendar alone (no network), so a
+    transient network error can never cause a fake weekend report. The
+    fail-open only applies to weekday holidays."""
+    if target_date.weekday() >= 5:  # Saturday/Sunday — never a trading day
+        return False
     try:
         h = yf.Ticker("QQQ").history(
             start=(target_date - timedelta(days=1)).strftime("%Y-%m-%d"),
