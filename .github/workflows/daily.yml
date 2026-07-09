@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "40 0 * * 1-5"
   workflow_dispatch:
+    inputs:
+      force_ai:
+        description: 'Force AI rebalance even if already ran today (1=yes)'
+        required: false
+        default: '0'
 
 permissions:
   contents: write
@@ -21,7 +26,22 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests yfinance
+        run: pip install requests yfinance anthropic
+
+      - name: AI rebalance & morning commentary
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          AI_REBALANCE_FORCE: ${{ github.event.inputs.force_ai || '0' }}
+        run: |
+          python ai_rebalance.py || {
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode chat_id="${TELEGRAM_CHAT_ID}" \
+              --data-urlencode text="⚠️ AI调仓/晨评步骤失败，今日维持原持仓，日报仍会正常生成。"
+            true
+          }
 
       - name: Generate report
         env:
@@ -42,7 +62,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reports/ docs/ portfolio.json
+          git add reports/ docs/ portfolio.json commentary.json journal.md
           git diff --cached --quiet || git commit -m "📊 Daily report $(date +'%Y-%m-%d')"
           git push
 
