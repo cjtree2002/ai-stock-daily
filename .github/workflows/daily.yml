@@ -35,6 +35,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           AI_REBALANCE_FORCE: ${{ github.event.inputs.force_ai || '0' }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
         run: |
           python ai_rebalance.py || {
             curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
