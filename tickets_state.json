@@ -1035,6 +1035,38 @@
     "17005d7514f56473": {
       "stage": "announce",
       "first_seen": "2026-07-11 07:28"
+    },
+    "091f9d81e9cc5f3e": {
+      "stage": "announce",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "b799c024168011bf": {
+      "stage": "announce",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "2e4d89963c1e7b55": {
+      "stage": "onsale",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "78498a69347e1e5b": {
+      "stage": "onsale",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "ec4267feff2cf9ca": {
+      "stage": "announce",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "fbdaf69e1e50c349": {
+      "stage": "announce",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "da84023c4b5bc5aa": {
+      "stage": "announce",
+      "first_seen": "2026-07-12 08:57"
+    },
+    "7aa190fe90631e1b": {
+      "stage": "announce",
+      "first_seen": "2026-07-12 08:57"
     }
   }
 }
