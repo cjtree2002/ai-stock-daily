@@ -1,18 +1,6 @@
 {
-  "updated": "2026-07-12 08:57",
+  "updated": "2026-07-13 12:19",
   "events": [
-    {
-      "key": "8cb3eb6ab1e8e13b",
-      "artist": "郑秀文",
-      "type": "歌手",
-      "title": "鄭秀文 Sammi 啟德演唱會 2026｜門票價錢、座位表、公開發售時間、啟德體育園 主場館、附官方購票連結",
-      "link": "https://www.tickethk.com/concert-ticket/1762",
-      "summary": "",
-      "source": "TicketHK香港",
-      "date": "",
-      "stage": "announce",
-      "found_at": "2026-07-12 08:57"
-    },
     {
       "key": "33407e3d2a5d002f",
       "artist": "刘德华",
@@ -23,7 +11,7 @@
       "source": "TicketHK香港",
       "date": "",
       "stage": "announce",
-      "found_at": "2026-07-12 08:57"
+      "found_at": "2026-07-13 12:19"
     },
     {
       "key": "eec6429e401c3b45",
@@ -35,7 +23,7 @@
       "source": "SISTIC新加坡",
       "date": "Thu, 20 Aug - Thu, 20 Aug 2026",
       "stage": "announce",
-      "found_at": "2026-07-12 08:57"
+      "found_at": "2026-07-13 12:19"
     },
     {
       "key": "5a558409fae3ce8b",
@@ -43,6 +31,18 @@
       "type": "演员/歌手",
       "title": "古天樂 紅館演唱會 2026 ｜門票價錢、座位表、公開發售時間、紅磡香港體育館、附官方購票連結",
       "link": "https://www.tickethk.com/concert-ticket/1791",
+      "summary": "",
+      "source": "TicketHK香港",
+      "date": "",
+      "stage": "announce",
+      "found_at": "2026-07-13 12:19"
+    },
+    {
+      "key": "8cb3eb6ab1e8e13b",
+      "artist": "郑秀文",
+      "type": "歌手",
+      "title": "鄭秀文 Sammi 啟德演唱會 2026｜門票價錢、座位表、公開發售時間、啟德體育園 主場館、附官方購票連結",
+      "link": "https://www.tickethk.com/concert-ticket/1762",
       "summary": "",
       "source": "TicketHK香港",
       "date": "",
