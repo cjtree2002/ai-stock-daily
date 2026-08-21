@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-20 02:17",
+  "updated": "2026-08-21 02:24",
   "events": [
     {
       "key": "33407e3d2a5d002f",
@@ -11,19 +11,7 @@
       "source": "TicketHK香港",
       "date": "",
       "stage": "announce",
-      "found_at": "2026-08-20 02:17"
-    },
-    {
-      "key": "eec6429e401c3b45",
-      "artist": "张学友",
-      "type": "歌手",
-      "title": "Esplanade Presents | A Date With Friends  Back to Golden Hits: Songs of  Sam Hui & Jacky Cheung 《两代歌神：许冠杰 · 张学友金曲相约》",
-      "link": "https://www.sistic.com.sg/events/golden0826",
-      "summary": "Esplanade Concert Hall · Thu, 20 Aug - Thu, 20 Aug 2026 · SGD36",
-      "source": "SISTIC新加坡",
-      "date": "Thu, 20 Aug - Thu, 20 Aug 2026",
-      "stage": "announce",
-      "found_at": "2026-08-20 02:17"
+      "found_at": "2026-08-21 02:24"
     },
     {
       "key": "5a558409fae3ce8b",
@@ -34,6 +22,18 @@
       "summary": "",
       "source": "TicketHK香港",
       "date": "",
+      "stage": "announce",
+      "found_at": "2026-08-21 02:24"
+    },
+    {
+      "key": "eec6429e401c3b45",
+      "artist": "张学友",
+      "type": "歌手",
+      "title": "Esplanade Presents | A Date With Friends  Back to Golden Hits: Songs of  Sam Hui & Jacky Cheung 《两代歌神：许冠杰 · 张学友金曲相约》",
+      "link": "https://www.sistic.com.sg/events/golden0826",
+      "summary": "Esplanade Concert Hall · Thu, 20 Aug - Thu, 20 Aug 2026 · SGD36",
+      "source": "SISTIC新加坡",
+      "date": "Thu, 20 Aug - Thu, 20 Aug 2026",
       "stage": "announce",
       "found_at": "2026-08-20 02:17"
     },
