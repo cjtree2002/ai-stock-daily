@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI美股日报 · 2026年07月28日</title>
+  <style>
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface2: #f8f9fc;
+      --border: #e4e7ef;
+      --border-light: #eef0f7;
+      --accent: #4f46e5;
+      --accent2: #6366f1;
+      --text: #1e2130;
+      --text-muted: #5a6278;
+      --text-dim: #9499b0;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --ticker-bg: #eef0fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+    .header-left h1 span { color: var(--accent2); }
+    .header-date {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .header-stats { display: flex; gap: 28px; }
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Company Card ── */
+    .company-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .company-card:hover {
+      border-color: var(--accent2);
+      box-shadow: 0 2px 16px rgba(99,102,241,0.10);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .company-name {
+      font-weight: 600;
+      font-size: 14px;
+      flex: 1;
+      color: var(--text);
+    }
+    .ticker {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: "SF Mono", "Fira Code", monospace;
+      background: var(--ticker-bg);
+      color: var(--accent);
+      border: 1px solid #d4d8f7;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .ticker.private {
+      background: #f3f4f6;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .article-count {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Stock Price Block ── */
+    .stock-price {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--surface);
+    }
+    .price-current {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--text);
+    }
+    .price-change {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: "SF Mono", "Fira Code", monospace;
+      padding: 1px 7px;
+      border-radius: 4px;
+    }
+    .price-change.up {
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+    }
+    .price-change.down {
+      color: var(--red);
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
+    .price-change.flat {
+      color: var(--text-dim);
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+    }
+    .price-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+    .price-vol {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Articles ── */
+    .articles { padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .article { padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+    .article:last-child { border-bottom: none; padding-bottom: 0; }
+    .article-title {
+      display: block;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .article-title:hover { color: var(--accent); text-decoration: underline; }
+    .article-meta {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .source { color: var(--accent); font-weight: 500; }
+    .pub-time { color: var(--text-dim); }
+    .article-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+
+    /* ── No News Section ── */
+    .no-news-section {
+      margin-top: 24px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .no-news-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+    .no-news-list { font-size: 12px; color: var(--text-dim); line-height: 1.8; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 36px;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Indices bar ── */
+    .indices {
+      display: flex; flex-wrap: wrap; gap: 0;
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+    }
+    .idx {
+      display: flex; align-items: baseline; gap: 7px;
+      padding: 2px 18px 2px 0; margin-right: 18px;
+      border-right: 1px solid var(--border-light);
+    }
+    .idx-name { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .idx-val { font-size: 14px; font-weight: 700; font-family: "SF Mono", monospace; }
+    .idx-chg { font-size: 12px; font-weight: 600; font-family: "SF Mono", monospace; }
+    .idx-chg.up, .price-change.up, .chip.up b, .movers-title.up { color: var(--green); }
+    .idx-chg.down, .price-change.down, .chip.down b, .movers-title.down { color: var(--red); }
+
+    /* ── Top row: summary + movers ── */
+    .top-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;
+    }
+    .summary, .movers {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 18px;
+    }
+    .summary-title, .movers-title {
+      font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text);
+    }
+    .summary ul { margin: 0; padding-left: 18px; }
+    .summary li { font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+    .movers { display: flex; gap: 18px; }
+    .movers-col { flex: 1; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11.5px; background: var(--surface2); border: 1px solid var(--border-light);
+      border-radius: 6px; padding: 2px 7px; margin: 3px 4px 0 0;
+    }
+    .chip b { font-family: "SF Mono", monospace; }
+
+    /* ── Sparkline + 52w range + tags ── */
+    .spark { width: 116px; height: 26px; margin-left: auto; }
+    .range52 {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 14px 0; font-size: 10px; color: var(--text-dim);
+      font-family: "SF Mono", monospace;
+    }
+    .r52-bar {
+      position: relative; flex: 1; height: 4px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--red), #e5e7eb 50%, var(--green));
+    }
+    .r52-bar i {
+      position: absolute; top: -2px; width: 2px; height: 8px;
+      background: var(--text); border-radius: 1px; transform: translateX(-1px);
+    }
+    .stock-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 14px 0; }
+    .tag {
+      font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+    .tag.rec-buy { color: var(--green); background: var(--green-bg); border-color: var(--green-border); }
+    .tag.rec-hold { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+    .tag.rec-sell { color: var(--red); background: var(--red-bg); border-color: var(--red-border); }
+    .tag.earn { color: var(--accent); background: var(--ticker-bg); border-color: #d4d8f7; }
+
+    /* ── Interactive toolbar ── */
+    .toolbar {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--bg); padding: 10px 0 8px;
+      margin-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .toolbar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .toolbar-row:last-child { margin-bottom: 0; }
+    .search-box {
+      flex: 1; min-width: 180px; font-size: 14px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+    }
+    .search-box:focus, .sort-select:focus, .history-select:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.12);
+    }
+    .sort-select, .history-select {
+      font-size: 13px; padding: 8px 10px; border: 1px solid var(--border);
+      border-radius: 8px; background: #fff; color: var(--text); cursor: pointer;
+    }
+    .history-label { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .tab-btn {
+      font-size: 12.5px; padding: 5px 12px; border-radius: 16px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+    .chip-btn {
+      font-size: 12px; padding: 4px 11px; border-radius: 6px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-muted);
+    }
+    .chip-btn.active { background: var(--ticker-bg); color: var(--accent); border-color: #c7cbf5; font-weight: 600; }
+    .vis-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+    .empty-hint { text-align: center; color: var(--text-dim); padding: 40px; font-size: 14px; }
+
+    .sector-badge {
+      font-size: 10.5px; color: var(--text-muted); background: var(--surface2);
+      border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 6px;
+    }
+    .article-count.muted { color: var(--text-dim); }
+    .no-articles { font-size: 12.5px; color: var(--text-dim); padding: 6px 2px; }
+
+    .to-top {
+      position: fixed; right: 20px; bottom: 20px; z-index: 30; display: none;
+      width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-size: 20px;
+      align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,.35);
+    }
+
+    /* ── AI morning commentary ── */
+    .ai-comm p { font-size: 13px; line-height: 1.75; color: var(--text-muted); margin: 0 0 7px; }
+    .ai-comm p:last-child { margin-bottom: 0; }
+    .ai-comm-tag {
+      font-size: 10px; color: var(--accent); background: var(--ticker-bg);
+      border: 1px solid #d4d8f7; border-radius: 4px; padding: 1px 6px;
+      margin-left: 8px; font-weight: 600; vertical-align: 1px;
+    }
+
+    /* ── AI paper portfolio panel ── */
+    .pf-panel {
+      background: linear-gradient(135deg, #eef0fc 0%, #ffffff 45%);
+      border: 1px solid #d4d8f7; border-radius: 14px;
+      padding: 16px 18px 12px; margin-bottom: 18px;
+      box-shadow: 0 2px 12px rgba(79,70,229,.06);
+    }
+    .pf-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .pf-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .pf-sub { font-size: 11px; color: var(--text-dim); }
+    .pf-stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 12px 0 6px; }
+    .pf-stat-label { font-size: 11px; color: var(--text-dim); }
+    .pf-stat-value { font-size: 19px; font-weight: 700; font-family: "SF Mono", "Fira Code", monospace; color: var(--text); }
+    .pf-stat-sm { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .pf-panel .up { color: var(--green); }
+    .pf-panel .down { color: var(--red); }
+    .pf-chart { margin-top: 8px; }
+    .pf-chart-empty { font-size: 12px; color: var(--text-dim); padding: 10px 2px; }
+    .pf-legend { display: flex; gap: 16px; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .pf-legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+    .pf-table-wrap { overflow-x: auto; margin-top: 10px; }
+    .pf-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .pf-table th { text-align: right; color: var(--text-dim); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .pf-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+    .pf-table th:first-child, .pf-table td:first-child { text-align: left; }
+    .pf-table .mono { font-family: "SF Mono", "Fira Code", monospace; }
+    .pf-table .cash-row td { color: var(--text-muted); border-bottom: none; }
+    .pf-table .dim { color: var(--text-dim); }
+    .pf-alert { color: var(--red); font-weight: 700; cursor: help; }
+    details.trade-log { margin-top: 10px; font-size: 12px; }
+    details.trade-log summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+    .trade-item { padding: 6px 0; border-bottom: 1px dashed var(--border-light); color: var(--text-muted); line-height: 1.55; }
+
+    /* ── Chart zoom modal ── */
+    .spark:hover { opacity: 0.75; }
+    .chart-modal {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(15,17,23,.45); align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .chart-box {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 680px;
+      padding: 18px 18px 14px; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .chart-head { display: flex; align-items: center; justify-content: space-between; }
+    .chart-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .chart-close {
+      border: none; background: var(--surface2); width: 30px; height: 30px;
+      border-radius: 50%; cursor: pointer; font-size: 14px; color: var(--text-muted);
+    }
+    .chart-sub { font-size: 13px; color: var(--text-muted); margin: 4px 0 8px; }
+    .chart-area { position: relative; width: 100%; }
+    .chart-tip {
+      position: absolute; top: 8px; transform: translateX(-50%);
+      background: var(--text); color: #fff; font-size: 11px; line-height: 1.35;
+      padding: 4px 8px; border-radius: 6px; text-align: center; pointer-events: none; white-space: nowrap;
+    }
+    .chart-hint { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 6px; }
+
+    @media (max-width: 640px) {
+      .header { padding: 14px 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .container { padding: 14px; }
+      .top-row { grid-template-columns: 1fr; }
+      .indices { padding: 10px 14px; gap: 4px; }
+      .idx { margin-right: 10px; padding-right: 10px; }
+      .search-box { min-width: 120px; }
+      .history-label { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>AI 美股 <span>日报</span></h1>
+    <div class="header-date">2026年07月28日（周二）前一日 &nbsp;·&nbsp; 个股为盘后最终价 &nbsp;·&nbsp; 生成于 2026-07-29 11:55 北京时间</div>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-value">26</div>
+      <div class="stat-label">有新闻公司</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">106</div>
+      <div class="stat-label">新闻总条数</div>
+    </div>
+  </div>
+</header>
+
+<div class="indices"><div class="idx"><span class="idx-name">标普500</span><span class="idx-val">7,428.78</span><span class="idx-chg up">▲ +0.21%</span></div><div class="idx"><span class="idx-name">纳斯达克</span><span class="idx-val">24,876.91</span><span class="idx-chg down">▼ -0.22%</span></div><div class="idx"><span class="idx-name">道琼斯</span><span class="idx-val">52,747.32</span><span class="idx-chg up">▲ +1.03%</span></div><div class="idx"><span class="idx-name">费城半导体</span><span class="idx-val">11,035.68</span><span class="idx-chg down">▼ -4.49%</span></div><div class="idx"><span class="idx-name">VIX恐慌</span><span class="idx-val">18.21</span><span class="idx-chg down">▼ -2.46%</span></div></div>
+
+<div class="container">
+  
+  <div class="pf-panel">
+    <div class="pf-head">
+      <span class="pf-title">🤖 AI 模拟盘</span>
+      <span class="pf-sub">初始 $1,000,000 · 2026-07-01 起 · AI基建超级周期 · 基本面动量 · 盘后最终价估值 · 纯多头不加杠杆 · 模拟盘不构成投资建议</span>
+    </div>
+    <div class="pf-stats">
+      <div><div class="pf-stat-label">总资产</div><div class="pf-stat-value">$855,920</div></div>
+      <div><div class="pf-stat-label">当日盈亏</div><div class="pf-stat-value"><span class="down">-0.96%</span> <span class="pf-stat-sm">-$8,315</span></div></div>
+      <div><div class="pf-stat-label">累计收益</div><div class="pf-stat-value"><span class="down">-14.41%</span></div></div>
+      <div><div class="pf-stat-label">32股等权基准</div><div class="pf-stat-value"><span class="down">-26.96%</span></div></div>
+      <div><div class="pf-stat-label">纳指100(QQQ)</div><div class="pf-stat-value"><span class="down">-10.33%</span></div></div>
+      <div><div class="pf-stat-label">费城半导体</div><div class="pf-stat-value"><span class="down">-28.07%</span></div></div>
+      <div><div class="pf-stat-label">超额收益(vs等权)</div><div class="pf-stat-value"><span class="up">+12.55%</span></div></div>
+    </div>
+    <svg viewBox="0 0 700 160" class="pf-chart" width="100%" height="160"><line x1="44" y1="8.0" x2="692" y2="8.0" stroke="var(--border-light)"/><text x="40" y="11.0" text-anchor="end" font-size="9" fill="var(--text-dim)">+0.0%</text><line x1="44" y1="142.0" x2="692" y2="142.0" stroke="var(--border-light)"/><text x="40" y="145.0" text-anchor="end" font-size="9" fill="var(--text-dim)">-28.1%</text><line x1="44" y1="8.0" x2="692" y2="8.0" stroke="var(--border)" stroke-dasharray="4 3"/><polyline points="44.0,8.0 78.1,32.7 112.2,56.0 146.3,49.5 180.4,72.5 214.5,65.1 248.6,47.4 282.7,48.4 316.8,70.1 350.9,68.6 385.1,77.9 419.2,103.6 453.3,110.1 487.4,107.4 521.5,82.9 555.6,85.8 589.7,89.1 623.8,109.5 657.9,118.5 692.0,136.7" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 3"/><polyline points="44.0,8.0 78.1,15.8 112.2,22.9 146.3,17.9 180.4,28.1 214.5,26.3 248.6,18.8 282.7,16.8 316.8,26.5 350.9,28.6 385.1,30.1 419.2,39.5 453.3,47.2 487.4,46.8 521.5,38.9 555.6,41.6 589.7,49.0 623.8,54.0 657.9,55.9 692.0,57.3" fill="none" stroke="#f59e0b" stroke-width="1.3"/><polyline points="44.0,8.0 78.1,37.9 112.2,62.3 146.3,53.1 180.4,73.2 214.5,64.0 248.6,51.1 282.7,50.9 316.8,71.6 350.9,91.4 385.1,99.6 419.2,116.1 453.3,122.1 487.4,120.0 521.5,100.9 555.6,99.2 589.7,101.3 623.8,117.6 657.9,125.8 692.0,142.0" fill="none" stroke="#a855f7" stroke-width="1.3"/><polyline points="44.0,8.0 78.1,33.2 112.2,50.4 146.3,49.3 180.4,59.1 214.5,49.0 248.6,43.1 282.7,42.4 316.8,56.2 350.9,44.8 385.1,51.6 419.2,64.3 453.3,69.6 487.4,66.3 521.5,54.7 555.6,53.8 589.7,57.2 623.8,66.4 657.9,72.8 692.0,76.8" fill="none" stroke="var(--accent)" stroke-width="2.2"/><text x="44" y="156" font-size="9" fill="var(--text-dim)">06-30</text><text x="692" y="156" text-anchor="end" font-size="9" fill="var(--text-dim)">07-28</text></svg><div class="pf-legend"><span><i style="background:var(--accent)"></i>AI模拟盘</span><span><i style="background:#94a3b8"></i>32股等权基准</span><span><i style="background:#f59e0b"></i>纳指100(QQQ)</span><span><i style="background:#a855f7"></i>费城半导体</span></div>
+    <div class="pf-table-wrap"><table class="pf-table">
+      <tr><th>持仓</th><th>代码</th><th>仓位</th><th>成本</th><th>现价</th><th>当日</th><th>盈亏</th><th>市值</th></tr>
+      <tr><td>英伟达 NVIDIA</td><td class="mono">NVDA</td><td>17.9%</td><td class="mono">$199.85</td><td class="mono">$197.63</td><td><span class="up">+0.6%</span></td><td><span class="down">-1.1%</span></td><td class="mono">$152,966</td></tr><tr><td>谷歌 Alphabet</td><td class="mono">GOOGL</td><td>10.9%</td><td class="mono">$351.45</td><td class="mono">$335.89</td><td><span class="up">+2.9%</span></td><td><span class="down">-4.4%</span></td><td class="mono">$93,042</td></tr><tr><td>台积电 TSMC <span class="pf-alert" title="触发-15%重估线">⚠</span></td><td class="mono">TSM</td><td>9.6%</td><td class="mono">$477.57</td><td class="mono">$394.72</td><td><span class="down">-1.1%</span></td><td><span class="down">-17.3%</span></td><td class="mono">$82,496</td></tr><tr><td>博通 Broadcom</td><td class="mono">AVGO</td><td>9.5%</td><td class="mono">$377.75</td><td class="mono">$384.34</td><td><span class="up">+0.3%</span></td><td><span class="up">+1.7%</span></td><td class="mono">$81,096</td></tr><tr><td>美光 Micron <span class="pf-alert" title="触发-15%重估线">⚠</span></td><td class="mono">MU</td><td>5.1%</td><td class="mono">$1,154.29</td><td class="mono">$830.75</td><td><span class="down">-7.7%</span></td><td><span class="down">-28.0%</span></td><td class="mono">$44,030</td></tr><tr><td>应用材料 AMAT <span class="pf-alert" title="触发-15%重估线">⚠</span></td><td class="mono">AMAT</td><td>4.6%</td><td class="mono">$723.00</td><td class="mono">$478.38</td><td><span class="down">-7.4%</span></td><td><span class="down">-33.8%</span></td><td class="mono">$39,227</td></tr><tr><td>泛林 Lam Research <span class="pf-alert" title="触发-15%重估线">⚠</span></td><td class="mono">LRCX</td><td>4.4%</td><td class="mono">$433.33</td><td class="mono">$271.00</td><td><span class="down">-7.1%</span></td><td><span class="down">-37.5%</span></td><td class="mono">$37,398</td></tr><tr><td>苹果 Apple</td><td class="mono">AAPL</td><td>4.1%</td><td class="mono">$329.18</td><td class="mono">$341.25</td><td><span class="up">+1.3%</span></td><td><span class="up">+3.7%</span></td><td class="mono">$34,807</td></tr><tr><td>迈威尔 Marvell <span class="pf-alert" title="触发-15%重估线">⚠</span></td><td class="mono">MRVL</td><td>3.5%</td><td class="mono">$297.89</td><td class="mono">$177.00</td><td><span class="down">-6.4%</span></td><td><span class="down">-40.6%</span></td><td class="mono">$29,559</td></tr><tr><td>科磊 KLA <span class="pf-alert" title="触发-15%重估线">⚠</span></td><td class="mono">KLAC</td><td>1.3%</td><td class="mono">$301.71</td><td class="mono">$174.91</td><td><span class="down">-14.0%</span></td><td><span class="down">-42.0%</span></td><td class="mono">$11,544</td></tr><tr class="cash-row"><td>💵 现金</td><td></td><td>29.2%</td><td></td><td></td><td></td><td></td><td class="mono">$249,755</td></tr>
+    </table></div>
+    <details class="trade-log"><summary>📒 调仓日志（20 笔，含每笔理由）</summary><div class="trade-item"><b>2026-07-29</b> 买入 英伟达 NVIDIA 75股 @ $197.63 — 现金占比30.9%超30%上限需再平衡；NVDA在费半-4.49%的板块性重挫中逆势+0.57%，显示相对韧性最强，且公司AI基础设施合作叙事未受损，仓位加仓后仍远低于20%上限，风险可控。</div><div class="trade-item"><b>2026-07-28</b> 买入 谷歌 Alphabet 54股 @ $326.99 — 卖MU资金轮动，GOOGL今日在板块普跌中逆势收涨，云/AI资本开支叙事边际转强，且当前仓位（8.4%）远低于20%上限，具备加仓空间，作为存储/设备板块承压期的确定性配置。</div><div class="trade-item"><b>2026-07-28</b> 卖出 美光 Micron 20股 @ $884.99 — CXMT上海IPO成功叠加中国国产DUV光刻机量产消息，两周内连续出现结构性利空催化，回撤已扩大至-23.3%（三次触及-15%重估线），判断存储敞口的竞争风险已从纯情绪性切换转为渐进结构性压力，做纪律性部分减仓，保留核心仓位观察后续财报与供需数据。</div><div class="trade-item"><b>2026-07-17</b> 买入 苹果 Apple 20股 @ $334.83 — 现金占比(30.7%)略超30%上限，需再平衡；苹果今日逆势+2.24%创新高，中国监管批准Apple Intelligence落地、与阿里/百度合作带来自身催化，继续分散组合对存储/设备板块的集中度风险，沿用既有持仓逻辑加仓而非新开仓位</div><div class="trade-item"><b>2026-07-16</b> 买入 苹果 Apple 82股 @ $327.80 — 卖出MU资金轮动配置，苹果今日创历史新高且有自身正向催化（传闻寻求收购AI芯片初创公司），用于分散组合对存储/半导体设备单一板块的过度集中风险，不影响现金区间纪律。</div><div class="trade-item"><b>2026-07-16</b> 卖出 美光 Micron 30股 @ $896.10 — 回撤扩大至-22.4%，二次触发-15%重估线，且本次下跌驱动已从单纯情绪性获利了结转变为结构性风险（传闻美国拟收紧HBM对华出口+中国存储厂商竞争加剧），纪律性减仓而非清仓，保留核心仓位对应AI内存长期需求逻辑未破。</div><div class="trade-item"><b>2026-07-03</b> 卖出 Astera Labs 62股 @ $409.60 — 防御性复评：卫星仓-15.2%触发重估线。高beta互联标的在板块动量破位期先退出，待费半企稳后再考虑回补</div><div class="trade-item"><b>2026-07-03</b> 卖出 科磊 KLA 66股 @ $238.00 — 防御性复评：-21.1%为设备持仓中破位最深。设备敞口(AMAT/LRCX/KLAC共16%)过度集中于存储capex，减半最弱一只，现金升至30%风控上限</div><div class="trade-item"><b>2026-07-03</b> 卖出 闪迪 SanDisk 26股 @ $1,762.07 — 防御性复评：-22.5%触发止损纪律。SK海力士放缓HBM扩产+美银泡沫警示引发存储动量瓦解，NAND纯标的为组合内最高beta，全部退出；存储核心敞口保留在基本面最硬的美光</div><div class="trade-item"><b>2026-07-01</b> 买入 Astera Labs 62股 @ $483.02 — AI互联（PCIe/CXL）高弹性卫星仓</div><div class="trade-item"><b>2026-07-01</b> 买入 科磊 KLA 132股 @ $301.71 — 量测检测环节近垄断，先进制程良率投资受益</div><div class="trade-item"><b>2026-07-01</b> 买入 迈威尔 Marvell 167股 @ $297.89 — 定制ASIC+光互联双主题，云厂自研芯片趋势受益</div><div class="trade-item"><b>2026-07-01</b> 买入 泛林 Lam Research 138股 @ $433.33 — 存储设备敞口最纯，NAND/DRAM扩产双受益</div><div class="trade-item"><b>2026-07-01</b> 买入 应用材料 AMAT 82股 @ $723.00 — 存储扩产资本开支周期，设备龙头订单能见度上行</div><div class="trade-item"><b>2026-07-01</b> 买入 闪迪 SanDisk 26股 @ $2,273.73 — NAND涨价周期高弹性：2026年NAND收入预计+45%，量价齐升被财报验证</div><div class="trade-item"><b>2026-07-01</b> 买入 谷歌 Alphabet 223股 @ $357.37 — AI大盘股中估值最合理，云+Gemini商业化加速；微软因$1900亿capex被市场惩罚，谷歌相对性价比更高</div><div class="trade-item"><b>2026-07-01</b> 买入 博通 Broadcom 211股 @ $377.75 — OpenAI定制ASIC落地，AI网络+定制芯片双引擎</div><div class="trade-item"><b>2026-07-01</b> 买入 台积电 TSMC 209股 @ $477.57 — 先进制程独占的代工咽喉，所有AI芯片绕不开，估值相对温和</div><div class="trade-item"><b>2026-07-01</b> 买入 美光 Micron 103股 @ $1,154.29 — 内存超级周期主升浪：HBM4产能全年售罄，财报大超预期、数据中心占收入56%+，前瞻市盈率不足9倍</div><div class="trade-item"><b>2026-07-01</b> 买入 英伟达 NVIDIA 699股 @ $200.09 — AI基建核心：2027年1万亿美元AI基础设施需求指引，产业地位与盈利确定性最高</div></details>
+  </div>
+
+  <div class="top-row">
+    <div class="summary ai-comm"><div class="summary-title">🤖 AI 晨评<span class="ai-comm-tag">每日自动研究</span></div><p>7/28全球半导体股遭遇结构性抛售：中国国产DUV光刻机量产传闻叠加AI资本开支可持续性质疑，费城半导体指数暴跌4.49%，纳指小幅收跌0.22%，而道指受益于非科技板块逆势收涨1.03%，市场呈现"科技/非科技"明显分化。VIX仅18.21且下行，说明这并非系统性恐慌，更像存储/设备链的板块性重挫（KLAC财报超预期但指引不及预期，盘后大跌近14%；MU、AMAT、LRCX、MRVL全线跟跌7%左右）。</p><p>组合层面，NVDA、AVGO、AAPL、GOOGL四大核心仓位均逆势收涨或持平，显示组合的相对韧性明显强于费半基准（-4.49% vs 组合更小波动）；但MU/TSM/AMAT/LRCX/MRVL/KLAC六只标的仍处于或已多次触及-15%重估线，需逐一说明。综合来看，本轮抛售更多是情绪面对AI资本开支叙事的过度反应（存储现货价格仍在上涨、云厂商已锁定多年期采购合同），而非基本面证伪，因此维持既有仓位结构、不做恐慌性减仓。</p><p>今日现金占比30.9%略超30%上限，需小幅再平衡：选择在本轮普跌中相对抗跌、且财报前瞻正面的NVDA小幅加仓，将现金比例拉回上限内，其余持仓维持不动，等待LRCX（明日7/29）、AAPL（本周四）等关键财报验证节点。</p></div>
+    
+    <div class="movers">
+      <div class="movers-col"><div class="movers-title up">📈 涨幅榜</div><span class="chip up">谷歌 Alphabet<b>+2.9%</b></span><span class="chip up">微软 Microsoft<b>+1.6%</b></span><span class="chip up">苹果 Apple<b>+1.3%</b></span><span class="chip up">Meta<b>+0.6%</b></span><span class="chip up">英伟达 NVIDIA<b>+0.6%</b></span></div>
+      <div class="movers-col"><div class="movers-title down">📉 跌幅榜</div><span class="chip down">科磊 KLA<b>-14.0%</b></span><span class="chip down">闪迪 SanDisk<b>-12.5%</b></span><span class="chip down">康宁 Corning<b>-11.4%</b></span><span class="chip down">Nebius<b>-9.6%</b></span><span class="chip down">AXT<b>-9.5%</b></span></div>
+    </div>
+  </div>
+
+  <!-- ── Interactive toolbar ── -->
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <input id="searchBox" class="search-box" type="text" placeholder="🔍 搜索公司名或代码…" />
+      <select id="sortSelect" class="sort-select">
+        <option value="order">默认顺序</option>
+        <option value="gain">涨幅从高到低</option>
+        <option value="lose">跌幅从高到低</option>
+        <option value="news">新闻最多</option>
+      </select>
+      <label class="history-label">历史：<select id="historySelect" class="history-select"><option value="2026-07-29">2026-07-29</option><option value="2026-07-28" selected>2026-07-28</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-08">2026-07-08</option><option value="2026-07-07">2026-07-07</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-01">2026-07-01</option><option value="2026-06-30">2026-06-30</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-21">2026-06-21</option></select></label>
+    </div>
+    <div class="toolbar-row tabs">
+      <button class="tab-btn active" data-sector="all">全部</button><button class="tab-btn" data-sector="存储">存储</button><button class="tab-btn" data-sector="AI芯片">AI芯片</button><button class="tab-btn" data-sector="云与AI">云与AI</button><button class="tab-btn" data-sector="光通信/材料">光通信/材料</button><button class="tab-btn" data-sector="半导体设备">半导体设备</button><button class="tab-btn" data-sector="其他">其他</button>
+    </div>
+    <div class="toolbar-row chips">
+      <button class="chip-btn active" data-filter="all">全部</button>
+      <button class="chip-btn" data-filter="hasnews">只看有新闻</button>
+      <button class="chip-btn" data-filter="up">只看上涨</button>
+      <button class="chip-btn" data-filter="down">只看下跌</button>
+      <span id="visCount" class="vis-count"></span>
+    </div>
+  </div>
+
+  <div class="grid" id="cardGrid">
+    
+      <div class="company-card" data-name="美光 micron mu" data-ticker="MU"
+           data-sector="存储" data-change="-7.7150"
+           data-news="5" data-order="0">
+        <div class="card-header">
+          <span class="company-name">美光 Micron</span>
+          <span class="ticker">MU</span>
+          <span class="sector-badge">存储</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$830.75</span>
+          <span class="price-change down">▼ -7.71%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,10.2 12.2,14.2 18.3,13.5 24.4,16.8 30.5,16.1 36.6,13.1 42.7,13.9 48.8,16.9 54.9,13.7 61.1,19.3 67.2,22.9 73.3,23.2 79.4,22.0 85.5,14.5 91.6,15.3 97.7,13.2 103.8,18.1 109.9,19.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$105</span>
+            <span class="r52-bar"><i style="left:65%"></i></span>
+            <span class="r52-hi">$1,213</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买51/持4/卖1">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=66dd4df31daa62c74480f92356b1ef2b1ab7581035895e3e39ea471684b9a242" target="_blank" class="article-title">美光科技股票引领芯片股新一轮残酷暴跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:31 UTC</span>
+              </div>
+              <p class="article-desc">特写 美光科技的股票周二成为跌幅最大的股票之一，此前该股在经历了之前最严重的抛售之后......</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=61e9c7d98729ee3ed9ff235eb6a8a212b81d35c90ac046240ebf3f0a78ee1fc7" target="_blank" class="article-title">为什么美光股票再次下跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:20 UTC</span>
+              </div>
+              <p class="article-desc">由于一场完美风暴袭击了芯片行业，美光科技股价暴跌 9%。这是您需要了解的内容。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7763ad0fc93308225741437d48ced364217989ece74fb9fa1cd1ea3f8b0a0aa0" target="_blank" class="article-title">CME 推出 23 小时单一股票期货，交易 SpaceX、Micron 等股票</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:30 UTC</span>
+              </div>
+              <p class="article-desc">斯科特·梅尔克 (Scott Melker) 讨论了 CME (CME) 如何推出 23 小时单一股票期货，用于交易 SpaceX (SPCX)、Micr...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=608f1e9e8a65a27dc48c915ac506f81bf2f88e4ca20b199a46856ed0688d550e" target="_blank" class="article-title">MU、AMD、INTC、SNDK 股票下跌 — 摩根士丹利的 Mike Wilson 解释投资者为何追逐芯片和内存股票</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:52 UTC</span>
+              </div>
+              <p class="article-desc">威尔逊在接受CNBC采访时表示，标普500指数的波动可能还会持续一个月。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=cd526da74c10eaaeaa1578a74754eda4ef1072fa255da084bbe17137b1df0ddb" target="_blank" class="article-title">随着半导体抛售势头增强，美光股价暴跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:26 UTC</span>
+              </div>
+              <p class="article-desc">由于半导体股票普遍继续抛售，美光科技股价周二暴跌。  早间交易...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="闪迪 sandisk sndk" data-ticker="SNDK"
+           data-sector="存储" data-change="-12.4751"
+           data-news="5" data-order="1">
+        <div class="card-header">
+          <span class="company-name">闪迪 SanDisk</span>
+          <span class="ticker">SNDK</span>
+          <span class="sector-badge">存储</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$1,118.77</span>
+          <span class="price-change down">▼ -12.48%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,6.3 12.2,12.0 18.3,12.0 24.4,14.6 30.5,12.4 36.6,9.8 42.7,8.6 48.8,13.4 54.9,11.8 61.1,14.6 67.2,18.7 73.3,19.8 79.4,19.1 85.5,15.1 91.6,14.9 97.7,14.7 103.8,18.2 109.9,21.3 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$41</span>
+            <span class="r52-bar"><i style="left:47%"></i></span>
+            <span class="r52-hi">$2,335</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买26/持4/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=3c4f2118fecab317dd2f02063642b4d41f4475fd1d3ee559a5000ef9c79f2978" target="_blank" class="article-title">纳斯达克 100 指数进入回调，闪迪较峰值下跌 50% 以上：今日股市</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 13:21 UTC</span>
+              </div>
+              <p class="article-desc">芯片股的进一步溃败拖累了纳斯达克指数，而可口可乐和宣伟则击败了道琼斯指数；伊朗石油价格暴跌 5%...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=64926ca01901c46cdf41ba89eea40fa169052c7f86d9d17a7934b30b63071668" target="_blank" class="article-title">随着人工智能内存疑虑加深，闪迪继续残酷抛售</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 12:18 UTC</span>
+              </div>
+              <p class="article-desc">随着投资者退出，Sandisk 的惊人反弹宣告结束</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ca5009fecd544686d4bf006e7331440fe201657a82b7cc17100e72b10f3080c9" target="_blank" class="article-title">CXMT 疯狂引发最严重 KOSPI 抛售，SK 海力士、SanDisk 暴跌 15% — 内存 ETF 面临新考验</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 09:24 UTC</span>
+              </div>
+              <p class="article-desc">由于中国长鑫存储的 IPO 加剧了存储芯片竞争担忧，SK 海力士和三星股价暴跌，使 ETF 面临……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=73822889de5e3321caba1848a5e19cd4d220784df38c806ae2c59974457469f8" target="_blank" class="article-title">随着人工智能内存贸易的破裂，Sandisk 股票扩大跌幅</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 06:49 UTC</span>
+              </div>
+              <p class="article-desc">由于 AI 内存股遭到抛售，Sandisk (SNDK) 股价在盘前交易中下跌。阅读关键技术水平和第四季度收益……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=f2c3e2c20030af043755ac75f6885a35465c0df3d6b9b619829fd40b6490d0ee" target="_blank" class="article-title">长鑫存储上海IPO加剧竞争担忧，为何Sandisk (SNDK)下跌8.1%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 04:30 UTC</span>
+              </div>
+              <p class="article-desc">本周早些时候，中国存储器制造商长鑫存储在上海IPO的轰动效应加剧后，Sandisk面临压力……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="迈威尔 marvell mrvl" data-ticker="MRVL"
+           data-sector="AI芯片" data-change="-6.4334"
+           data-news="5" data-order="2">
+        <div class="card-header">
+          <span class="company-name">迈威尔 Marvell</span>
+          <span class="ticker">MRVL</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$177.00</span>
+          <span class="price-change down">▼ -6.43%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,6.4 12.2,11.5 18.3,10.8 24.4,14.3 30.5,14.1 36.6,11.9 42.7,13.3 48.8,16.8 54.9,15.8 61.1,18.9 67.2,22.3 73.3,22.3 79.4,21.1 85.5,18.6 91.6,18.0 97.7,18.3 103.8,21.2 109.9,22.2 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$62</span>
+            <span class="r52-bar"><i style="left:45%"></i></span>
+            <span class="r52-hi">$316</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买43/持7/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ed108b861aadfd64a68da8cd6f70c195271f0cbd32984d61088d5619c2cde7e7" target="_blank" class="article-title">由于人工智能融资疑虑打击芯片股，Marvell Technology (MRVL) 股价下跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:14 UTC</span>
+              </div>
+              <p class="article-desc">由于投资者质疑人工智能融资的可持续性并对上涨做出反应，半导体股票最近遭到抛售……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=37fae0e763c35d3d7a71eaa6f4bb2ba0eb9cca015c0fd4ed8b877b31c261b485" target="_blank" class="article-title">AI 芯片交易范围缩小至 NVIDIA，AMD 下跌 8%，Marvell 下跌 7%，英特尔下跌 6%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 15:28 UTC</span>
+              </div>
+              <p class="article-desc">芯片股周二遭受重创，而英伟达几乎没有变动，赢家和输家之间的差距揭示了...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=e680c66f2c310b1d43d923ea5439a96fa5ee55f4110526dc1ecb731f161fbf75" target="_blank" class="article-title">随着 AI 内存贸易回调触及半决赛，Marvell 科技股价下跌</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 13:59 UTC</span>
+              </div>
+              <p class="article-desc">由于人工智能板块回调，Marvell Technology 股价下跌近 8%。获取技术水平、分析师价格目标和关键……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=01d93a5b0319bdce9728ac8d05ab3a574abc4d0faad1439bf8151fd53aae5d95" target="_blank" class="article-title">Marvell Technology 与 Snowflake：2026 年哪只高增长人工智能股票更值得买入？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 12:18 UTC</span>
+              </div>
+              <p class="article-desc">一家盈利且不断增长，另一家仍在烧钱但扩张迅速，他们的风险状况和估值告诉我们……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=84affedbd6649949a2248c44d13f8513ae38dae2dc8658bd0320fa00de141678" target="_blank" class="article-title">Marvell 科技股实际上会跌落多远？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:32 UTC</span>
+              </div>
+              <p class="article-desc">历史上在整个市场震荡期间跌幅大于市场的股票的交易价格远低于其自身高点，并且……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="amd amd" data-ticker="AMD"
+           data-sector="AI芯片" data-change="-6.9805"
+           data-news="5" data-order="3">
+        <div class="card-header">
+          <span class="company-name">AMD</span>
+          <span class="ticker">AMD</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$460.40</span>
+          <span class="price-change down">▼ -6.98%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,9.1 12.2,13.5 18.3,7.0 24.4,13.9 30.5,13.6 36.6,8.0 42.7,5.9 48.8,10.4 54.9,7.8 61.1,11.4 67.2,16.8 73.3,17.8 79.4,16.3 85.5,8.5 91.6,7.0 97.7,9.4 103.8,12.8 109.9,17.9 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$151</span>
+            <span class="r52-bar"><i style="left:72%"></i></span>
+            <span class="r52-hi">$581</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买48/持9/卖0">分析师 买入</span><span class="tag earn">📅 08-04 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=db78461206110b51a7b2c5018114bde5aacf54eff3cd68d9f031e8e17018a1a7" target="_blank" class="article-title">Advanced Micro Devices 与 Arista Networks：2026 年哪只科技股更值得买入？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:18 UTC</span>
+              </div>
+              <p class="article-desc">尽管利润率较低，但 AMD 的估值较高，而 Arista 的客户高度集中度增加了风险……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=0622d2f1be674cec4989aa8dd306f0393c8d7739d74959f4180d3d4023f654b9" target="_blank" class="article-title">在第二季度大幅亏损和 AMD AI 交易之后，Core Scientific (CORZ) 下跌 7.4% - 牛市情况是否发生了变化？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:13 UTC</span>
+              </div>
+              <p class="article-desc">2026 年第二季度，Core Scientific 报告收入为 1.642 亿美元，而上年同期为 7863 万美元……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=c70ae72f7f512ad8738cb2a3e40874f1e89ba2269c9f3a12af4f9266dfa6928e" target="_blank" class="article-title">Nvidia、AMD 因支出担忧引发市场抛售，AI 芯片股暴跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:59 UTC</span>
+              </div>
+              <p class="article-desc">由于中国竞争和资金担忧打击该行业，人工智能芯片股面临压力</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=434a2f4290502010341cf9abbf45b39673c632ee3996f8255ed8621d02cfcf41" target="_blank" class="article-title">核心科学股票下跌。巨大的盈利失误给 AMD 的交易蒙上阴影。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:47 UTC</span>
+              </div>
+              <p class="article-desc">Core Scientific 宣布与 AMD 建立合作伙伴关系，提供 2.5 吉瓦的数据中心容量，这可能会带来超过 $...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7a4f9856324ec76c3b9717b9b3726469a040e9a395be37799bdbf08ee640d74a" target="_blank" class="article-title">AMD 与英特尔：到 2027 年底，哪只人工智能芯片股更值得持有？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:09 UTC</span>
+              </div>
+              <p class="article-desc">在过去的一年里，这两家芯片制造商都让投资者变得更加富有，并且他们可以维持健康的增长……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="nebius nbis" data-ticker="NBIS"
+           data-sector="云与AI" data-change="-9.5699"
+           data-news="4" data-order="4">
+        <div class="card-header">
+          <span class="company-name">Nebius</span>
+          <span class="ticker">NBIS</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">4 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$169.90</span>
+          <span class="price-change down">▼ -9.57%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,11.7 12.2,14.6 18.3,15.2 24.4,19.0 30.5,14.4 36.6,14.5 42.7,13.7 48.8,15.7 54.9,19.3 61.1,18.1 67.2,24.1 73.3,22.8 79.4,21.7 85.5,14.3 91.6,14.1 97.7,13.4 103.8,20.6 109.9,20.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$50</span>
+            <span class="r52-bar"><i style="left:51%"></i></span>
+            <span class="r52-hi">$287</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买16/持7/卖0">分析师 买入</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=6a5760bd3b6eb6383710101426c2bf1a5acbdc75a637a63b99e1527cabb2cc63" target="_blank" class="article-title">Nebius 股票周二下跌：发生了什么？</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 11:23 UTC</span>
+              </div>
+              <p class="article-desc">Nebius Group NV（纳斯达克股票代码：NBIS）股价周二大幅走低，因投资者降低了高端人工智能基础设施的风险……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=135cfec2a3d58f951f41ce1b4356549e1ab5e682fbf8c67ae99d4e513e7f7bd8" target="_blank" class="article-title">Nebius 股票能否将 10,000 美元的投资变成 100 万美元？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 13:02 UTC</span>
+              </div>
+              <p class="article-desc">如果对人工智能芯片和基础设施的需求保持强劲，Nebius 可能正处于进一步增长的风口浪尖，但这绝不是……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=778515bfbd3f0a18a43fb2e88bacd1c66052acb730ac7384f1d730db9ccb1a03" target="_blank" class="article-title">Nebius：市场坚持出租的软件公司</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">07/28 04:34 UTC</span>
+              </div>
+              <p class="article-desc">Nebius 公布了 840% 的人工智能云收入增长和 45% 的 EBITDA 利润率，标志着向更高利润率的成功转型……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=fe38e86349fc2814e2f8f4fbf96577d8e3294421cb6bd6dda5b76f9758fd1194" target="_blank" class="article-title">Bloom Energy (BE) 股票在大幅上涨后看起来已完全定价</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 23:16 UTC</span>
+              </div>
+              <p class="article-desc">布鲁姆能源股票在过去三年中取得了巨大收益，但最近的回调和估值参差不齐……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="astera labs alab" data-ticker="ALAB"
+           data-sector="AI芯片" data-change="-6.3858"
+           data-news="1" data-order="5">
+        <div class="card-header">
+          <span class="company-name">Astera Labs</span>
+          <span class="ticker">ALAB</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$264.48</span>
+          <span class="price-change down">▼ -6.39%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,7.0 12.2,9.6 18.3,6.8 24.4,12.0 30.5,11.0 36.6,8.4 42.7,8.9 48.8,14.2 54.9,14.3 61.1,15.4 67.2,18.7 73.3,20.4 79.4,19.8 85.5,18.7 91.6,17.5 97.7,17.9 103.8,21.6 109.9,22.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$100</span>
+            <span class="r52-bar"><i style="left:43%"></i></span>
+            <span class="r52-hi">$483</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买21/持9/卖0">分析师 买入</span><span class="tag earn">📅 08-04 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2a64b0e72e54e78f7fc3cf4ad64e66d317ed6187c2b60d0debe402fad2d2a425" target="_blank" class="article-title">Astera Labs 与 BigBear.ai：2026 年哪只人工智能股票更值得买入？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 23:39 UTC</span>
+              </div>
+              <p class="article-desc">其中一家公司的收入增长了 115%，净利润增长了 25.7%；另一个刚刚报告了 2.939 亿美元的损失并否定了……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="康宁 corning glw" data-ticker="GLW"
+           data-sector="光通信/材料" data-change="-11.4258"
+           data-news="5" data-order="6">
+        <div class="card-header">
+          <span class="company-name">康宁 Corning</span>
+          <span class="ticker">GLW</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$126.98</span>
+          <span class="price-change down">▼ -11.43%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,7.7 12.2,12.0 18.3,12.4 24.4,14.0 30.5,14.3 36.6,12.8 42.7,13.1 48.8,14.4 54.9,13.6 61.1,16.0 67.2,18.9 73.3,19.6 79.4,19.8 85.5,18.2 91.6,19.7 97.7,19.3 103.8,21.0 109.9,21.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$61</span>
+            <span class="r52-bar"><i style="left:34%"></i></span>
+            <span class="r52-hi">$256</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买15/持6/卖0">分析师 买入</span><span class="tag earn">📅 07-28 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=19ad7b7de5e4c4d5bdeb911859c2c03f9f1f872c5fb6a0aa56b94b9561bd4115" target="_blank" class="article-title">康宁财报公布后大跌16%，领跌光学股</a>
+              <div class="article-meta">
+                <span class="source">CNBC</span>
+                <span class="pub-time">07/28 11:18 UTC</span>
+              </div>
+              <p class="article-desc">Marvell、Lumentum、AXT 和 Coherent 继康宁发布后股价下跌两位数。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=4b0a5ae972ae2995ce094c314ad331ef33fcb062dd105f42d64663bbb16a8cf8" target="_blank" class="article-title">为什么康宁股票在盈利后经历了四个月以来最糟糕的一天</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:30 UTC</span>
+              </div>
+              <p class="article-desc">康宁第二季度盈利超出预期，但股价下跌符合预期。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=1b6beb5d491c216eaa128d26f41e04314ad55c466c7dbd60ce3de07258527208" target="_blank" class="article-title">康宁公司 (GLW) 2026 年第二季度收益电话会议亮点：光通信和……的强劲增长</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:02 UTC</span>
+              </div>
+              <p class="article-desc">康宁公司 (GLW) 报告称，在光通信领域显着增长的推动下，收入增长了 17%，每股收益增长了 30%……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=01f5d594485f3b99789449ad34556c6a4e76b63f3fc9d55e3678c2ca78896471" target="_blank" class="article-title">康宁第二季度财报电话会议亮点</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:04 UTC</span>
+              </div>
+              <p class="article-desc">康宁（纽约证券交易所股票代码：GLW）公布的 2026 年第二季度业绩超出了预期，在光学器件持续增长的带动下……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d1c4d2922b9cc45b599e0cf1c30429b1018758b244a3f90c17f6a686f835fd41" target="_blank" class="article-title">纤维增长放缓，康宁股价暴跌 16%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:42 UTC</span>
+              </div>
+              <p class="article-desc">尽管人工智能数据中心基础设施的需求持续增长，但康宁第三季度的销售预测未达到预期。</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="阿斯麦 asml asml" data-ticker="ASML"
+           data-sector="半导体设备" data-change="-3.8067"
+           data-news="5" data-order="7">
+        <div class="card-header">
+          <span class="company-name">阿斯麦 ASML</span>
+          <span class="ticker">ASML</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$1,590.18</span>
+          <span class="price-change down">▼ -3.81%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,10.0 12.2,14.2 18.3,11.0 24.4,15.5 30.5,14.3 36.6,12.2 42.7,12.6 48.8,16.8 54.9,13.9 61.1,11.6 67.2,13.3 73.3,15.5 79.4,16.0 85.5,12.4 91.6,12.4 97.7,12.3 103.8,15.0 109.9,20.9 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$685</span>
+            <span class="r52-bar"><i style="left:70%"></i></span>
+            <span class="r52-hi">$1,987</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买35/持5/卖2">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=38d7306efddc542034b648ed694c068df83505d08efa771c07bf0ead9c83df8d" target="_blank" class="article-title">ASML 股价因中国最新芯片进展而持续下滑——为何美国银行称抛售为“过度反应”，并预计上涨超过 70%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:04 UTC</span>
+              </div>
+              <p class="article-desc">该券商表示，中国在 DUV 光刻技术方面的进展仅带来有限的财务风险，并认为最近的抛售......</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=0a1d6ca60f03621b17fef9c806c8951c88967a5f2150322d6ee0b57c9ce056ef" target="_blank" class="article-title">中国的芯片工具推动表明ASML陷入中美挤压</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:45 UTC</span>
+              </div>
+              <p class="article-desc">中国推出国产先进光刻芯片印刷机，凸显了欧洲芯片工具……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=e5c784aa4d75887afa03fae2a192db986bb665f870e929ebd959caff798d2647" target="_blank" class="article-title">预测：ASML 股价将在 3 年内涨至 3,000 美元</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 15:05 UTC</span>
+              </div>
+              <p class="article-desc">由于在芯片和内存制造设备方面的巨额投资，半导体领头羊的前景光明。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=01757b3cf2849b3fe436476b0e4cb20785410e3482797a11749d1ebdcec4bba6" target="_blank" class="article-title">ASML Holding N.V. (ASML) 2026 年第 2 季度视频采访记录</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">07/28 10:10 UTC</span>
+              </div>
+              <p class="article-desc">ASML 2026 年第二季度盈利回顾：销售额 9.3B，利润率 54%；提高了对强大欧盟的第三季度/26 财年指引</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=313fe986e4edae534cd1e07e2d17b41f9b9c8baab33e61ea8d27d6c95d3c7cd8" target="_blank" class="article-title">道琼斯能源巨头雪佛龙在油价暴跌之际着眼买入点，但阿斯麦股价跌破关键水平</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:36 UTC</span>
+              </div>
+              <p class="article-desc">尽管周二油价进一步下跌，但道琼斯能源巨头雪佛龙仍将目光投向了潜在的买入点。 ASML 股价暴跌...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="东京电子 tokyo electron toely" data-ticker="TOELY"
+           data-sector="半导体设备" data-change="-9.3767"
+           data-news="0" data-order="8">
+        <div class="card-header">
+          <span class="company-name">东京电子 Tokyo Electron</span>
+          <span class="ticker">TOELY</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$167.20</span>
+          <span class="price-change down">▼ -9.38%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,2.9 12.2,7.7 18.3,9.6 24.4,8.2 30.5,12.3 36.6,11.7 42.7,8.4 48.8,7.1 54.9,9.9 61.1,9.1 67.2,9.8 73.3,11.8 79.4,14.3 85.5,14.6 91.6,12.5 97.7,13.8 103.8,15.3 109.9,19.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$67</span>
+            <span class="r52-bar"><i style="left:55%"></i></span>
+            <span class="r52-hi">$248</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买23/持3/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="泛林 lam research lrcx" data-ticker="LRCX"
+           data-sector="半导体设备" data-change="-7.0677"
+           data-news="3" data-order="9">
+        <div class="card-header">
+          <span class="company-name">泛林 Lam Research</span>
+          <span class="ticker">LRCX</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count">3 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$271.00</span>
+          <span class="price-change down">▼ -7.07%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,7.5 12.2,13.1 18.3,13.3 24.4,16.7 30.5,15.7 36.6,12.9 42.7,13.3 48.8,16.2 54.9,13.9 61.1,15.4 67.2,17.4 73.3,18.5 79.4,19.4 85.5,17.3 91.6,17.7 97.7,17.6 103.8,19.7 109.9,21.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$94</span>
+            <span class="r52-bar"><i style="left:52%"></i></span>
+            <span class="r52-hi">$433</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买34/持7/卖0">分析师 买入</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=523c3f2eb4c983b6641f27a4a383843526ab981db7594371989f838c5442dc14" target="_blank" class="article-title">Lam Research (LRCX) 人工智能数据中心和内存支出上涨</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 13:57 UTC</span>
+              </div>
+              <p class="article-desc">投资管理公司 Columbia Threadneedle Investments 发布了“Columbia Seligman Global Technology F…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=0daafeace28e9c290f87a97eea56e5705d32efd546a9e353276abf11ddf1b334" target="_blank" class="article-title">Lam Research Corporation (LRCX) 因半导体资本支出强劲而上涨</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 13:13 UTC</span>
+              </div>
+              <p class="article-desc">投资管理公司 Carillon Tower Advisers 发布了 2026 年第二季度投资者信函，内容涉及“汽车……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=78c94c8d7e1abf55a454876d06cd1ed54a384394acfa5a8f638306e2841e4248" target="_blank" class="article-title">值得关注的收益：泛林研究 (LRCX) 将于明天报告第二季度业绩</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:33 UTC</span>
+              </div>
+              <p class="article-desc">半导体设备制造商 Lam Research（纳斯达克股票代码：LRCX）将于本周三盘后公布业绩。他…</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="应用材料 amat amat" data-ticker="AMAT"
+           data-sector="半导体设备" data-change="-7.4499"
+           data-news="2" data-order="10">
+        <div class="card-header">
+          <span class="company-name">应用材料 AMAT</span>
+          <span class="ticker">AMAT</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count">2 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$478.38</span>
+          <span class="price-change down">▼ -7.45%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,8.3 12.2,12.8 18.3,13.7 24.4,17.3 30.5,15.8 36.6,14.1 42.7,12.8 48.8,15.4 54.9,13.5 61.1,15.0 67.2,16.7 73.3,19.7 79.4,20.1 85.5,16.4 91.6,17.4 97.7,16.6 103.8,19.1 109.9,20.9 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$156</span>
+            <span class="r52-bar"><i style="left:57%"></i></span>
+            <span class="r52-hi">$723</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买39/持6/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=c7eeb6cef9f4a3f48daee6260053ef6f6b27b9766eb0323e1252e67507239f7d" target="_blank" class="article-title">应用材料公司 (AMAT) 因人工智能驱动的晶圆制造支出而上涨</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 13:30 UTC</span>
+              </div>
+              <p class="article-desc">投资管理公司 Columbia Threadneedle Investments 发布了“Columbia Seligman Global Technology F…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=024ac0cba2f65813e885547a4a046a2d9296f7f662fc05c1a3b869ea09c63e93" target="_blank" class="article-title">汇丰银行大幅上调应用材料公司股票目标价</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 12:23 UTC</span>
+              </div>
+              <p class="article-desc">随着人工智能芯片热潮的发展，顶级银行更加看好应用材料公司</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="科磊 kla klac" data-ticker="KLAC"
+           data-sector="半导体设备" data-change="-13.9900"
+           data-news="5" data-order="11">
+        <div class="card-header">
+          <span class="company-name">科磊 KLA</span>
+          <span class="ticker">KLAC</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$174.91</span>
+          <span class="price-change down">▼ -13.99%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,7.9 12.2,13.5 18.3,13.9 24.4,17.0 30.5,16.1 36.6,14.6 42.7,14.2 48.8,15.9 54.9,14.4 61.1,15.5 67.2,16.4 73.3,17.6 79.4,18.6 85.5,16.8 91.6,17.3 97.7,16.6 103.8,18.0 109.9,19.3 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$84</span>
+            <span class="r52-bar"><i style="left:42%"></i></span>
+            <span class="r52-hi">$302</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买23/持12/卖0">分析师 买入</span><span class="tag earn">📅 07-28 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=8dab53e26ddd504047617aee221f45b2f6265d275342d6d661149c0d6f543268" target="_blank" class="article-title">KLA 第四季度财报电话会议亮点</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 23:04 UTC</span>
+              </div>
+              <p class="article-desc">KLA（纳斯达克股票代码：KLAC）报告了创纪录的六月季度收入，并上调了对晶圆设备市场的展望，理由是……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d8a496583d407246aee03250bda81e8026aec14ebe833c9e1268f63874684c3d" target="_blank" class="article-title">KLA Corporation（纳斯达克股票代码：KLAC）第二季度：收入好于预期，但股价下跌 10.1%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:00 UTC</span>
+              </div>
+              <p class="article-desc">半导体制造设备制造商 KLA Corporation（纳斯达克股票代码：KLAC）报告 2026 年第二季度业绩优于华尔街……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=c7d699a3e06a7095f8a81520554cf79acfc078fb893fe08c3d2bb16a9deb11e0" target="_blank" class="article-title">KLA (KLAC) 第四季度盈利和收入最高预期</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:20 UTC</span>
+              </div>
+              <p class="article-desc">截至 2026 年 6 月的季度，KLA (KLAC) 的盈利和收入分别超出 +5.00% 和 +1.32%。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d31b298a4afd4c6b50006033edce5c0688fd447e97fe24e410b83d2b884adf89" target="_blank" class="article-title">KLA Corp 第四季度业绩超出预期，股价在指引不佳的情况下暴跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:51 UTC</span>
+              </div>
+              <p class="article-desc">Investing.com——KLA Corporation 发布的指导意见未达到预期，周二该公司股价下跌 10%。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=0b16cf750aa470673190b1644b6db6d446bbf10f42d562fce596f80ee67801bf" target="_blank" class="article-title">芯片齿轮供应商 KLA 名列前茅，但财报公布后股价下跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:48 UTC</span>
+              </div>
+              <p class="article-desc">半导体设备供应商 KLA 的第四财季及其前景超出了华尔街的目标。但 KLAC 股票下跌...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="爱德万 advantest ateyy" data-ticker="ATEYY"
+           data-sector="半导体设备" data-change="-5.8133"
+           data-news="0" data-order="12">
+        <div class="card-header">
+          <span class="company-name">爱德万 Advantest</span>
+          <span class="ticker">ATEYY</span>
+          <span class="sector-badge">半导体设备</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$155.54</span>
+          <span class="price-change down">▼ -5.81%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,2.1 6.1,1.5 12.2,11.6 18.3,15.2 24.4,11.0 30.5,15.5 36.6,14.9 42.7,10.9 48.8,11.0 54.9,15.9 61.1,11.8 67.2,10.1 73.3,15.9 79.4,14.6 85.5,16.6 91.6,11.0 97.7,11.7 103.8,11.5 109.9,20.3 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$67</span>
+            <span class="r52-bar"><i style="left:59%"></i></span>
+            <span class="r52-hi">$216</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买20/持7/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="semtech smtc" data-ticker="SMTC"
+           data-sector="AI芯片" data-change="-8.0711"
+           data-news="0" data-order="13">
+        <div class="card-header">
+          <span class="company-name">Semtech</span>
+          <span class="ticker">SMTC</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$111.71</span>
+          <span class="price-change down">▼ -8.07%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,8.3 12.2,13.7 18.3,12.0 24.4,17.8 30.5,16.6 36.6,12.7 42.7,13.3 48.8,15.1 54.9,10.9 61.1,13.7 67.2,17.2 73.3,18.4 79.4,18.0 85.5,12.5 91.6,12.9 97.7,12.1 103.8,18.0 109.9,20.0 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$48</span>
+            <span class="r52-bar"><i style="left:50%"></i></span>
+            <span class="r52-hi">$175</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买19/持3/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="英伟达 nvidia nvda" data-ticker="NVDA"
+           data-sector="AI芯片" data-change="0.5699"
+           data-news="5" data-order="14">
+        <div class="card-header">
+          <span class="company-name">英伟达 NVIDIA</span>
+          <span class="ticker">NVDA</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$197.63</span>
+          <span class="price-change up">▲ +0.57%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,17.7 6.1,20.9 12.2,24.5 18.3,23.6 24.4,21.8 30.5,12.4 36.6,14.2 42.7,3.5 48.8,13.2 54.9,2.4 61.1,1.5 67.2,8.1 73.3,14.1 79.4,13.5 85.5,8.3 91.6,2.1 97.7,6.4 103.8,8.9 109.9,22.3 116.0,20.9" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$165</span>
+            <span class="r52-bar"><i style="left:46%"></i></span>
+            <span class="r52-hi">$235</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买64/持4/卖1">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=f84aa69e33046f8b1ac689ed8688e62e7cd8d4c8423e0dcc787feff8dc1ad554" target="_blank" class="article-title">独家：首席执行官表示，继英伟达和 SK 海力士之后，这 3 只人工智能股票可能成为下一个赢家</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:00 UTC</span>
+              </div>
+              <p class="article-desc">人工智能热潮的第一波浪潮使英伟达公司和内存领导者SK海力士公司成为华尔街的最大赢家。但…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=2f9b9fc3646b49fa15e8510efb3f05114bb24d9ac17e75e49692801782d29e8f" target="_blank" class="article-title">5 万亿美元问题：苹果或英伟达能否保持最高市值？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:29 UTC</span>
+              </div>
+              <p class="article-desc">苹果和英伟达的市值相差不到 2000 亿美元，两家公司的盈利报告都令人瞩目。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=9f51313f0647f2d81b71acd748f77734a9c490994412580689656d9a9e4bb962" target="_blank" class="article-title">英伟达股票面临中国人工智能漏洞的新风险</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:17 UTC</span>
+              </div>
+              <p class="article-desc">英伟达（NVDA）投资者不乏保持看涨的理由。这家 AI 芯片制造商公布了创纪录的收入 81.6 美元……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=22bc9bc9868b81e4cb2d4d045e03370f8f490a6ef62e1a4099b9b661a2d1d394" target="_blank" class="article-title">NVDA 股票的增长能带来多少上涨空间？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 11:27 UTC</span>
+              </div>
+              <p class="article-desc">在保守的情况下，NVIDIA (NVDA) 的股价为 196.51 美元，未来三年预计上涨约 56%。 …</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a923ca3cbde9611e205922e5b73a238f32a1f665e960e6e04eb9359a75761e21" target="_blank" class="article-title">自 2015 年以来，Nvidia 的股价从未如此便宜，而且还在变得更便宜</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 10:58 UTC</span>
+              </div>
+              <p class="article-desc">正如英国流行的一句话所说，英伟达的股票“像芯片一样便宜”。  目前看来反弹的可能性不大，...</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="谷歌 alphabet googl" data-ticker="GOOGL"
+           data-sector="云与AI" data-change="2.8571"
+           data-news="5" data-order="15">
+        <div class="card-header">
+          <span class="company-name">谷歌 Alphabet</span>
+          <span class="ticker">GOOGL</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$335.89</span>
+          <span class="price-change up">▲ +2.86%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,7.4 6.1,5.7 12.2,6.3 18.3,3.4 24.4,3.2 30.5,5.4 36.6,6.7 42.7,7.4 48.8,9.5 54.9,6.4 61.1,1.5 67.2,8.6 73.3,11.9 79.4,9.7 85.5,11.8 91.6,14.0 97.7,24.5 103.8,23.6 109.9,20.7 116.0,16.6" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$189</span>
+            <span class="r52-bar"><i style="left:69%"></i></span>
+            <span class="r52-hi">$402</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买60/持9/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7095608f3ee6990721f84988583962e67f58bbcbffe92a37bd6657c77466e56f" target="_blank" class="article-title">谷歌报告引发抛售后，亚马逊、Meta 和微软本周面临投资者的怀疑</a>
+              <div class="article-meta">
+                <span class="source">CNBC</span>
+                <span class="pub-time">07/28 08:00 UTC</span>
+              </div>
+              <p class="article-desc">Alphabet 的自由现金流已转为负值，该公司上调了资本支出预期。增长缓慢的云…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=13b0c68fa2491ce79a779decdf05881a4f8ff077ec758b135bcbd68b0974a287" target="_blank" class="article-title">Alphabet 的人工智能支出和现金紧缩是否会改变 Alphabet (GOOGL) 的牛市理由？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 23:14 UTC</span>
+              </div>
+              <p class="article-desc">2026 年 7 月，Alphabet 公布了 2026 年第二季度业绩，销售额为 1198 亿美元，净利润为 112 美元……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=38a162f5cae4c5ddccb5d7ab1d7eb8ccd70ff21d87fc74d3719a482aaf37c5bb" target="_blank" class="article-title">Alphabet 股票最大的风险是建立在借来的收益之上的利润率</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:25 UTC</span>
+              </div>
+              <p class="article-desc">增长仍在加速，反垄断担忧也很常见，但 Alphabet 真正的脆弱性是多年......</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7fd053ae1dd8fb551666a7d3cbd6e4428476a5fe786b7e56944f5291da19b506" target="_blank" class="article-title">Mag 7 财报：策略师称 Alphabet“确实定下了基调”</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:46 UTC</span>
+              </div>
+              <p class="article-desc">元平台 (META)、微软 (MSFT)、亚马逊 (AMZN) 和苹果 (AAPL) 是下一个大型科技公司——Magni 的一部分……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7470d601bc2d9aa20d2a80a23a8cc5a2e4f977c2f01078afbdc5ba06666aa86c" target="_blank" class="article-title">AMZN、GOOGL、MSFT 人工智能资本支出计划 — 为什么摩根士丹利表示支出将会得到回报</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:28 UTC</span>
+              </div>
+              <p class="article-desc">摩根士丹利分析师表示，尽管投资者越来越焦虑，但主要科技巨头仍将实现投资资本回报……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="微软 microsoft msft" data-ticker="MSFT"
+           data-sector="云与AI" data-change="1.6435"
+           data-news="5" data-order="16">
+        <div class="card-header">
+          <span class="company-name">微软 Microsoft</span>
+          <span class="ticker">MSFT</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$395.50</span>
+          <span class="price-change up">▲ +1.64%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,24.5 6.1,15.7 12.2,10.8 18.3,13.7 24.4,12.1 30.5,16.4 36.6,15.6 42.7,15.0 48.8,10.4 54.9,15.1 61.1,6.7 67.2,2.4 73.3,8.2 79.4,1.5 85.5,5.1 91.6,10.9 97.7,17.8 103.8,17.7 109.9,11.9 116.0,6.8" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$353</span>
+            <span class="r52-bar"><i style="left:23%"></i></span>
+            <span class="r52-hi">$539</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买63/持5/卖0">分析师 买入</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=48396116bd327c56885f150095730b4a835615a48f343317ecbeb37f10e37385" target="_blank" class="article-title">吉恩·蒙斯特表示，MSFT 股票面临比盈利更大的考验——为什么“机器人恶魔”不会消失</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:31 UTC</span>
+              </div>
+              <p class="article-desc">这位资深科技投资者表示，微软的长期估值将更少取决于季度业绩，而更多地取决于它......</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a7476eb630302ee5040310ec98a01f093d6ec1b6417186e425dfb391633e6896" target="_blank" class="article-title">新的合作伙伴人工智能集成是否会改变微软（MSFT）大规模云资本支出的风险回报？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:13 UTC</span>
+              </div>
+              <p class="article-desc">最近几天，包括 Broadvoice、CloudMoyo、汉朔、Knox Systems 等在内的多个合作伙伴已经推出或取消了……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=1719b6ccf45e387a7c56419258e5f8237351d8c7a46648a7e494d1e668187cce" target="_blank" class="article-title">微软股票遭遇阻力，接下来的财报；微软现在该卖吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:40 UTC</span>
+              </div>
+              <p class="article-desc">微软股价周二走高，在连续两次上涨的基础上，投资者等待这家科技巨头的第四次...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=093c8b03255713aac660f1cec41aefd4223c3ab8a668eb621476f7ada854b89a" target="_blank" class="article-title">盈利摊牌：7 月 29 日盈利下跌时，微软或 Meta 面临的风险更大吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:46 UTC</span>
+              </div>
+              <p class="article-desc">微软和 Meta 的最后一个季度业绩均表现不佳，但华尔街 7 月 29 日的真正判决与...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=22c97c1c16274cb695e90213ce82c3645b00d7dbff62c93fdde35db93b07ecbf" target="_blank" class="article-title">值得关注的收益：微软 (MSFT) 明天公布第二季度业绩</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:29 UTC</span>
+              </div>
+              <p class="article-desc">科技巨头微软（纳斯达克股票代码：MSFT）将于本周三收盘后公布财报。这就是研究内容……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="苹果 apple aapl" data-ticker="AAPL"
+           data-sector="云与AI" data-change="1.2871"
+           data-news="5" data-order="17">
+        <div class="card-header">
+          <span class="company-name">苹果 Apple</span>
+          <span class="ticker">AAPL</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$341.25</span>
+          <span class="price-change up">▲ +1.29%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,24.5 6.1,22.3 12.2,16.0 18.3,14.2 24.4,15.1 30.5,13.8 36.6,12.6 42.7,13.0 48.8,12.1 54.9,13.2 61.1,7.6 67.2,5.0 73.3,4.8 79.4,8.0 85.5,7.5 91.6,8.3 97.7,10.2 103.8,5.1 109.9,3.4 116.0,1.5" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$202</span>
+            <span class="r52-bar"><i style="left:100%"></i></span>
+            <span class="r52-hi">$341</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买36/持16/卖2">分析师 买入</span><span class="tag earn">📅 07-30 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=1bfe4bb9d4dff7dac20d270da8ef366e205326666d3af3ad383ead567155ef43" target="_blank" class="article-title">随着油价降温，道指连续第三个交易日收高，纳斯达克因芯片制造商溃败而下滑——PYPL、SPCX、AAPL、V、F 股票成为焦点</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:44 UTC</span>
+              </div>
+              <p class="article-desc">纳斯达克指数周二连续第五个交易日下跌，这是自今年一月以来最长的连续下跌。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=25e851930e847d43b4193575856a3141fa6db505eb241fcc840a9baa90905db0" target="_blank" class="article-title">苹果定于周四公布收益。这是股票预计变动的幅度</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:59 UTC</span>
+              </div>
+              <p class="article-desc">苹果定于周四下午公布财报，交易员预计这家 iPhone 制造商的股价可能会上涨……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=99388ef6d8c22903771b35d54e3e12c4b198c6b3d31fcad3e14670958d1479a2" target="_blank" class="article-title">苹果超越英伟达成为最有价值公司，但其统治可能会很短暂</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:34 UTC</span>
+              </div>
+              <p class="article-desc">在这家 iPhone 制造商的市值超过 Nvidia 后，KeyBanc 分析师布兰登·尼斯佩尔 (Brandon Nispel) 表示，“投资者太自满了”……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=6428fdad6a4c1822ea98603eb2e02fb1b43a42d484970feb522542cf94bba506" target="_blank" class="article-title">苹果将​​于 7 月 30 日公布第三季度财报。以下是蒂姆·库克作为首席执行官在最后一次财报电话会议期间投资者应该关注的内容</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:20 UTC</span>
+              </div>
+              <p class="article-desc">如果苹果公司的财务业绩保持强劲，那么今年年底它可能会成为全球最大的公司。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ee188a82e959b9b193befa70b57bf6da3779ac77274a48d0eaddcbb74f78bd64" target="_blank" class="article-title">苹果因涉嫌比特币诈骗而面临诉讼</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:52 UTC</span>
+              </div>
+              <p class="article-desc">7 月 24 日，三名加密货币投资者对苹果公司（纳斯达克股票代码：AAPL）提起联邦诉讼。他们声称自己失去了......</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="meta meta" data-ticker="META"
+           data-sector="云与AI" data-change="0.5900"
+           data-news="5" data-order="18">
+        <div class="card-header">
+          <span class="company-name">Meta</span>
+          <span class="ticker">META</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$597.37</span>
+          <span class="price-change up">▲ +0.59%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,24.5 6.1,14.8 12.2,20.7 18.3,17.3 24.4,14.3 30.5,16.7 36.6,11.2 42.7,3.9 48.8,6.3 54.9,5.5 61.1,1.5 67.2,4.8 73.3,8.4 79.4,8.4 85.5,8.8 91.6,12.1 97.7,16.2 103.8,18.3 109.9,18.5 116.0,17.9" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$525</span>
+            <span class="r52-bar"><i style="left:28%"></i></span>
+            <span class="r52-hi">$787</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买63/持8/卖0">分析师 买入</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=34053bc945942612810defbd12c5cf4e93c40a3796fa79b8193c95f035eae97a" target="_blank" class="article-title">Meta 与贝莱德合作：以下是您需要了解的信息</a>
+              <div class="article-meta">
+                <span class="source">CNBC</span>
+                <span class="pub-time">07/28 11:54 UTC</span>
+              </div>
+              <p class="article-desc">CNBC 的 Julia Boorstin 报道了 Meta 和 BlackRock 之间价值 140 亿美元的数据中心合作伙伴关系。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=6826460a31d879bc9d177b9ff735e6b7993f390a6958343d3d74feca1ed7594e" target="_blank" class="article-title">Meta 与贝莱德共同推出价值 140 亿美元的人工智能数据中心合资企业</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:36 UTC</span>
+              </div>
+              <p class="article-desc">Meta 将保留 20% 的权益，而贝莱德管理的基金则拥有计划中的埃尔帕索设施 80% 的权益。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=6bee56ca7b6c0a813b7d059b6c766849cd09b9af4e3b3efdadc7b78f99e2aa74" target="_blank" class="article-title">为什么投资者应该等待 Meta 的盈利下滑</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:45 UTC</span>
+              </div>
+              <p class="article-desc">Meta 的广告机器正在印钞，分析师的目标指向近 30% 的上涨空间，但期权市场却出现了一些变化……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a09e8a6be6772c08d131a76f15234b6dfcbed097bf028ddeafb5c8b3947915bf" target="_blank" class="article-title">Meta 与贝莱德组建 140 亿美元合资企业，在德克萨斯州开发人工智能数据中心园区</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:37 UTC</span>
+              </div>
+              <p class="article-desc">Meta Platforms Inc（纳斯达克股票代码：META、XETRA：FB2A、SIX：FB）和 BlackRock Inc（纽约证券交易所股票代码：BLK）成立了一家合资企业，开发……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=cbc56c69625d7fb416f1390c7cf2003b25e407a34f2f32561be8f760c3635f67" target="_blank" class="article-title">更高的广告收入会有助于元平台股票第二季度的盈利吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:21 UTC</span>
+              </div>
+              <p class="article-desc">META 第二季度的业绩可能会显示广告收入的增长，因为人工智能定位、更强的参与度和不断上升的印象促进了广告商……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="亚马逊 amazon amzn" data-ticker="AMZN"
+           data-sector="云与AI" data-change="0.2809"
+           data-news="5" data-order="19">
+        <div class="card-header">
+          <span class="company-name">亚马逊 Amazon</span>
+          <span class="ticker">AMZN</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$232.04</span>
+          <span class="price-change up">▲ +0.28%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,17.7 6.1,14.4 12.2,13.5 18.3,12.0 24.4,10.3 30.5,12.6 36.6,9.2 42.7,10.9 48.8,9.0 54.9,8.8 61.1,1.5 67.2,6.4 73.3,9.0 79.4,6.3 85.5,8.7 91.6,11.4 97.7,22.3 103.8,23.8 109.9,24.5 116.0,23.9" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$199</span>
+            <span class="r52-bar"><i style="left:44%"></i></span>
+            <span class="r52-hi">$275</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买70/持5/卖0">分析师 买入</span><span class="tag earn">📅 07-30 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=852a33e052473f4e2eb051f9db8b7c63860c02a3fabc15288ece8e21c714cb9a" target="_blank" class="article-title">亚马逊股价回升 UPS 股价上涨 912 亿美元</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:58 UTC</span>
+              </div>
+              <p class="article-desc">UPS 完成了亚马逊计划的减货计划，并将年收入预期上调约 15 亿美元。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=333771347760fea1727fc018f0697cf5033af1d7199ac85fcda2f2727c0849dc" target="_blank" class="article-title">亚马逊第二季度财报公布之前：立即购买股票还是等待结果？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:47 UTC</span>
+              </div>
+              <p class="article-desc">随着投资者权衡人工智能支出，亚马逊即将公布 2026 年第二季度财报，AWS 增长、Prime Day 时机和广告势头成为焦点……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b1123f82ba5f75deb650b51ab88fa44895b363d276cb379fd4935d88ad6f5622" target="_blank" class="article-title">UPS 上调 2026 年收入预期；在亚马逊下滑的影响下，国内季度收入持平</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 15:16 UTC</span>
+              </div>
+              <p class="article-desc">联合包裹服务公司 (UPS) 在交付第二个季度后于周二上调了全年收入预期</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=77d17b47ae35d7fd424c24deae1778a4152f4ac572359ee7cf87585fba2a74a1" target="_blank" class="article-title">在 7 月 30 日第二季度收益之前购买亚马逊股票的 3 个主要原因</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:09 UTC</span>
+              </div>
+              <p class="article-desc">亚马逊将于 7 月 30 日公布第二季度收益，其布局看起来与该股多年来提供的任何内容都不同。四合院…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7bd1bc126041ab77fa820d6723b951cfd902022fe67ba3eb49f4cd03111328a3" target="_blank" class="article-title">随着盈利接近，亚马逊（AMZN）能否保持被低估的状态？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 12:13 UTC</span>
+              </div>
+              <p class="article-desc">亚马逊 (Amazon.com) 股价最近有所回落，但在过去三年中仍强劲上涨 73.1%，而当前…</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="特斯拉 tesla tsla" data-ticker="TSLA"
+           data-sector="云与AI" data-change="-0.7632"
+           data-news="5" data-order="20">
+        <div class="card-header">
+          <span class="company-name">特斯拉 Tesla</span>
+          <span class="ticker">TSLA</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$306.86</span>
+          <span class="price-change down">▼ -0.76%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,2.4 6.1,1.5 12.2,7.7 18.3,2.6 24.4,5.8 30.5,7.6 36.6,5.1 42.7,4.9 48.8,7.4 54.9,7.2 61.1,7.5 67.2,8.1 73.3,10.1 79.4,12.3 85.5,10.5 91.6,11.5 97.7,22.0 103.8,23.3 109.9,24.0 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$303</span>
+            <span class="r52-bar"><i style="left:2%"></i></span>
+            <span class="r52-hi">$490</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买29/持24/卖7">分析师 持有</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=18e51dbab8428b4e8f41ee55900074d094b5b18bed1483d17956d74c24de5297" target="_blank" class="article-title">德意志银行以更低的价格加倍押注特斯拉</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:33 UTC</span>
+              </div>
+              <p class="article-desc">有一种信任投票的形式，人们几乎不需要付出任何代价。华尔街已经完善了它。...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=77ceb15938b0d6e42c8361004ef6beebdae552c781832371cc2b1071c442ab0b" target="_blank" class="article-title">Lucid 现在一个月内上涨 33%，轻松击败特斯拉和 Rivian。怎样才能让 LCID 股票回到 10 美元？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:07 UTC</span>
+              </div>
+              <p class="article-desc">一位沙特王子刚刚以 1.29 亿美元的价格购买了 Lucid 的股份，导致特斯拉和 Rivian 盘中股价飙升 25%。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=8861428efbf0752d77f1d3da6b64f6b21c4cc30d6918465e800d294c413b9e6f" target="_blank" class="article-title">自 6 月份达到顶峰以来，SpaceX 的市值已相当于特斯拉的全部市值</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:42 UTC</span>
+              </div>
+              <p class="article-desc">特斯拉公司（纳斯达克股票代码：TSLA）于 2010 年上市，这家电动汽车公司估值约为 17 亿美元。十一岁…</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=b26cec47787fedf792306f5bc07d258bedec4530b6e8cb7a93b729cbd2a9c715" target="_blank" class="article-title">这家华尔街银行相信特斯拉的股价将比目前的价格增长近一倍，这是疯了吗？也许不是。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:41 UTC</span>
+              </div>
+              <p class="article-desc">Wedbush 刚刚给一只股票设定了 600 美元的目标价，该股的盈利率下降了近 40%，并关注其营业利润率……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=dbb380132477c5437e4259c89babeeece91499b9f36b09dccf81a25729474a1c" target="_blank" class="article-title">特斯拉股价下跌 23%，比亚迪股价上涨 22%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:39 UTC</span>
+              </div>
+              <p class="article-desc">过去一个月，两家电动汽车巨头面临着同样举步维艰的全球市场，但最终却得到了完全相反的结果……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="台积电 tsmc tsm" data-ticker="TSM"
+           data-sector="AI芯片" data-change="-1.0950"
+           data-news="2" data-order="21">
+        <div class="card-header">
+          <span class="company-name">台积电 TSMC</span>
+          <span class="ticker">TSM</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">2 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$394.72</span>
+          <span class="price-change down">▼ -1.09%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,10.8 12.2,13.6 18.3,8.7 24.4,14.0 30.5,12.8 36.6,12.8 42.7,13.6 48.8,17.0 54.9,17.4 61.1,17.6 67.2,20.3 73.3,23.5 79.4,22.4 85.5,16.2 91.6,17.1 97.7,18.7 103.8,22.1 109.9,23.3 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$225</span>
+            <span class="r52-bar"><i style="left:67%"></i></span>
+            <span class="r52-hi">$478</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买41/持2/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=dc89aa4588f760efb83def0cc1f69959ddf33167ddae5ba151c9ddda4d574eea" target="_blank" class="article-title">台积电称其熊本工厂的所有人员均已确认安全；称震后结构检查已完成，确认结构安全，运营正在逐步恢复；称详细检查和影响评估正在进行中；称 JASM 施工现场未受影响，但出于安全预防考虑，部分工程已暂停</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 09:36 UTC</span>
+              </div>
+              <p class="article-desc">- 路透社</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=f2f93c4d8533a256a289879a12f0d662bf46804f344ef38fcd75f1ed247567a2" target="_blank" class="article-title">英特尔VS。台积电：CoWoS 封装限制如何为英特尔代工厂创造机会</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">07/28 18:25 UTC</span>
+              </div>
+              <p class="article-desc">随着英特尔扩大外部销售规模，台积电领先代工制造。单击查看 TSM 问题如何提供操作……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="博通 broadcom avgo" data-ticker="AVGO"
+           data-sector="AI芯片" data-change="0.2924"
+           data-news="5" data-order="22">
+        <div class="card-header">
+          <span class="company-name">博通 Broadcom</span>
+          <span class="ticker">AVGO</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$384.34</span>
+          <span class="price-change up">▲ +0.29%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,14.7 6.1,19.5 12.2,24.5 18.3,16.9 24.4,18.7 30.5,8.5 36.6,1.5 42.7,2.1 48.8,11.2 54.9,8.3 61.1,5.4 67.2,16.6 73.3,18.6 79.4,14.5 85.5,9.8 91.6,3.9 97.7,6.4 103.8,12.4 109.9,11.6 116.0,11.0" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$287</span>
+            <span class="r52-bar"><i style="left:50%"></i></span>
+            <span class="r52-hi">$481</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买52/持5/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=dc84f31152113b0e1dd4b2ee43da324a1e4a6c1e246a6a5998eeadd2a5efa120" target="_blank" class="article-title">博通股票收益率仅为 0.68%。但股息却出现爆炸式增长</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:54 UTC</span>
+              </div>
+              <p class="article-desc">微薄的收益率掩盖了科技领域增长最快的支出之一。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=1122569073d2d9e7320fb792b00f5fb4f37ff932b526b8ada3cc0a40b5538b5d" target="_blank" class="article-title">您为博通股票真正付出的代价</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:37 UTC</span>
+              </div>
+              <p class="article-desc">从今天的数据来看，这家芯片制造商看起来很昂贵，但一旦考虑到增长分析师的因素，就会出现大幅折扣……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=47b869c6900cefb0910ee90a04c328630eb9b63df97cbf3b3fdba39d2de0ff50" target="_blank" class="article-title">博通带领 3 只人工智能股悄然提高股息，其中一只股息上涨 161%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 12:30 UTC</span>
+              </div>
+              <p class="article-desc">三只科技股将强劲的五年股息增长与受控的派息率和看涨的分析师评级结合在一起。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=fe8e0d37289068f99ccea18880f7838945af406c29f934add16dbcee503f9907" target="_blank" class="article-title">Broadcom (AVGO) 与三星 AI 芯片达成 2000 亿美元交易，直至 2030 年</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 10:08 UTC</span>
+              </div>
+              <p class="article-desc">三星和博通（NasdaqGS：AVGO）同意达成一项价值超过 200 亿美元的人工智能半导体交易，该交易将持续到 2030 年。该协议……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=79ea789e038752aa5a2b7a3d3fb45face1c5d70062762696be3038bdc38db8a1" target="_blank" class="article-title">博通：为什么谷歌股票恐慌错过了博通的护城河实际上是什么</a>
+              <div class="article-meta">
+                <span class="source">SeekingAlpha</span>
+                <span class="pub-time">07/28 04:57 UTC</span>
+              </div>
+              <p class="article-desc">Broadcom (AVGO) 的买入论点：持久的人工智能网络护城河、强劲的每股收益和利润率扩张以及 2027 年收入前景……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="英特尔 intel intc" data-ticker="INTC"
+           data-sector="AI芯片" data-change="-4.5053"
+           data-news="5" data-order="23">
+        <div class="card-header">
+          <span class="company-name">英特尔 Intel</span>
+          <span class="ticker">INTC</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$87.54</span>
+          <span class="price-change down">▼ -4.51%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,7.1 12.2,10.0 18.3,9.2 24.4,14.4 30.5,14.5 36.6,13.5 42.7,14.7 48.8,17.6 54.9,15.6 61.1,17.7 67.2,20.3 73.3,21.2 79.4,20.3 85.5,16.6 91.6,17.8 97.7,18.9 103.8,22.4 109.9,22.7 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$19</span>
+            <span class="r52-bar"><i style="left:56%"></i></span>
+            <span class="r52-hi">$141</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买18/持34/卖3">分析师 持有</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=5e6f3d62cd5ebc1190bb96a181ead959ef0d5977da3e0f31a87833f7804bec1c" target="_blank" class="article-title">英特尔 (INTC) 股票在第二季度和人工智能需求强劲后公允价值上涨￼</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:08 UTC</span>
+              </div>
+              <p class="article-desc">在分析师将其公允价值预期从 88.61 美元上调至 115.65 美元后，英特尔重新成为焦点，这一大幅调整导致……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=30aa6f827080e53e85f79cffd3e6f8c4fb508303c8e2dc70a76d1cec4d93ccc5" target="_blank" class="article-title">英特尔股价周二下跌：发生了什么？</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 05:44 UTC</span>
+              </div>
+              <p class="article-desc">由于半导体市场回落，英特尔 (INTC) 股价盘前下跌近 4%。发现关键支撑位、MACD 动量、...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=a7f965542b39ddc0533961e85126e2be1f6c42d40ae2a45a2c6258df5e62c4ab" target="_blank" class="article-title">英特尔自 6 月份以来股价下跌 39%。是时候购买了吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 21:17 UTC</span>
+              </div>
+              <p class="article-desc">股价在大幅上涨后下跌，但什么时候才能止跌呢？</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=9da2b3ec369a2f6ae282187d13b4bd0d190d5a8c2b247ea4c99634075829e71a" target="_blank" class="article-title">为什么英特尔股票再次下跌</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:35 UTC</span>
+              </div>
+              <p class="article-desc">在人工智能支出方面的疑虑、美联储可能的意外以及来自中国的新竞争之间，以下是令投资者感到不安的因素。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=54a107239e989aff39a1f4d09c75286421f1e5aa71eb8d2a351303fe807b7b93" target="_blank" class="article-title">英特尔 14A 芯片尚未制造：Synopsys 已在</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:47 UTC</span>
+              </div>
+              <p class="article-desc">任何在完全测试之前发布过软件的人都知道其中的数学原理。代码审查中发现的错误花费了一个下午的时间……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="高通 qualcomm qcom" data-ticker="QCOM"
+           data-sector="AI芯片" data-change="-3.2009"
+           data-news="5" data-order="24">
+        <div class="card-header">
+          <span class="company-name">高通 Qualcomm</span>
+          <span class="ticker">QCOM</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$164.60</span>
+          <span class="price-change down">▼ -3.20%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,7.0 6.1,9.5 12.2,14.4 18.3,5.5 24.4,8.6 30.5,5.4 36.6,1.5 42.7,3.2 48.8,7.7 54.9,12.8 61.1,12.9 67.2,19.3 73.3,18.3 79.4,19.5 85.5,16.8 91.6,14.9 97.7,18.9 103.8,22.4 109.9,19.8 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$124</span>
+            <span class="r52-bar"><i style="left:32%"></i></span>
+            <span class="r52-hi">$250</span>
+          </div><div class="stock-tags"><span class="tag rec-hold" title="分析师: 买19/持26/卖3">分析师 持有</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d189a0dc245609556f5727537cb8e38e778ad375ed51a49e178141e185422451" target="_blank" class="article-title">高通 (QCOM) 三星的扩张和人工智能交易可能重塑其增长故事</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:11 UTC</span>
+              </div>
+              <p class="article-desc">高通公司（纳斯达克股票代码：QCOM）正在进入一个新的增长阶段，这是两个主要催化剂——Samsun 的扩张……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=afa527d7f47f60e80ce28ae6f489d8bb841f8b4fb710b0f1fca566775e925d6f" target="_blank" class="article-title">高通遭遇 35% 的残酷下滑后面临严峻考验</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 19:47 UTC</span>
+              </div>
+              <p class="article-desc">这家拥有 41 年历史的公司已经回吐了上半年的股价涨幅，目前股价比其股价低了 35%……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=4e80b843a42186b2199acb2d1b5c5276944afa4e62ec9aec3651f7253508fae4" target="_blank" class="article-title">高通 (QCOM) 明天公布收益：展望</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:17 UTC</span>
+              </div>
+              <p class="article-desc">无线芯片制造商高通（纳斯达克股票代码：QCOM）将于本周三盘后公布财报。这是值得期待的……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=7493aedac7df319bc99b7ccbd14525e905d31d46e8a626251d2266e02c5cc195" target="_blank" class="article-title">高通将于 9 月提高芯片价格，您的下一次设备升级可能首当其冲</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:38 UTC</span>
+              </div>
+              <p class="article-desc">高通于 2026 年 7 月 24 日通知客户，两位数的芯片价格上涨将于 9 月 1 日生效，理由是……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=c3726ae6742afd3bfc4dd39699be40d7d53614d5c04bc9bfce7f8fc801a8768e" target="_blank" class="article-title">高通 (QCOM) 在下一份收益报告中会再次超出预期吗？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:10 UTC</span>
+              </div>
+              <p class="article-desc">高通（QCOM）有着令人印象深刻的盈利惊喜历史，目前拥有两个关键的正确组合……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="arm arm" data-ticker="ARM"
+           data-sector="AI芯片" data-change="-7.2579"
+           data-news="1" data-order="25">
+        <div class="card-header">
+          <span class="company-name">Arm</span>
+          <span class="ticker">ARM</span>
+          <span class="sector-badge">AI芯片</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$247.00</span>
+          <span class="price-change down">▼ -7.26%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,5.2 12.2,9.9 18.3,8.4 24.4,13.1 30.5,13.1 36.6,7.2 42.7,8.2 48.8,13.4 54.9,17.2 61.1,18.1 67.2,21.3 73.3,20.2 79.4,19.7 85.5,15.4 91.6,16.7 97.7,16.8 103.8,21.7 109.9,20.4 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$105</span>
+            <span class="r52-bar"><i style="left:43%"></i></span>
+            <span class="r52-hi">$439</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买28/持14/卖2">分析师 买入</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=558112a0c7b5c13f789965e416a6969ae4f87991edbc06e984a74734e1387e3d" target="_blank" class="article-title">周二 Arm Holdings 股票怎么样？</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 13:22 UTC</span>
+              </div>
+              <p class="article-desc">由于人工智能贸易紧张情绪冲击科技股，Arm Holdings 股价下跌超过 9%。获取有关技术水平、盈利预测的重要见解……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="aaoi 应用光电 aaoi" data-ticker="AAOI"
+           data-sector="光通信/材料" data-change="-8.8121"
+           data-news="0" data-order="26">
+        <div class="card-header">
+          <span class="company-name">AAOI 应用光电</span>
+          <span class="ticker">AAOI</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$89.20</span>
+          <span class="price-change down">▼ -8.81%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,5.1 12.2,12.1 18.3,11.2 24.4,14.7 30.5,14.7 36.6,11.6 42.7,12.5 48.8,15.7 54.9,10.4 61.1,16.7 67.2,20.2 73.3,19.3 79.4,19.1 85.5,12.8 91.6,16.2 97.7,15.6 103.8,20.2 109.9,21.1 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$19</span>
+            <span class="r52-bar"><i style="left:34%"></i></span>
+            <span class="r52-hi">$223</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买9/持4/卖0">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="axt axti" data-ticker="AXTI"
+           data-sector="光通信/材料" data-change="-9.5238"
+           data-news="1" data-order="27">
+        <div class="card-header">
+          <span class="company-name">AXT</span>
+          <span class="ticker">AXTI</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count">1 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$43.32</span>
+          <span class="price-change down">▼ -9.52%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,7.1 12.2,13.9 18.3,8.3 24.4,12.6 30.5,11.1 36.6,9.1 42.7,13.4 48.8,18.8 54.9,13.1 61.1,16.4 67.2,22.7 73.3,22.5 79.4,20.1 85.5,14.0 91.6,16.8 97.7,16.8 103.8,21.4 109.9,20.9 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$2</span>
+            <span class="r52-bar"><i style="left:30%"></i></span>
+            <span class="r52-hi">$141</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买8/持3/卖0">分析师 买入</span><span class="tag earn">📅 07-30 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=9f34dcfc94db70376ebd849f956c3da154bd4835452cfd69c7ec09042e87dc7f" target="_blank" class="article-title">B. Riley Securities 对 AXT 维持中性，将目标价下调至 52 美元</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 08:23 UTC</span>
+              </div>
+              <p class="article-desc">B. Riley Securities 分析师 Dave Kang 维持 AXT （纳斯达克股票代码：AXTI）的中性评级，并将目标价从 73 美元下调......</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="lumentum lite" data-ticker="LITE"
+           data-sector="光通信/材料" data-change="-7.2982"
+           data-news="2" data-order="28">
+        <div class="card-header">
+          <span class="company-name">Lumentum</span>
+          <span class="ticker">LITE</span>
+          <span class="sector-badge">光通信/材料</span>
+          <span class="article-count">2 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$660.00</span>
+          <span class="price-change down">▼ -7.30%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,1.5 6.1,8.1 12.2,16.6 18.3,16.2 24.4,20.0 30.5,19.0 36.6,9.9 42.7,8.0 48.8,11.9 54.9,6.5 61.1,13.8 67.2,19.1 73.3,16.0 79.4,12.2 85.5,3.9 91.6,4.8 97.7,4.3 103.8,12.5 109.9,18.5 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$107</span>
+            <span class="r52-bar"><i style="left:58%"></i></span>
+            <span class="r52-hi">$1,053</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买27/持6/卖0">分析师 买入</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=8c365c1504dc325b8b354a440066f838fc453641aa54395b674b70c45fc62ed2" target="_blank" class="article-title">由于交易员质疑人工智能支出热潮，相干公司股价下跌 11%，应用光电公司股价下跌 10%，Lumentum 股价下跌 9%</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 16:15 UTC</span>
+              </div>
+              <p class="article-desc">今年飙升三位数的光学股周二遭受重创，其原因可以追溯到单一的 l...</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d24f209f0ee12e45ec49355d4575d4ab04af03c8b5f67dac1555fb64ca51eee4" target="_blank" class="article-title">新的人工智能短缺即将到来。一位首席执行官刚刚预测它将“比内存更大”。</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 14:53 UTC</span>
+              </div>
+              <p class="article-desc">Lumentum 的首席执行官刚刚命名了一种不起眼的半导体材料，他认为这种材料将扼杀人工智能基础设施的增长，而……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="黑莓 blackberry bb" data-ticker="BB"
+           data-sector="其他" data-change="-4.5131"
+           data-news="0" data-order="29">
+        <div class="card-header">
+          <span class="company-name">黑莓 BlackBerry</span>
+          <span class="ticker">BB</span>
+          <span class="sector-badge">其他</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$8.04</span>
+          <span class="price-change down">▼ -4.51%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,2.3 6.1,1.5 12.2,7.8 18.3,8.4 24.4,9.7 30.5,9.6 36.6,8.2 42.7,10.4 48.8,11.6 54.9,10.2 61.1,12.0 67.2,19.1 73.3,19.9 79.4,20.7 85.5,19.9 91.6,20.1 97.7,21.7 103.8,22.1 109.9,22.7 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$3</span>
+            <span class="r52-bar"><i style="left:51%"></i></span>
+            <span class="r52-hi">$13</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买9/持4/卖1">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+      <div class="company-card" data-name="robinhood hood" data-ticker="HOOD"
+           data-sector="其他" data-change="-2.0693"
+           data-news="5" data-order="30">
+        <div class="card-header">
+          <span class="company-name">Robinhood</span>
+          <span class="ticker">HOOD</span>
+          <span class="sector-badge">其他</span>
+          <span class="article-count">5 条</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$93.67</span>
+          <span class="price-change down">▼ -2.07%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,18.1 6.1,10.1 12.2,6.1 18.3,1.5 24.4,6.0 30.5,5.4 36.6,3.9 42.7,6.9 48.8,8.9 54.9,5.4 61.1,3.4 67.2,12.6 73.3,18.4 79.4,19.1 85.5,12.3 91.6,14.1 97.7,16.9 103.8,23.3 109.9,22.6 116.0,24.5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$65</span>
+            <span class="r52-bar"><i style="left:33%"></i></span>
+            <span class="r52-hi">$152</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买27/持5/卖1">分析师 买入</span><span class="tag earn">📅 07-29 财报</span></div>
+        <div class="articles">
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=ede09f2adf68d4b184b56c13c1fbb488a8f826dbdb4648993206b1c965538b41" target="_blank" class="article-title">分析师在 7 月 29 日公布财报前上调 Robinhood 股价目标</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 22:30 UTC</span>
+              </div>
+              <p class="article-desc">Robinhood Markets（纳斯达克股票代码：HOOD）是一个因其股票、加密货币和代币化股票而广受欢迎的电子交易经纪平台……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=17def6dffe08671c744a3ebd8aaef8d5b3e0d311916c20731c76635cbb471ed8" target="_blank" class="article-title">Coinbase 和 Robinhood 在第二季度财报公布前陷入激烈竞争，但只有一家被称为行业“第一家超大规模企业”</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 20:07 UTC</span>
+              </div>
+              <p class="article-desc">事实证明，Robinhood 更擅长实现收入来源多元化，但人工智能商业和代币化股票等新兴领域……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=d239e19d93cec05f64dfd3d99a0aa62cb449cc279463cbb639b84f0d6f4520e3" target="_blank" class="article-title">股票交易和预测市场能否抵消 Robinhood 的加密货币暴跌？</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 18:05 UTC</span>
+              </div>
+              <p class="article-desc">根据 FactSet 编制的估计，分析师预计 Robinhood 将报告每股收益 43 美分。</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=88b73d0562552c250554c8a5ebfa84911613d76420a5283e55057a7867a15902" target="_blank" class="article-title">Robinhood (HOOD) 将于明天报告收益：以下是预期内容</a>
+              <div class="article-meta">
+                <span class="source">Yahoo</span>
+                <span class="pub-time">07/28 17:09 UTC</span>
+              </div>
+              <p class="article-desc">金融服务公司 Robinhood（纳斯达克股票代码：HOOD）将于本周三收盘后公布收益。这是……</p>
+            </div>
+            <div class="article">
+              <a href="https://finnhub.io/api/news?id=4ee05b0ebde7f357990d64be9f0956236db1ecb8679e720b105faa919829fc06" target="_blank" class="article-title">Robinhood 第二季度预览：预测市场、Meme 币和特朗普账户可能会推动盈利</a>
+              <div class="article-meta">
+                <span class="source">Benzinga</span>
+                <span class="pub-time">07/28 15:41 UTC</span>
+              </div>
+              <p class="article-desc">由于新产品的推出，Robinhood 可能会看到强劲的第二季度财务业绩和/或第三季度指导……</p>
+            </div>
+        </div>
+      </div>
+      <div class="company-card" data-name="cloudflare net" data-ticker="NET"
+           data-sector="云与AI" data-change="-0.5497"
+           data-news="0" data-order="31">
+        <div class="card-header">
+          <span class="company-name">Cloudflare</span>
+          <span class="ticker">NET</span>
+          <span class="sector-badge">云与AI</span>
+          <span class="article-count muted">无新闻</span>
+        </div>
+        <div class="stock-price">
+          <span class="price-current">$264.15</span>
+          <span class="price-change down">▼ -0.55%</span>
+          <svg class="spark" viewBox="0 0 116 26" preserveAspectRatio="none"><polyline points="0.0,22.8 6.1,22.2 12.2,24.5 18.3,21.5 24.4,9.1 30.5,6.4 36.6,5.0 42.7,9.3 48.8,8.6 54.9,1.5 61.1,6.6 67.2,6.9 73.3,3.9 79.4,7.0 85.5,7.0 91.6,9.0 97.7,12.9 103.8,13.0 109.9,10.9 116.0,11.8" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+          <div class="range52" title="52周区间">
+            <span class="r52-lo">$160</span>
+            <span class="r52-bar"><i style="left:86%"></i></span>
+            <span class="r52-hi">$282</span>
+          </div><div class="stock-tags"><span class="tag rec-buy" title="分析师: 买29/持9/卖2">分析师 买入</span></div>
+        <div class="articles"><div class="no-articles">今日无相关新闻</div>
+        </div>
+      </div>
+  </div>
+  <div id="emptyHint" class="empty-hint" style="display:none">没有符合条件的公司</div>
+</div>
+
+<button id="toTop" class="to-top" title="返回顶部">↑</button>
+
+<!-- ── Chart zoom modal ── -->
+<div id="chartModal" class="chart-modal" style="display:none">
+  <div class="chart-box">
+    <div class="chart-head">
+      <span id="chartTitle" class="chart-title"></span>
+      <button id="chartClose" class="chart-close">✕</button>
+    </div>
+    <div class="chart-sub" id="chartSub"></div>
+    <div id="chartArea" class="chart-area"></div>
+    <div class="chart-hint">在图上移动鼠标/手指查看每天的价格 · 近 90 个交易日</div>
+  </div>
+</div>
+
+<footer class="footer">
+  新闻数据：Finnhub &nbsp;·&nbsp; 股价/指数：Yahoo Finance（个股为含盘后的最终成交价，指数为收盘价） &nbsp;·&nbsp; 评级/财报：Finnhub &nbsp;·&nbsp; 仅供参考，不构成投资建议
+</footer>
+
+<script>
+(function () {
+  var grid = document.getElementById('cardGrid');
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.company-card'));
+  var search = document.getElementById('searchBox');
+  var sortSel = document.getElementById('sortSelect');
+  var visCount = document.getElementById('visCount');
+  var emptyHint = document.getElementById('emptyHint');
+  var state = { q: '', sector: 'all', filter: 'all' };
+
+  function num(c, a) { var v = c.getAttribute(a); return v === '' ? null : parseFloat(v); }
+
+  function apply() {
+    // sort
+    var arr = cards.slice();
+    var mode = sortSel.value;
+    arr.sort(function (a, b) {
+      if (mode === 'order') return num(a, 'data-order') - num(b, 'data-order');
+      if (mode === 'news') return num(b, 'data-news') - num(a, 'data-news') || num(a,'data-order')-num(b,'data-order');
+      var ca = num(a, 'data-change'), cb = num(b, 'data-change');
+      if (ca === null) return 1; if (cb === null) return -1;
+      return mode === 'gain' ? cb - ca : ca - cb;
+    });
+    arr.forEach(function (c) { grid.appendChild(c); });
+    // filter
+    var shown = 0;
+    cards.forEach(function (c) {
+      var ok = true;
+      if (state.q && c.getAttribute('data-name').indexOf(state.q) === -1) ok = false;
+      if (state.sector !== 'all' && c.getAttribute('data-sector') !== state.sector) ok = false;
+      if (state.filter === 'hasnews' && num(c, 'data-news') <= 0) ok = false;
+      var ch = num(c, 'data-change');
+      if (state.filter === 'up' && !(ch > 0)) ok = false;
+      if (state.filter === 'down' && !(ch < 0)) ok = false;
+      c.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    visCount.textContent = '显示 ' + shown + ' / ' + cards.length + ' 家';
+    emptyHint.style.display = shown ? 'none' : 'block';
+  }
+
+  search.addEventListener('input', function () { state.q = this.value.trim().toLowerCase(); apply(); });
+  sortSel.addEventListener('change', apply);
+  document.querySelectorAll('.tab-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active'); state.sector = b.getAttribute('data-sector'); apply();
+    });
+  });
+  document.querySelectorAll('.chip-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.chip-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active'); state.filter = b.getAttribute('data-filter'); apply();
+    });
+  });
+  var hist = document.getElementById('historySelect');
+  if (hist) hist.addEventListener('change', function () { window.location.href = './' + this.value + '.html'; });
+
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function () { toTop.style.display = window.scrollY > 400 ? 'flex' : 'none'; });
+  toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  apply();
+})();
+</script>
+
+<script>
+var CHART_DATA = {"MU":{"name":"美光 Micron","pts":[["03/19",444.02],["03/20",422.66],["03/23",404.12],["03/24",395.3],["03/25",381.87],["03/26",355.26],["03/27",357.02],["03/30",321.75],["03/31",337.79],["04/01",367.79],["04/02",366.18],["04/06",377.7],["04/07",377.52],["04/08",406.67],["04/09",421.45],["04/10",420.53],["04/13",426.49],["04/14",465.59],["04/15",456.16],["04/16",457.16],["04/17",455.0],["04/20",448.35],["04/21",449.31],["04/22",487.41],["04/23",481.65],["04/24",496.64],["04/27",524.48],["04/28",504.21],["04/29",518.38],["04/30",517.08],["05/01",542.13],["05/04",576.36],["05/05",640.1],["05/06",666.49],["05/07",646.53],["05/08",746.7],["05/11",795.21],["05/12",766.46],["05/13",803.51],["05/14",775.89],["05/15",724.55],["05/18",681.44],["05/19",698.63],["05/20",731.88],["05/21",761.98],["05/22",750.88],["05/26",895.74],["05/27",928.27],["05/28",923.38],["05/29",970.85],["06/01",1035.34],["06/02",1063.94],["06/03",1079.4],["06/04",995.85],["06/05",863.88],["06/08",949.13],["06/09",935.75],["06/10",891.74],["06/11",995.72],["06/12",981.46],["06/15",1087.82],["06/16",1020.6],["06/17",1043.03],["06/18",1133.82],["06/22",1211.19],["06/23",1051.61],["06/24",1048.35],["06/25",1213.37],["06/26",1132.16],["06/29",1145.1],["06/30",1154.11],["07/01",1032.12],["07/02",975.41],["07/06",984.75],["07/07",938.38],["07/08",948.8],["07/09",991.64],["07/10",979.3],["07/13",937.0],["07/14",983.12],["07/15",904.28],["07/16",853.2],["07/17",848.95],["07/20",865.46],["07/21",970.82],["07/22",959.48],["07/23",990.21],["07/24",920.95],["07/27",900.2],["07/28",830.75]]},"SNDK":{"name":"闪迪 SanDisk","pts":[["03/19",772.09],["03/20",709.71],["03/23",702.49],["03/24",702.48],["03/25",677.86],["03/26",603.17],["03/27",615.83],["03/30",572.5],["03/31",635.34],["04/01",692.73],["04/02",701.59],["04/06",724.63],["04/07",710.8],["04/08",780.9],["04/09",851.57],["04/10",851.77],["04/13",952.5],["04/14",944.46],["04/15",891.72],["04/16",919.47],["04/17",920.99],["04/20",913.02],["04/21",903.49],["04/22",979.07],["04/23",932.43],["04/24",989.9],["04/27",1070.2],["04/28",1002.35],["04/29",1064.21],["04/30",1096.51],["05/01",1187.0],["05/04",1255.86],["05/05",1406.32],["05/06",1409.98],["05/07",1339.96],["05/08",1562.34],["05/11",1547.56],["05/12",1452.02],["05/13",1447.23],["05/14",1382.72],["05/15",1407.61],["05/18",1333.01],["05/19",1383.29],["05/20",1392.56],["05/21",1542.24],["05/22",1478.69],["05/26",1589.55],["05/27",1589.94],["05/28",1641.64],["05/29",1694.98],["06/01",1761.43],["06/02",1716.36],["06/03",1831.5],["06/04",1759.68],["06/05",1559.32],["06/08",1642.0],["06/09",1646.54],["06/10",1643.23],["06/11",1881.51],["06/12",1980.1],["06/15",2107.86],["06/16",1991.55],["06/17",1958.8],["06/18",2184.75],["06/22",2273.73],["06/23",1963.6],["06/24",1914.46],["06/25",2335.0],["06/26",2090.71],["06/29",2050.39],["06/30",2273.73],["07/01",2032.22],["07/02",1745.0],["07/06",1744.43],["07/07",1617.7],["07/08",1727.18],["07/09",1858.27],["07/10",1915.92],["07/13",1673.97],["07/14",1757.82],["07/15",1615.0],["07/16",1411.08],["07/17",1354.82],["07/20",1390.95],["07/21",1589.4],["07/22",1599.27],["07/23",1610.33],["07/24",1436.56],["07/27",1278.23],["07/28",1118.77]]},"MRVL":{"name":"迈威尔 Marvell","pts":[["03/19",89.46],["03/20",87.84],["03/23",90.09],["03/24",92.29],["03/25",98.38],["03/26",97.61],["03/27",94.81],["03/30",87.74],["03/31",98.98],["04/01",106.63],["04/02",107.03],["04/06",109.43],["04/07",109.3],["04/08",114.36],["04/09",119.84],["04/10",128.46],["04/13",131.27],["04/14",133.8],["04/15",134.57],["04/16",133.34],["04/17",139.66],["04/20",147.8],["04/21",151.27],["04/22",157.28],["04/23",165.52],["04/24",164.27],["04/27",158.17],["04/28",153.19],["04/29",156.53],["04/30",165.11],["05/01",164.91],["05/04",163.62],["05/05",168.71],["05/06",172.11],["05/07",159.97],["05/08",170.09],["05/11",170.8],["05/12",164.46],["05/13",177.91],["05/14",182.53],["05/15",176.85],["05/18",168.89],["05/19",176.23],["05/20",186.75],["05/21",190.64],["05/22",196.28],["05/26",208.21],["05/27",198.65],["05/28",204.78],["05/29",204.95],["06/01",219.38],["06/02",290.72],["06/03",301.58],["06/04",316.35],["06/05",263.41],["06/08",288.78],["06/09",266.81],["06/10",252.53],["06/11",280.64],["06/12",279.63],["06/15",308.8],["06/16",278.6],["06/17",289.47],["06/18",310.5],["06/22",307.78],["06/23",278.97],["06/24",276.63],["06/25",281.19],["06/26",266.7],["06/29",277.68],["06/30",297.82],["07/01",271.98],["07/02",245.23],["07/06",249.21],["07/07",230.64],["07/08",231.65],["07/09",243.21],["07/10",235.81],["07/13",217.53],["07/14",222.44],["07/15",206.26],["07/16",188.3],["07/17",188.68],["07/20",194.94],["07/21",207.96],["07/22",210.99],["07/23",209.32],["07/24",194.23],["07/27",189.17],["07/28",177.0]]},"AMD":{"name":"AMD","pts":[["03/19",205.27],["03/20",201.33],["03/23",202.68],["03/24",205.37],["03/25",220.27],["03/26",203.77],["03/27",201.99],["03/30",196.04],["03/31",203.43],["04/01",210.21],["04/02",217.5],["04/06",220.18],["04/07",221.53],["04/08",231.82],["04/09",236.64],["04/10",245.04],["04/13",246.83],["04/14",255.07],["04/15",258.12],["04/16",278.26],["04/17",278.39],["04/20",274.95],["04/21",284.49],["04/22",303.46],["04/23",305.33],["04/24",347.81],["04/27",334.63],["04/28",323.21],["04/29",337.11],["04/30",354.49],["05/01",360.54],["05/04",341.54],["05/05",355.26],["05/06",421.39],["05/07",408.46],["05/08",455.19],["05/11",458.79],["05/12",448.29],["05/13",445.5],["05/14",449.7],["05/15",424.1],["05/18",420.99],["05/19",414.05],["05/20",447.58],["05/21",449.59],["05/22",467.51],["05/26",503.89],["05/27",495.54],["05/28",518.09],["05/29",516.1],["06/01",510.13],["06/02",521.54],["06/03",542.52],["06/04",523.2],["06/05",466.38],["06/08",490.33],["06/09",475.51],["06/10",452.4],["06/11",488.45],["06/12",511.57],["06/15",547.26],["06/16",507.29],["06/17",512.48],["06/18",537.37],["06/22",551.63],["06/23",519.85],["06/24",519.74],["06/25",532.57],["06/26",521.58],["06/29",539.49],["06/30",580.91],["07/01",540.88],["07/02",517.82],["07/06",552.05],["07/07",516.11],["07/08",517.41],["07/09",546.72],["07/10",557.89],["07/13",534.39],["07/14",548.13],["07/15",529.14],["07/16",500.94],["07/17",495.76],["07/20",503.57],["07/21",544.43],["07/22",552.33],["07/23",539.69],["07/24",521.95],["07/27",494.95],["07/28",460.4]]},"NBIS":{"name":"Nebius","pts":[["03/19",121.52],["03/20",117.62],["03/23",114.15],["03/24",114.91],["03/25",115.09],["03/26",105.97],["03/27",100.82],["03/30",92.26],["03/31",103.76],["04/01",101.95],["04/02",108.82],["04/06",112.54],["04/07",117.4],["04/08",125.0],["04/09",136.33],["04/10",144.97],["04/13",154.56],["04/14",161.94],["04/15",166.77],["04/16",165.34],["04/17",157.14],["04/20",159.16],["04/21",156.55],["04/22",156.14],["04/23",157.08],["04/24",147.16],["04/27",144.96],["04/28",135.51],["04/29",141.19],["04/30",138.23],["05/01",154.49],["05/04",176.42],["05/05",175.92],["05/06",195.09],["05/07",184.77],["05/08",177.05],["05/11",186.1],["05/12",179.11],["05/13",207.27],["05/14",221.15],["05/15",219.94],["05/18",199.86],["05/19",197.73],["05/20",191.82],["05/21",219.93],["05/22",214.77],["05/26",208.06],["05/27",208.37],["05/28",226.34],["05/29",231.09],["06/01",264.51],["06/02",260.58],["06/03",251.68],["06/04",259.67],["06/05",227.81],["06/08",218.0],["06/09",220.12],["06/10",211.69],["06/11",222.24],["06/12",232.36],["06/15",260.07],["06/16",265.1],["06/17",280.91],["06/18",286.69],["06/22",283.61],["06/23",275.25],["06/24",259.66],["06/25",256.63],["06/26",240.3],["06/29",261.15],["06/30",276.17],["07/01",229.18],["07/02",215.62],["07/06",213.02],["07/07",195.19],["07/08",216.48],["07/09",216.2],["07/10",219.65],["07/13",210.51],["07/14",194.09],["07/15",199.51],["07/16",171.77],["07/17",177.71],["07/20",182.62],["07/21",216.92],["07/22",218.16],["07/23",220.97],["07/24",187.77],["07/27",187.88],["07/28",169.9]]},"ALAB":{"name":"Astera Labs","pts":[["03/19",126.16],["03/20",116.04],["03/23",123.87],["03/24",121.76],["03/25",120.33],["03/26",113.61],["03/27",112.47],["03/30",100.27],["03/31",109.6],["04/01",106.33],["04/02",117.14],["04/06",117.99],["04/07",118.99],["04/08",125.46],["04/09",129.46],["04/10",149.05],["04/13",166.79],["04/14",170.6],["04/15",172.09],["04/16",170.81],["04/17",174.05],["04/20",175.8],["04/21",191.97],["04/22",194.06],["04/23",197.54],["04/24",212.84],["04/27",196.64],["04/28",183.31],["04/29",196.85],["04/30",194.74],["05/01",202.68],["05/04",201.25],["05/05",215.69],["05/06",213.91],["05/07",195.65],["05/08",199.79],["05/11",207.35],["05/12",204.42],["05/13",224.09],["05/14",228.64],["05/15",232.68],["05/18",215.58],["05/19",244.26],["05/20",287.48],["05/21",297.84],["05/22",306.88],["05/26",318.72],["05/27",325.33],["05/28",349.17],["05/29",342.85],["06/01",320.09],["06/02",355.76],["06/03",363.54],["06/04",358.05],["06/05",317.06],["06/08",346.33],["06/09",341.7],["06/10",330.86],["06/11",367.47],["06/12",367.15],["06/15",389.2],["06/16",361.71],["06/17",374.68],["06/18",417.07],["06/22",439.66],["06/23",397.02],["06/24",399.92],["06/25",398.0],["06/26",391.74],["06/29",455.96],["06/30",483.02],["07/01",430.86],["07/02",406.42],["07/06",432.74],["07/07",382.89],["07/08",393.16],["07/09",417.45],["07/10",412.97],["07/13",362.05],["07/14",361.78],["07/15",350.62],["07/16",319.74],["07/17",303.62],["07/20",309.09],["07/21",319.79],["07/22",330.89],["07/23",326.97],["07/24",291.58],["07/27",282.52],["07/28",264.48]]},"GLW":{"name":"康宁 Corning","pts":[["03/19",132.88],["03/20",124.39],["03/23",130.77],["03/24",141.79],["03/25",146.13],["03/26",135.11],["03/27",136.6],["03/30",128.35],["03/31",135.76],["04/01",142.16],["04/02",147.69],["04/06",146.28],["04/07",148.29],["04/08",164.85],["04/09",169.54],["04/10",170.98],["04/13",174.9],["04/14",172.56],["04/15",168.01],["04/16",165.83],["04/17",164.13],["04/20",165.13],["04/21",165.2],["04/22",168.5],["04/23",169.24],["04/24",175.62],["04/27",167.75],["04/28",152.82],["04/29",151.67],["04/30",163.99],["05/01",158.02],["05/04",159.72],["05/05",161.85],["05/06",181.29],["05/07",182.12],["05/08",186.65],["05/11",207.07],["05/12",197.94],["05/13",206.19],["05/14",207.96],["05/15",191.52],["05/18",178.28],["05/19",175.56],["05/20",180.41],["05/21",191.6],["05/22",193.75],["05/26",195.87],["05/27",190.6],["05/28",182.69],["05/29",181.16],["06/01",176.7],["06/02",200.4],["06/03",200.76],["06/04",197.7],["06/05",177.58],["06/08",187.54],["06/09",173.94],["06/10",168.17],["06/11",176.55],["06/12",179.2],["06/15",187.88],["06/16",177.42],["06/17",175.4],["06/18",194.92],["06/22",209.83],["06/23",194.07],["06/24",205.83],["06/25",228.01],["06/26",221.05],["06/29",255.69],["06/30",255.43],["07/01",220.63],["07/02",196.79],["07/06",194.8],["07/07",185.38],["07/08",184.03],["07/09",192.38],["07/10",190.89],["07/13",183.11],["07/14",187.64],["07/15",174.41],["07/16",158.39],["07/17",154.61],["07/20",153.1],["07/21",162.41],["07/22",154.06],["07/23",156.06],["07/24",146.65],["07/27",143.36],["07/28",126.98]]},"ASML":{"name":"阿斯麦 ASML","pts":[["03/19",1361.64],["03/20",1312.67],["03/23",1364.86],["03/24",1394.56],["03/25",1389.04],["03/26",1324.88],["03/27",1297.94],["03/30",1249.6],["03/31",1316.24],["04/01",1355.03],["04/02",1312.65],["04/06",1299.48],["04/07",1301.91],["04/08",1416.11],["04/09",1443.6],["04/10",1473.14],["04/13",1494.98],["04/14",1513.02],["04/15",1476.62],["04/16",1405.93],["04/17",1454.73],["04/20",1471.37],["04/21",1453.9],["04/22",1438.64],["04/23",1412.87],["04/24",1452.63],["04/27",1430.58],["04/28",1382.76],["04/29",1392.27],["04/30",1437.12],["05/01",1425.17],["05/04",1384.41],["05/05",1441.04],["05/06",1542.73],["05/07",1514.63],["05/08",1589.95],["05/11",1563.78],["05/12",1518.96],["05/13",1579.52],["05/14",1582.45],["05/15",1499.86],["05/18",1470.48],["05/19",1457.54],["05/20",1548.12],["05/21",1589.93],["05/22",1630.78],["05/26",1629.91],["05/27",1595.79],["05/28",1603.68],["05/29",1610.66],["06/01",1626.45],["06/02",1703.15],["06/03",1724.12],["06/04",1755.19],["06/05",1639.61],["06/08",1746.77],["06/09",1775.46],["06/10",1731.94],["06/11",1897.01],["06/12",1861.13],["06/15",1890.2],["06/16",1801.55],["06/17",1865.4],["06/18",1927.17],["06/22",1926.74],["06/23",1776.15],["06/24",1760.48],["06/25",1838.79],["06/26",1792.29],["06/29",1880.66],["06/30",1986.85],["07/01",1840.65],["07/02",1767.02],["07/06",1822.7],["07/07",1745.01],["07/08",1766.35],["07/09",1801.91],["07/10",1794.98],["07/13",1723.8],["07/14",1773.33],["07/15",1812.91],["07/16",1782.55],["07/17",1745.31],["07/20",1736.76],["07/21",1799.17],["07/22",1799.52],["07/23",1800.66],["07/24",1754.81],["07/27",1653.11],["07/28",1590.18]]},"TOELY":{"name":"东京电子 Tokyo Electron","pts":[["03/18",121.19],["03/19",124.31],["03/20",115.89],["03/23",125.65],["03/24",125.68],["03/25",126.5],["03/26",122.11],["03/27",116.77],["03/30",116.71],["03/31",122.22],["04/01",125.0],["04/02",121.36],["04/06",121.42],["04/07",122.1],["04/08",135.0],["04/09",134.76],["04/10",141.45],["04/13",136.36],["04/14",140.34],["04/15",137.8],["04/16",142.64],["04/17",142.85],["04/20",141.05],["04/21",142.64],["04/22",145.73],["04/23",143.6],["04/24",145.8],["04/27",146.9],["04/28",139.31],["04/29",139.53],["04/30",150.3],["05/01",153.32],["05/04",156.2],["05/05",159.51],["05/06",166.25],["05/07",162.64],["05/08",172.39],["05/11",168.46],["05/12",163.22],["05/13",165.0],["05/14",162.92],["05/15",160.08],["05/18",156.2],["05/19",149.84],["05/20",150.67],["05/21",155.66],["05/22",157.04],["05/26",164.82],["05/27",163.75],["05/28",168.36],["05/29",169.92],["06/01",170.25],["06/02",172.15],["06/03",187.0],["06/04",200.5],["06/05",178.96],["06/08",182.51],["06/09",189.37],["06/10",190.5],["06/11",211.45],["06/12",217.65],["06/15",228.5],["06/16",218.94],["06/17",231.0],["06/18",245.49],["06/22",246.91],["06/23",227.8],["06/24",220.33],["06/25",234.0],["06/26",228.91],["06/29",247.8],["06/30",243.01],["07/01",226.0],["07/02",219.4],["07/06",224.49],["07/07",209.84],["07/08",212.22],["07/09",223.7],["07/10",228.26],["07/13",218.25],["07/14",221.27],["07/15",218.8],["07/16",211.53],["07/17",202.94],["07/20",201.81],["07/21",209.15],["07/22",204.53],["07/23",199.58],["07/27",184.5],["07/28",167.2]]},"LRCX":{"name":"泛林 Lam Research","pts":[["03/19",233.83],["03/20",228.2],["03/23",233.15],["03/24",238.67],["03/25",233.29],["03/26",211.47],["03/27",211.26],["03/30",199.79],["03/31",213.51],["04/01",221.85],["04/02",218.29],["04/06",220.49],["04/07",224.19],["04/08",246.32],["04/09",258.58],["04/10",263.47],["04/13",267.13],["04/14",272.22],["04/15",264.97],["04/16",260.78],["04/17",267.41],["04/20",262.97],["04/21",258.19],["04/22",265.36],["04/23",258.38],["04/24",267.59],["04/27",259.29],["04/28",251.05],["04/29",248.57],["04/30",257.68],["05/01",256.54],["05/04",258.39],["05/05",275.61],["05/06",296.96],["05/07",286.32],["05/08",293.84],["05/11",295.84],["05/12",289.04],["05/13",295.23],["05/14",298.94],["05/15",284.52],["05/18",277.76],["05/19",273.19],["05/20",291.88],["05/21",302.03],["05/22",305.14],["05/26",322.45],["05/27",318.71],["05/28",317.78],["05/29",317.96],["06/01",316.9],["06/02",334.17],["06/03",343.47],["06/04",336.17],["06/05",303.07],["06/08",324.22],["06/09",326.93],["06/10",321.57],["06/11",362.26],["06/12",366.55],["06/15",388.65],["06/16",369.08],["06/17",374.18],["06/18",389.04],["06/22",409.54],["06/23",371.33],["06/24",374.8],["06/25",401.82],["06/26",379.09],["06/29",410.91],["06/30",433.33],["07/01",391.26],["07/02",351.41],["07/06",350.2],["07/07",326.13],["07/08",333.15],["07/09",353.17],["07/10",350.33],["07/13",329.92],["07/14",346.1],["07/15",335.43],["07/16",320.96],["07/17",313.3],["07/20",306.76],["07/21",322.0],["07/22",319.29],["07/23",319.78],["07/24",305.21],["07/27",291.61],["07/28",271.0]]},"AMAT":{"name":"应用材料 AMAT","pts":[["03/19",356.77],["03/20",356.62],["03/23",361.34],["03/24",373.53],["03/25",368.88],["03/26",338.13],["03/27",336.75],["03/30",322.72],["03/31",341.37],["04/01",353.36],["04/02",348.04],["04/06",352.18],["04/07",353.87],["04/08",385.24],["04/09",397.32],["04/10",398.99],["04/13",395.24],["04/14",395.15],["04/15",393.77],["04/16",389.42],["04/17",396.45],["04/20",391.13],["04/21",393.84],["04/22",402.98],["04/23",403.41],["04/24",416.52],["04/27",404.36],["04/28",380.64],["04/29",382.11],["04/30",394.0],["05/01",388.6],["05/04",390.89],["05/05",410.31],["05/06",428.09],["05/07",410.13],["05/08",434.9],["05/11",443.07],["05/12",430.66],["05/13",436.07],["05/14",440.01],["05/15",436.08],["05/18",413.06],["05/19",406.4],["05/20",426.32],["05/21",427.36],["05/22",432.16],["05/26",454.89],["05/27",448.25],["05/28",449.68],["05/29",450.06],["06/01",458.17],["06/02",490.05],["06/03",500.77],["06/04",501.7],["06/05",453.01],["06/08",492.17],["06/09",499.21],["06/10",497.01],["06/11",552.64],["06/12",567.25],["06/15",585.78],["06/16",568.23],["06/17",592.92],["06/18",617.11],["06/22",640.18],["06/23",585.88],["06/24",588.97],["06/25",668.0],["06/26",626.84],["06/29",694.64],["06/30",723.0],["07/01",650.91],["07/02",603.04],["07/06",592.79],["07/07",554.5],["07/08",570.5],["07/09",588.66],["07/10",602.5],["07/13",575.39],["07/14",595.7],["07/15",579.43],["07/16",560.93],["07/17",529.66],["07/20",525.7],["07/21",564.55],["07/22",553.92],["07/23",562.8],["07/24",536.25],["07/27",516.89],["07/28",478.38]]},"KLAC":{"name":"科磊 KLA","pts":[["03/19",150.96],["03/20",149.68],["03/23",150.95],["03/24",156.42],["03/25",154.19],["03/26",144.93],["03/27",144.14],["03/30",138.08],["03/31",147.05],["04/01",151.79],["04/02",151.49],["04/06",153.81],["04/07",154.69],["04/08",167.02],["04/09",172.51],["04/10",173.51],["04/13",176.65],["04/14",179.36],["04/15",174.59],["04/16",173.26],["04/17",178.92],["04/20",180.3],["04/21",178.31],["04/22",180.98],["04/23",181.31],["04/24",193.25],["04/27",189.76],["04/28",180.67],["04/29",181.39],["04/30",174.81],["05/01",172.41],["05/04",171.11],["05/05",173.07],["05/06",181.4],["05/07",176.1],["05/08",186.68],["05/11",184.28],["05/12",180.9],["05/13",184.74],["05/14",189.05],["05/15",180.2],["05/18",175.65],["05/19",174.06],["05/20",182.95],["05/21",184.22],["05/22",188.84],["05/26",201.14],["05/27",195.72],["05/28",192.76],["05/29",192.17],["06/01",194.0],["06/02",204.52],["06/03",212.51],["06/04",213.11],["06/05",192.92],["06/08",210.81],["06/09",213.94],["06/10",213.56],["06/11",241.16],["06/12",254.54],["06/15",256.42],["06/16",237.33],["06/17",238.73],["06/18",259.56],["06/22",269.16],["06/23",244.49],["06/24",240.48],["06/25",258.8],["06/26",248.64],["06/29",278.39],["06/30",301.71],["07/01",266.19],["07/02",235.55],["07/06",233.31],["07/07",216.47],["07/08",221.18],["07/09",229.52],["07/10",231.52],["07/13",222.25],["07/14",230.37],["07/15",224.5],["07/16",219.37],["07/17",212.75],["07/20",207.6],["07/21",217.56],["07/22",214.69],["07/23",218.73],["07/24",210.52],["07/27",203.36],["07/28",174.91]]},"ATEYY":{"name":"爱德万 Advantest","pts":[["03/18",149.33],["03/19",153.07],["03/20",140.62],["03/23",150.96],["03/24",143.5],["03/25",147.75],["03/26",136.19],["03/27",134.08],["03/30",126.86],["03/31",135.81],["04/01",144.0],["04/02",135.64],["04/06",138.95],["04/07",141.34],["04/08",161.25],["04/09",159.44],["04/10",159.3],["04/13",160.97],["04/14",174.83],["04/15",174.01],["04/16",177.99],["04/17",181.88],["04/20",173.76],["04/21",167.21],["04/22",178.0],["04/23",174.42],["04/24",188.94],["04/27",196.0],["04/28",181.83],["04/29",181.7],["04/30",187.0],["05/01",181.37],["05/04",181.37],["05/05",186.02],["05/06",197.0],["05/07",186.09],["05/08",198.32],["05/11",185.3],["05/12",179.09],["05/13",180.96],["05/14",181.34],["05/15",170.58],["05/18",166.34],["05/19",163.58],["05/20",169.77],["05/21",172.63],["05/22",169.43],["05/26",169.12],["05/27",169.95],["05/28",171.8],["05/29",165.65],["06/01",164.42],["06/02",169.82],["06/03",174.8],["06/04",177.0],["06/05",153.51],["06/08",165.51],["06/09",159.88],["06/10",144.72],["06/11",168.06],["06/12",175.0],["06/15",186.35],["06/16",185.91],["06/17",187.43],["06/18",194.99],["06/22",201.79],["06/23",190.45],["06/24",192.75],["06/25",216.24],["06/26",200.74],["06/29",206.67],["06/30",208.06],["07/01",185.0],["07/02",176.7],["07/06",186.43],["07/07",176.0],["07/08",177.4],["07/09",186.68],["07/10",186.31],["07/13",175.16],["07/14",184.65],["07/15",188.42],["07/16",175.2],["07/17",178.05],["07/20",173.64],["07/21",186.45],["07/22",184.72],["07/23",185.15],["07/27",165.14],["07/28",155.54]]},"SMTC":{"name":"Semtech","pts":[["03/19",78.35],["03/20",73.6],["03/23",76.52],["03/24",77.95],["03/25",80.04],["03/26",74.16],["03/27",72.16],["03/30",70.61],["03/31",76.89],["04/01",80.04],["04/02",82.65],["04/06",82.64],["04/07",83.08],["04/08",86.95],["04/09",88.66],["04/10",85.22],["04/13",91.83],["04/14",90.12],["04/15",93.27],["04/16",102.44],["04/17",107.71],["04/20",105.91],["04/21",103.48],["04/22",103.48],["04/23",105.34],["04/24",109.79],["04/27",101.29],["04/28",94.4],["04/29",98.29],["04/30",105.05],["05/01",107.81],["05/04",107.1],["05/05",112.98],["05/06",119.19],["05/07",121.5],["05/08",121.81],["05/11",136.53],["05/12",132.08],["05/13",139.74],["05/14",141.16],["05/15",137.64],["05/18",132.39],["05/19",134.79],["05/20",141.85],["05/21",146.53],["05/22",156.78],["05/26",164.46],["05/27",157.2],["05/28",166.33],["05/29",152.54],["06/01",149.58],["06/02",166.63],["06/03",163.5],["06/04",169.35],["06/05",151.02],["06/08",158.79],["06/09",157.52],["06/10",154.28],["06/11",163.57],["06/12",166.71],["06/15",174.3],["06/16",161.59],["06/17",150.2],["06/18",158.23],["06/22",174.73],["06/23",163.28],["06/24",158.48],["06/25",162.27],["06/26",149.75],["06/29",156.14],["06/30",161.85],["07/01",147.03],["07/02",135.27],["07/06",138.89],["07/07",126.4],["07/08",128.84],["07/09",137.5],["07/10",136.13],["07/13",132.15],["07/14",141.36],["07/15",135.22],["07/16",127.65],["07/17",124.96],["07/20",125.88],["07/21",137.84],["07/22",136.93],["07/23",138.68],["07/24",125.92],["07/27",121.52],["07/28",111.71]]},"NVDA":{"name":"英伟达 NVIDIA","pts":[["03/19",178.35],["03/20",172.5],["03/23",175.44],["03/24",175.0],["03/25",178.47],["03/26",171.04],["03/27",167.32],["03/30",164.98],["03/31",174.2],["04/01",175.55],["04/02",177.18],["04/06",177.43],["04/07",177.89],["04/08",181.87],["04/09",183.7],["04/10",188.41],["04/13",189.09],["04/14",196.28],["04/15",198.64],["04/16",198.12],["04/17",201.45],["04/20",201.82],["04/21",199.65],["04/22",202.26],["04/23",199.41],["04/24",208.03],["04/27",216.36],["04/28",212.92],["04/29",209.01],["04/30",199.34],["05/01",198.22],["05/04",198.25],["05/05",196.27],["05/06",207.59],["05/07",211.25],["05/08",214.95],["05/11",219.18],["05/12",220.52],["05/13",225.57],["05/14",235.47],["05/15",225.06],["05/18",222.06],["05/19",220.35],["05/20",223.21],["05/21",219.25],["05/22",215.08],["05/26",214.61],["05/27",212.35],["05/28",214.0],["05/29",210.89],["06/01",224.1],["06/02",222.56],["06/03",214.5],["06/04",218.66],["06/05",205.1],["06/08",208.64],["06/09",208.19],["06/10",200.42],["06/11",204.87],["06/12",205.19],["06/15",212.45],["06/16",207.41],["06/17",204.65],["06/18",210.69],["06/22",208.65],["06/23",200.04],["06/24",199.0],["06/25",195.74],["06/26",192.53],["06/29",194.97],["06/30",200.09],["07/01",197.58],["07/02",194.83],["07/06",195.55],["07/07",196.93],["07/08",204.12],["07/09",202.78],["07/10",210.96],["07/13",203.53],["07/14",211.8],["07/15",212.5],["07/16",207.4],["07/17",202.81],["07/20",203.28],["07/21",207.29],["07/22",212.06],["07/23",208.76],["07/24",206.84],["07/27",196.51],["07/28",197.63]]},"GOOGL":{"name":"谷歌 Alphabet","pts":[["03/19",306.95],["03/20",300.82],["03/23",301.88],["03/24",290.27],["03/25",290.76],["03/26",280.75],["03/27",274.18],["03/30",273.34],["03/31",287.39],["04/01",297.21],["04/02",295.59],["04/06",299.81],["04/07",305.28],["04/08",317.13],["04/09",318.3],["04/10",317.05],["04/13",321.12],["04/14",332.71],["04/15",336.92],["04/16",335.82],["04/17",341.48],["04/20",337.22],["04/21",332.09],["04/22",339.12],["04/23",338.69],["04/24",344.19],["04/27",350.13],["04/28",349.57],["04/29",349.73],["04/30",384.57],["05/01",385.46],["05/04",383.02],["05/05",388.2],["05/06",397.8],["05/07",397.75],["05/08",400.56],["05/11",388.41],["05/12",387.12],["05/13",402.38],["05/14",400.83],["05/15",396.54],["05/18",396.7],["05/19",387.43],["05/20",388.68],["05/21",387.43],["05/22",382.74],["05/26",388.65],["05/27",388.6],["05/28",389.9],["05/29",380.11],["06/01",376.15],["06/02",361.63],["06/03",358.78],["06/04",371.97],["06/05",368.31],["06/08",363.31],["06/09",364.26],["06/10",356.38],["06/11",357.77],["06/12",359.68],["06/15",369.35],["06/16",373.25],["06/17",363.79],["06/18",368.03],["06/22",349.68],["06/23",346.13],["06/24",345.29],["06/25",343.71],["06/26",337.39],["06/29",353.65],["06/30",357.37],["07/01",361.21],["07/02",359.91],["07/06",366.46],["07/07",367.03],["07/08",361.92],["07/09",358.89],["07/10",357.18],["07/13",352.51],["07/14",359.51],["07/15",370.92],["07/16",354.46],["07/17",346.77],["07/20",351.99],["07/21",347.15],["07/22",342.09],["07/23",317.69],["07/24",319.74],["07/27",326.56],["07/28",335.89]]},"MSFT":{"name":"微软 Microsoft","pts":[["03/19",388.18],["03/20",381.04],["03/23",382.17],["03/24",371.93],["03/25",370.24],["03/26",365.18],["03/27",356.0],["03/30",358.18],["03/31",369.37],["04/01",368.57],["04/02",372.65],["04/06",372.07],["04/07",371.49],["04/08",373.52],["04/09",372.26],["04/10",370.07],["04/13",383.54],["04/14",392.26],["04/15",410.33],["04/16",419.35],["04/17",421.88],["04/20",417.17],["04/21",423.24],["04/22",431.98],["04/23",414.85],["04/24",423.7],["04/27",423.9],["04/28",428.32],["04/29",423.54],["04/30",406.9],["05/01",413.54],["05/04",412.73],["05/05",410.49],["05/06",413.07],["05/07",419.86],["05/08",414.22],["05/11",411.77],["05/12",406.89],["05/13",404.33],["05/14",408.55],["05/15",421.01],["05/18",422.62],["05/19",416.52],["05/20",420.15],["05/21",419.09],["05/22",418.57],["05/26",416.03],["05/27",412.67],["05/28",426.99],["05/29",450.24],["06/01",460.52],["06/02",441.31],["06/03",427.34],["06/04",428.05],["06/05",416.67],["06/08",411.74],["06/09",403.41],["06/10",397.36],["06/11",390.34],["06/12",390.74],["06/15",399.76],["06/16",393.83],["06/17",378.91],["06/18",379.4],["06/22",367.34],["06/23",373.94],["06/24",365.46],["06/25",352.83],["06/26",372.97],["06/29",368.57],["06/30",373.02],["07/01",384.28],["07/02",390.49],["07/06",386.74],["07/07",388.84],["07/08",383.34],["07/09",384.36],["07/10",385.1],["07/13",390.99],["07/14",384.93],["07/15",395.63],["07/16",401.1],["07/17",393.82],["07/20",402.29],["07/21",397.75],["07/22",390.34],["07/23",381.58],["07/24",381.7],["07/27",389.1],["07/28",395.5]]},"AAPL":{"name":"苹果 Apple","pts":[["03/19",248.73],["03/20",247.76],["03/23",251.26],["03/24",251.41],["03/25",252.39],["03/26",252.66],["03/27",248.57],["03/30",246.4],["03/31",253.56],["04/01",255.39],["04/02",255.68],["04/06",258.62],["04/07",253.27],["04/08",258.66],["04/09",260.25],["04/10",260.24],["04/13",258.96],["04/14",258.59],["04/15",266.18],["04/16",263.16],["04/17",269.98],["04/20",272.8],["04/21",265.93],["04/22",272.92],["04/23",273.18],["04/24",270.81],["04/27",267.36],["04/28",270.46],["04/29",269.92],["04/30",271.1],["05/01",279.88],["05/04",276.58],["05/05",283.92],["05/06",287.25],["05/07",287.18],["05/08",293.05],["05/11",292.68],["05/12",294.8],["05/13",298.87],["05/14",298.21],["05/15",300.23],["05/18",297.84],["05/19",298.97],["05/20",302.25],["05/21",304.99],["05/22",308.82],["05/26",308.33],["05/27",310.85],["05/28",312.51],["05/29",312.06],["06/01",306.31],["06/02",315.2],["06/03",310.26],["06/04",311.23],["06/05",307.34],["06/08",301.54],["06/09",290.55],["06/10",291.58],["06/11",295.63],["06/12",291.13],["06/15",296.42],["06/16",299.24],["06/17",295.95],["06/18",298.01],["06/22",297.01],["06/23",294.3],["06/24",293.08],["06/25",275.15],["06/26",283.78],["06/29",281.74],["06/30",289.36],["07/01",294.38],["07/02",308.63],["07/06",312.66],["07/07",310.66],["07/08",313.39],["07/09",316.22],["07/10",315.32],["07/13",317.31],["07/14",314.86],["07/15",327.5],["07/16",333.26],["07/17",333.74],["07/20",326.59],["07/21",327.74],["07/22",325.89],["07/23",321.66],["07/24",333.02],["07/27",336.91],["07/28",341.25]]},"META":{"name":"Meta","pts":[["03/19",606.14],["03/20",593.11],["03/23",603.5],["03/24",592.37],["03/25",594.34],["03/26",547.03],["03/27",525.23],["03/30",535.88],["03/31",571.6],["04/01",578.69],["04/02",573.93],["04/06",572.49],["04/07",574.52],["04/08",611.85],["04/09",627.81],["04/10",629.28],["04/13",633.94],["04/14",661.88],["04/15",670.96],["04/16",676.24],["04/17",687.91],["04/20",670.29],["04/21",668.22],["04/22",674.1],["04/23",658.54],["04/24",674.4],["04/27",677.99],["04/28",670.72],["04/29",668.5],["04/30",611.34],["05/01",608.19],["05/04",609.84],["05/05",604.4],["05/06",612.31],["05/07",616.24],["05/08",609.07],["05/11",598.31],["05/12",602.44],["05/13",616.06],["05/14",617.86],["05/15",613.66],["05/18",610.64],["05/19",602.05],["05/20",604.5],["05/21",606.82],["05/22",609.69],["05/26",611.77],["05/27",634.67],["05/28",634.7],["05/29",631.92],["06/01",599.91],["06/02",597.08],["06/03",622.4],["06/04",626.99],["06/05",592.45],["06/08",584.85],["06/09",584.05],["06/10",570.45],["06/11",567.9],["06/12",566.45],["06/15",593.48],["06/16",600.21],["06/17",567.58],["06/18",577.22],["06/22",563.85],["06/23",562.2],["06/24",557.67],["06/25",542.87],["06/26",550.25],["06/29",562.6],["06/30",563.29],["07/01",612.91],["07/02",582.9],["07/06",600.29],["07/07",615.58],["07/08",603.12],["07/09",631.48],["07/10",669.21],["07/13",656.73],["07/14",661.04],["07/15",681.31],["07/16",664.54],["07/17",646.01],["07/20",645.85],["07/21",643.81],["07/22",627.17],["07/23",606.1],["07/24",595.19],["07/27",593.87],["07/28",597.37]]},"AMZN":{"name":"亚马逊 Amazon","pts":[["03/19",208.76],["03/20",205.37],["03/23",210.14],["03/24",207.24],["03/25",211.71],["03/26",207.54],["03/27",199.34],["03/30",200.95],["03/31",208.27],["04/01",210.57],["04/02",209.77],["04/06",212.79],["04/07",213.77],["04/08",221.25],["04/09",233.65],["04/10",238.38],["04/13",239.89],["04/14",249.02],["04/15",248.5],["04/16",249.7],["04/17",250.56],["04/20",248.28],["04/21",249.91],["04/22",255.36],["04/23",255.08],["04/24",263.99],["04/27",261.12],["04/28",259.7],["04/29",263.04],["04/30",265.06],["05/01",268.26],["05/04",272.05],["05/05",273.55],["05/06",274.99],["05/07",271.17],["05/08",272.68],["05/11",268.99],["05/12",265.82],["05/13",270.13],["05/14",267.22],["05/15",264.14],["05/18",264.86],["05/19",259.34],["05/20",265.01],["05/21",268.46],["05/22",266.32],["05/26",265.29],["05/27",271.85],["05/28",274.0],["05/29",270.64],["06/01",261.26],["06/02",256.52],["06/03",250.02],["06/04",253.79],["06/05",246.03],["06/08",245.22],["06/09",244.19],["06/10",238.0],["06/11",241.51],["06/12",238.55],["06/15",246.02],["06/16",246.0],["06/17",237.5],["06/18",244.39],["06/22",232.79],["06/23",234.11],["06/24",234.27],["06/25",227.01],["06/26",232.69],["06/29",240.14],["06/30",238.34],["07/01",241.7],["07/02",242.67],["07/06",244.16],["07/07",245.98],["07/08",243.62],["07/09",247.04],["07/10",245.34],["07/13",247.31],["07/14",247.49],["07/15",254.96],["07/16",249.89],["07/17",247.23],["07/20",249.99],["07/21",247.55],["07/22",244.85],["07/23",233.66],["07/24",232.11],["07/27",231.39],["07/28",232.04]]},"TSLA":{"name":"特斯拉 Tesla","pts":[["03/19",380.3],["03/20",367.96],["03/23",380.85],["03/24",383.03],["03/25",385.95],["03/26",372.11],["03/27",361.83],["03/30",355.28],["03/31",371.75],["04/01",381.26],["04/02",360.59],["04/06",352.82],["04/07",346.65],["04/08",343.25],["04/09",345.62],["04/10",348.95],["04/13",352.42],["04/14",364.2],["04/15",391.95],["04/16",388.9],["04/17",400.62],["04/20",392.5],["04/21",386.42],["04/22",387.51],["04/23",373.72],["04/24",376.3],["04/27",378.67],["04/28",376.02],["04/29",372.8],["04/30",381.63],["05/01",390.82],["05/04",392.51],["05/05",389.37],["05/06",398.73],["05/07",411.79],["05/08",428.35],["05/11",445.0],["05/12",433.45],["05/13",445.27],["05/14",443.3],["05/15",422.24],["05/18",409.99],["05/19",404.11],["05/20",417.26],["05/21",417.85],["05/22",426.01],["05/26",433.59],["05/27",440.36],["05/28",442.1],["05/29",435.79],["06/01",415.88],["06/02",423.74],["06/03",423.7],["06/04",418.45],["06/05",391.0],["06/08",408.95],["06/09",396.68],["06/10",381.59],["06/11",399.15],["06/12",406.43],["06/15",411.15],["06/16",404.66],["06/17",396.38],["06/18",400.49],["06/22",405.05],["06/23",381.61],["06/24",375.53],["06/25",375.12],["06/26",379.71],["06/29",411.84],["06/30",420.6],["07/01",425.3],["07/02",393.45],["07/06",419.77],["07/07",402.9],["07/08",394.06],["07/09",406.55],["07/10",407.76],["07/13",394.76],["07/14",396.18],["07/15",394.46],["07/16",391.06],["07/17",380.84],["07/20",369.57],["07/21",378.93],["07/22",374.01],["07/23",319.69],["07/24",313.03],["07/27",309.22],["07/28",306.86]]},"TSM":{"name":"台积电 TSMC","pts":[["03/19",338.0],["03/20",328.47],["03/23",337.66],["03/24",342.45],["03/25",346.94],["03/26",325.35],["03/27",325.98],["03/30",315.76],["03/31",337.16],["04/01",340.69],["04/02",338.25],["04/06",340.96],["04/07",344.51],["04/08",365.05],["04/09",364.64],["04/10",369.73],["04/13",368.71],["04/14",379.0],["04/15",374.22],["04/16",362.5],["04/17",369.63],["04/20",365.38],["04/21",367.22],["04/22",386.53],["04/23",381.77],["04/24",401.52],["04/27",404.03],["04/28",391.42],["04/29",392.91],["04/30",395.13],["05/01",396.74],["05/04",400.67],["05/05",393.49],["05/06",418.52],["05/07",413.18],["05/08",410.72],["05/11",403.59],["05/12",396.35],["05/13",398.87],["05/14",416.74],["05/15",403.41],["05/18",395.02],["05/19",391.69],["05/20",400.68],["05/21",406.2],["05/22",403.57],["05/26",411.36],["05/27",421.74],["05/28",423.87],["05/29",417.47],["06/01",434.61],["06/02",445.65],["06/03",435.67],["06/04",443.88],["06/05",414.2],["06/08",425.8],["06/09",426.92],["06/10",407.8],["06/11",421.07],["06/12",423.93],["06/15",441.4],["06/16",425.83],["06/17",432.15],["06/18",462.12],["06/22",467.67],["06/23",436.39],["06/24",440.83],["06/25",434.99],["06/26",432.35],["06/29",455.1],["06/30",477.57],["07/01",444.23],["07/02",434.16],["07/06",451.79],["07/07",432.57],["07/08",436.98],["07/09",436.96],["07/10",434.11],["07/13",421.58],["07/14",420.39],["07/15",419.48],["07/16",409.74],["07/17",398.37],["07/20",402.3],["07/21",424.61],["07/22",421.21],["07/23",415.58],["07/24",403.41],["07/27",399.09],["07/28",394.72]]},"AVGO":{"name":"博通 Broadcom","pts":[["03/19",318.67],["03/20",309.37],["03/23",322.0],["03/24",317.79],["03/25",318.31],["03/26",308.93],["03/27",300.2],["03/30",292.95],["03/31",309.02],["04/01",312.99],["04/02",314.05],["04/06",313.93],["04/07",333.44],["04/08",350.08],["04/09",354.35],["04/10",370.96],["04/13",379.15],["04/14",380.18],["04/15",396.09],["04/16",397.84],["04/17",405.9],["04/20",399.0],["04/21",401.53],["04/22",421.98],["04/23",419.28],["04/24",422.09],["04/27",417.54],["04/28",399.2],["04/29",404.81],["04/30",416.77],["05/01",420.61],["05/04",415.84],["05/05",426.68],["05/06",424.77],["05/07",411.91],["05/08",429.32],["05/11",427.75],["05/12",418.64],["05/13",416.13],["05/14",439.1],["05/15",424.52],["05/18",420.05],["05/19",410.42],["05/20",417.1],["05/21",413.91],["05/22",413.49],["05/26",421.34],["05/27",421.19],["05/28",425.91],["05/29",446.06],["06/01",459.24],["06/02",480.81],["06/03",478.47],["06/04",418.25],["06/05",385.12],["06/08",395.97],["06/09",391.54],["06/10",371.51],["06/11",384.96],["06/12",381.47],["06/15",393.32],["06/16",376.11],["06/17",392.28],["06/18",410.7],["06/22",392.13],["06/23",380.15],["06/24",382.07],["06/25",378.91],["06/26",365.02],["06/29",372.45],["06/30",377.75],["07/01",369.34],["07/02",360.45],["07/06",373.9],["07/07",370.78],["07/08",388.69],["07/09",401.11],["07/10",399.97],["07/13",384.05],["07/14",389.11],["07/15",394.28],["07/16",374.45],["07/17",370.83],["07/20",378.16],["07/21",386.5],["07/22",396.81],["07/23",392.47],["07/24",381.92],["07/27",383.22],["07/28",384.34]]},"INTC":{"name":"英特尔 Intel","pts":[["03/19",46.18],["03/20",43.87],["03/23",44.01],["03/24",44.06],["03/25",47.18],["03/26",44.1],["03/27",43.13],["03/30",41.19],["03/31",44.13],["04/01",48.03],["04/02",50.38],["04/06",50.78],["04/07",52.91],["04/08",58.95],["04/09",61.72],["04/10",62.38],["04/13",65.18],["04/14",63.81],["04/15",64.94],["04/16",68.5],["04/17",68.5],["04/20",65.7],["04/21",66.26],["04/22",65.27],["04/23",66.78],["04/24",82.54],["04/27",84.99],["04/28",84.52],["04/29",94.75],["04/30",94.48],["05/01",99.62],["05/04",95.78],["05/05",108.15],["05/06",113.01],["05/07",109.62],["05/08",124.92],["05/11",129.44],["05/12",120.61],["05/13",120.29],["05/14",115.93],["05/15",108.77],["05/18",108.17],["05/19",110.8],["05/20",118.96],["05/21",118.5],["05/22",119.84],["05/26",123.52],["05/27",121.77],["05/28",120.89],["05/29",114.68],["06/01",109.33],["06/02",107.93],["06/03",112.71],["06/04",111.78],["06/05",99.17],["06/08",110.27],["06/09",107.92],["06/10",107.04],["06/11",116.96],["06/12",124.57],["06/15",127.86],["06/16",117.05],["06/17",121.1],["06/18",133.99],["06/22",140.94],["06/23",132.28],["06/24",131.65],["06/25",132.87],["06/26",128.32],["06/29",131.72],["06/30",139.63],["07/01",127.02],["07/02",120.35],["07/06",122.2],["07/07",110.39],["07/08",110.24],["07/09",112.54],["07/10",109.84],["07/13",103.12],["07/14",107.76],["07/15",102.99],["07/16",96.98],["07/17",95.04],["07/20",97.06],["07/21",105.45],["07/22",102.62],["07/23",100.23],["07/24",92.32],["07/27",91.67],["07/28",87.54]]},"QCOM":{"name":"高通 Qualcomm","pts":[["03/19",130.8],["03/20",129.42],["03/23",127.88],["03/24",128.2],["03/25",129.87],["03/26",130.06],["03/27",126.64],["03/30",126.6],["03/31",128.31],["04/01",126.81],["04/02",126.33],["04/06",125.27],["04/07",123.61],["04/08",127.04],["04/09",127.28],["04/10",127.59],["04/13",130.76],["04/14",132.35],["04/15",132.56],["04/16",133.98],["04/17",135.7],["04/20",137.01],["04/21",135.06],["04/22",135.57],["04/23",133.46],["04/24",148.3],["04/27",149.71],["04/28",149.45],["04/29",155.43],["04/30",178.92],["05/01",176.36],["05/04",167.76],["05/05",185.86],["05/06",191.86],["05/07",201.8],["05/08",218.28],["05/11",236.66],["05/12",209.54],["05/13",212.39],["05/14",199.34],["05/15",200.75],["05/18",202.89],["05/19",194.89],["05/20",201.76],["05/21",212.62],["05/22",237.28],["05/26",247.9],["05/27",232.54],["05/28",242.39],["05/29",250.1],["06/01",228.15],["06/02",239.95],["06/03",249.09],["06/04",242.57],["06/05",215.94],["06/08",217.77],["06/09",205.42],["06/10",191.2],["06/11",202.96],["06/12",211.72],["06/15",220.81],["06/16",214.07],["06/17",212.97],["06/18",226.11],["06/22",221.9],["06/23",204.13],["06/24",197.41],["06/25",204.9],["06/26",189.39],["06/29",188.72],["06/30",184.79],["07/01",181.92],["07/02",176.25],["07/06",186.48],["07/07",182.97],["07/08",186.56],["07/09",191.11],["07/10",189.16],["07/13",183.98],["07/14",178.1],["07/15",177.98],["07/16",170.61],["07/17",171.78],["07/20",170.32],["07/21",173.5],["07/22",175.63],["07/23",171.11],["07/24",166.97],["07/27",170.04],["07/28",164.6]]},"ARM":{"name":"Arm","pts":[["03/19",129.82],["03/20",132.35],["03/23",136.89],["03/24",134.96],["03/25",157.07],["03/26",154.8],["03/27",144.13],["03/30",136.96],["03/31",151.28],["04/01",155.07],["04/02",149.11],["04/06",148.77],["04/07",143.86],["04/08",148.91],["04/09",149.79],["04/10",148.93],["04/13",157.58],["04/14",161.22],["04/15",159.34],["04/16",162.33],["04/17",166.73],["04/20",175.1],["04/21",175.49],["04/22",196.57],["04/23",204.61],["04/24",234.81],["04/27",215.88],["04/28",198.65],["04/29",201.69],["04/30",210.32],["05/01",211.18],["05/04",203.26],["05/05",208.84],["05/06",237.3],["05/07",213.31],["05/08",213.27],["05/11",212.65],["05/12",207.92],["05/13",221.21],["05/14",228.5],["05/15",209.16],["05/18",215.12],["05/19",223.15],["05/20",256.73],["05/21",298.23],["05/22",306.51],["05/26",321.22],["05/27",302.71],["05/28",335.27],["05/29",353.29],["06/01",408.85],["06/02",402.71],["06/03",411.83],["06/04",393.44],["06/05",342.93],["06/08",346.39],["06/09",324.86],["06/10",307.43],["06/11",342.23],["06/12",380.81],["06/15",412.55],["06/16",396.34],["06/17",418.88],["06/18",439.46],["06/22",407.72],["06/23",366.39],["06/24",359.08],["06/25",347.71],["06/26",334.27],["06/29",343.58],["06/30",354.57],["07/01",337.47],["07/02",315.28],["07/06",322.24],["07/07",300.43],["07/08",300.24],["07/09",327.87],["07/10",323.39],["07/13",298.99],["07/14",281.17],["07/15",277.01],["07/16",262.01],["07/17",267.19],["07/20",269.61],["07/21",289.73],["07/22",283.4],["07/23",283.04],["07/24",260.01],["07/27",266.33],["07/28",247.0]]},"AAOI":{"name":"AAOI 应用光电","pts":[["03/19",101.92],["03/20",87.54],["03/23",95.76],["03/24",113.9],["03/25",114.41],["03/26",97.42],["03/27",98.21],["03/30",85.19],["03/31",84.59],["04/01",86.35],["04/02",103.91],["04/06",107.45],["04/07",117.64],["04/08",132.7],["04/09",133.3],["04/10",150.6],["04/13",153.19],["04/14",146.39],["04/15",142.55],["04/16",157.32],["04/17",159.42],["04/20",163.47],["04/21",150.57],["04/22",149.42],["04/23",137.73],["04/24",162.17],["04/27",145.78],["04/28",137.26],["04/29",152.83],["04/30",164.36],["05/01",183.51],["05/04",172.98],["05/05",180.57],["05/06",178.54],["05/07",157.55],["05/08",148.94],["05/11",184.9],["05/12",188.28],["05/13",223.1],["05/14",203.57],["05/15",190.36],["05/18",173.26],["05/19",171.33],["05/20",165.26],["05/21",176.81],["05/22",181.49],["05/26",177.62],["05/27",179.83],["05/28",169.02],["05/29",158.41],["06/01",185.67],["06/02",202.37],["06/03",184.07],["06/04",202.89],["06/05",177.0],["06/08",196.64],["06/09",162.88],["06/10",175.13],["06/11",172.78],["06/12",169.05],["06/15",191.55],["06/16",170.81],["06/17",167.34],["06/18",161.85],["06/22",171.23],["06/23",147.44],["06/24",146.97],["06/25",138.54],["06/26",135.69],["06/29",150.1],["06/30",148.16],["07/01",139.0],["07/02",120.95],["07/06",123.36],["07/07",114.41],["07/08",114.44],["07/09",122.21],["07/10",119.92],["07/13",111.88],["07/14",125.45],["07/15",109.09],["07/16",100.24],["07/17",102.41],["07/20",103.02],["07/21",119.26],["07/22",110.52],["07/23",112.02],["07/24",100.15],["07/27",97.82],["07/28",89.2]]},"AXTI":{"name":"AXT","pts":[["03/19",58.09],["03/20",54.24],["03/23",64.44],["03/24",68.44],["03/25",67.35],["03/26",58.51],["03/27",60.63],["03/30",52.73],["03/31",56.98],["04/01",47.14],["04/02",52.84],["04/06",41.99],["04/07",45.46],["04/08",53.18],["04/09",63.12],["04/10",64.18],["04/13",66.45],["04/14",67.3],["04/15",62.93],["04/16",81.78],["04/17",82.56],["04/20",78.76],["04/21",74.97],["04/22",86.94],["04/23",75.27],["04/24",76.16],["04/27",70.15],["04/28",68.71],["04/29",71.07],["04/30",79.22],["05/01",96.0],["05/04",106.0],["05/05",107.55],["05/06",104.83],["05/07",108.42],["05/08",116.36],["05/11",125.81],["05/12",122.9],["05/13",121.94],["05/14",114.98],["05/15",123.78],["05/18",105.88],["05/19",112.88],["05/20",104.61],["05/21",121.02],["05/22",140.83],["05/26",132.6],["05/27",122.77],["05/28",115.7],["05/29",103.16],["06/01",109.55],["06/02",110.85],["06/03",106.7],["06/04",105.99],["06/05",89.04],["06/08",90.78],["06/09",78.36],["06/10",85.29],["06/11",88.34],["06/12",97.18],["06/15",110.74],["06/16",93.04],["06/17",92.11],["06/18",84.57],["06/22",92.44],["06/23",77.91],["06/24",70.14],["06/25",69.06],["06/26",70.15],["06/29",71.46],["06/30",72.08],["07/01",65.03],["07/02",56.62],["07/06",63.52],["07/07",58.15],["07/08",60.12],["07/09",62.55],["07/10",57.21],["07/13",50.46],["07/14",57.57],["07/15",53.42],["07/16",45.57],["07/17",45.86],["07/20",48.83],["07/21",56.51],["07/22",52.98],["07/23",52.93],["07/24",47.23],["07/27",47.88],["07/28",43.32]]},"LITE":{"name":"Lumentum","pts":[["03/19",772.13],["03/20",706.35],["03/23",728.95],["03/24",801.99],["03/25",777.17],["03/26",688.8],["03/27",702.73],["03/30",654.79],["03/31",702.76],["04/01",764.65],["04/02",826.88],["04/06",772.28],["04/07",815.75],["04/08",896.02],["04/09",894.13],["04/10",897.3],["04/13",871.18],["04/14",852.79],["04/15",824.01],["04/16",891.22],["04/17",894.07],["04/20",895.11],["04/21",836.92],["04/22",873.6],["04/23",846.89],["04/24",881.64],["04/27",859.68],["04/28",791.37],["04/29",858.32],["04/30",902.32],["05/01",949.93],["05/04",976.18],["05/05",994.56],["05/06",944.28],["05/07",892.58],["05/08",903.8],["05/11",1053.09],["05/12",992.37],["05/13",1030.37],["05/14",1001.81],["05/15",970.7],["05/18",884.98],["05/19",890.09],["05/20",868.07],["05/21",964.5],["05/22",946.9],["05/26",910.81],["05/27",902.31],["05/28",860.62],["05/29",854.96],["06/01",905.0],["06/02",1029.15],["06/03",938.0],["06/04",945.08],["06/05",863.66],["06/08",895.4],["06/09",821.76],["06/10",853.26],["06/11",889.59],["06/12",921.56],["06/15",957.24],["06/16",875.36],["06/17",869.98],["06/18",850.0],["06/22",893.93],["06/23",827.92],["06/24",842.53],["06/25",861.97],["06/26",816.98],["06/29",851.4],["06/30",858.06],["07/01",801.16],["07/02",728.32],["07/06",731.25],["07/07",698.91],["07/08",707.1],["07/09",785.77],["07/10",802.01],["07/13",768.15],["07/14",814.8],["07/15",752.0],["07/16",706.23],["07/17",732.82],["07/20",765.55],["07/21",837.56],["07/22",829.7],["07/23",833.64],["07/24",762.99],["07/27",711.96],["07/28",660.0]]},"BB":{"name":"黑莓 BlackBerry","pts":[["03/19",3.3],["03/20",3.22],["03/23",3.32],["03/24",3.23],["03/25",3.29],["03/26",3.25],["03/27",3.16],["03/30",3.15],["03/31",3.24],["04/01",3.36],["04/02",3.46],["04/06",3.55],["04/07",3.48],["04/08",3.53],["04/09",3.82],["04/10",3.84],["04/13",3.87],["04/14",3.97],["04/15",4.11],["04/16",4.69],["04/17",4.86],["04/20",5.5],["04/21",5.61],["04/22",5.43],["04/23",5.27],["04/24",5.09],["04/27",5.32],["04/28",5.14],["04/29",5.38],["04/30",5.4],["05/01",5.42],["05/04",5.58],["05/05",5.6],["05/06",5.99],["05/07",6.1],["05/08",6.37],["05/11",6.22],["05/12",6.22],["05/13",6.1],["05/14",6.18],["05/15",6.19],["05/18",6.38],["05/19",6.21],["05/20",6.2],["05/21",6.65],["05/22",7.91],["05/26",8.42],["05/27",8.67],["05/28",8.78],["05/29",9.0],["06/01",9.72],["06/02",10.32],["06/03",10.18],["06/04",10.34],["06/05",9.41],["06/08",9.29],["06/09",8.84],["06/10",8.82],["06/11",9.29],["06/12",9.19],["06/15",9.24],["06/16",9.17],["06/17",8.83],["06/18",8.38],["06/22",8.79],["06/23",8.82],["06/24",8.62],["06/25",10.34],["06/26",11.4],["06/29",12.48],["06/30",12.65],["07/01",12.81],["07/02",11.51],["07/06",11.38],["07/07",11.1],["07/08",11.12],["07/09",11.43],["07/10",10.97],["07/13",10.71],["07/14",11.01],["07/15",10.64],["07/16",9.16],["07/17",8.99],["07/20",8.83],["07/21",8.99],["07/22",8.95],["07/23",8.63],["07/24",8.54],["07/27",8.42],["07/28",8.04]]},"HOOD":{"name":"Robinhood","pts":[["03/19",74.16],["03/20",70.89],["03/23",72.49],["03/24",69.08],["03/25",72.54],["03/26",70.35],["03/27",66.02],["03/30",65.16],["03/31",69.3],["04/01",70.11],["04/02",68.9],["04/06",69.78],["04/07",69.65],["04/08",71.83],["04/09",70.12],["04/10",69.19],["04/13",71.67],["04/14",79.09],["04/15",87.32],["04/16",86.85],["04/17",90.75],["04/20",91.28],["04/21",86.43],["04/22",88.43],["04/23",83.54],["04/24",84.71],["04/27",83.95],["04/28",82.07],["04/29",71.2],["04/30",72.89],["05/01",73.66],["05/04",76.55],["05/05",77.03],["05/06",79.05],["05/07",76.28],["05/08",77.03],["05/11",80.78],["05/12",78.27],["05/13",76.75],["05/14",80.7],["05/15",77.14],["05/18",77.15],["05/19",74.16],["05/20",75.76],["05/21",75.92],["05/22",73.64],["05/26",74.09],["05/27",76.23],["05/28",84.84],["05/29",94.3],["06/01",90.73],["06/02",88.16],["06/03",82.85],["06/04",88.33],["06/05",82.47],["06/08",85.04],["06/09",83.77],["06/10",86.36],["06/11",92.23],["06/12",93.19],["06/15",98.12],["06/16",96.71],["06/17",105.2],["06/18",108.15],["06/22",105.71],["06/23",103.25],["06/24",97.19],["06/25",93.47],["06/26",98.69],["06/29",101.83],["06/30",100.28],["07/01",108.65],["07/02",112.73],["07/06",117.55],["07/07",112.9],["07/08",113.53],["07/09",115.11],["07/10",111.97],["07/13",109.86],["07/14",113.45],["07/15",115.54],["07/16",106.02],["07/17",99.96],["07/20",99.28],["07/21",106.36],["07/22",104.48],["07/23",101.58],["07/24",94.91],["07/27",95.65],["07/28",93.67]]},"NET":{"name":"Cloudflare","pts":[["03/19",221.36],["03/20",215.42],["03/23",220.65],["03/24",213.15],["03/25",218.0],["03/26",210.13],["03/27",203.02],["03/30",194.63],["03/31",206.34],["04/01",205.43],["04/02",211.69],["04/06",211.78],["04/07",216.29],["04/08",211.25],["04/09",193.05],["04/10",166.99],["04/13",184.02],["04/14",178.65],["04/15",190.13],["04/16",197.38],["04/17",200.99],["04/20",204.81],["04/21",207.67],["04/22",207.56],["04/23",205.0],["04/24",207.07],["04/27",212.36],["04/28",208.5],["04/29",211.97],["04/30",204.97],["05/01",217.5],["05/04",224.17],["05/05",244.43],["05/06",248.59],["05/07",256.79],["05/08",196.13],["05/11",193.52],["05/12",186.79],["05/13",192.62],["05/14",199.81],["05/15",197.56],["05/18",201.75],["05/19",206.73],["05/20",210.13],["05/21",212.65],["05/22",216.17],["05/26",217.54],["05/27",209.22],["05/28",228.11],["05/29",241.82],["06/01",270.82],["06/02",272.66],["06/03",265.33],["06/04",268.64],["06/05",250.11],["06/08",247.79],["06/09",236.13],["06/10",219.67],["06/11",227.44],["06/12",228.48],["06/15",235.71],["06/16",230.97],["06/17",226.87],["06/18",224.06],["06/22",218.38],["06/23",224.94],["06/24",223.48],["06/25",226.65],["06/26",237.24],["06/29",243.76],["06/30",245.28],["07/01",246.31],["07/02",242.41],["07/06",247.55],["07/07",268.83],["07/08",273.4],["07/09",275.8],["07/10",268.4],["07/13",269.53],["07/14",281.75],["07/15",273.04],["07/16",272.46],["07/17",277.66],["07/20",272.42],["07/21",272.31],["07/22",268.98],["07/23",262.32],["07/24",262.15],["07/27",265.61],["07/28",264.15]]}};
+(function () {
+  var modal = document.getElementById('chartModal');
+  var area = document.getElementById('chartArea');
+  var titleEl = document.getElementById('chartTitle');
+  var subEl = document.getElementById('chartSub');
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function render(ticker) {
+    var data = CHART_DATA[ticker];
+    if (!data || !data.pts || data.pts.length < 2) return;
+    var pts = data.pts;
+    titleEl.textContent = data.name + ' · ' + ticker;
+    var last = pts[pts.length - 1][1], first = pts[0][1];
+    var chg = ((last - first) / first * 100);
+    subEl.innerHTML = '当前 $' + last.toFixed(2) +
+      ' &nbsp; 90日 <b style="color:' + (chg >= 0 ? 'var(--green)' : 'var(--red)') + '">' +
+      (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</b>';
+
+    area.innerHTML = '';
+    var W = area.clientWidth || 640, H = 300, padL = 46, padR = 12, padT = 12, padB = 24;
+    var vals = pts.map(function (p) { return p[1]; });
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    var rng = (hi - lo) || 1;
+    var x = function (i) { return padL + i / (pts.length - 1) * (W - padL - padR); };
+    var y = function (v) { return padT + (1 - (v - lo) / rng) * (H - padT - padB); };
+
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H });
+
+    // horizontal gridlines + y labels
+    for (var g = 0; g <= 3; g++) {
+      var gv = lo + rng * g / 3, gy = y(gv);
+      svg.appendChild(el('line', { x1: padL, y1: gy, x2: W - padR, y2: gy, stroke: 'var(--border-light)', 'stroke-width': 1 }));
+      var lb = el('text', { x: padL - 6, y: gy + 3, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-dim)' });
+      lb.textContent = '$' + gv.toFixed(gv < 10 ? 2 : 0);
+      svg.appendChild(lb);
+    }
+    // area + line
+    var up = last >= first;
+    var col = up ? 'var(--green)' : 'var(--red)';
+    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p[1]).toFixed(1); }).join(' ');
+    var areaD = d + ' L' + x(pts.length - 1) + ' ' + y(lo) + ' L' + x(0) + ' ' + y(lo) + ' Z';
+    svg.appendChild(el('path', { d: areaD, fill: col, 'fill-opacity': 0.08 }));
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: col, 'stroke-width': 1.8 }));
+
+    // x labels (first / mid / last date)
+    [0, Math.floor(pts.length / 2), pts.length - 1].forEach(function (i) {
+      var t = el('text', { x: x(i), y: H - 6, 'text-anchor': i === 0 ? 'start' : (i === pts.length - 1 ? 'end' : 'middle'), 'font-size': 10, fill: 'var(--text-dim)' });
+      t.textContent = pts[i][0]; svg.appendChild(t);
+    });
+
+    // crosshair + dot + tooltip
+    var vline = el('line', { y1: padT, y2: H - padB, stroke: 'var(--text-dim)', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: 0 });
+    var dot = el('circle', { r: 4, fill: col, stroke: '#fff', 'stroke-width': 1.5, opacity: 0 });
+    svg.appendChild(vline); svg.appendChild(dot);
+    var tip = document.createElement('div'); tip.className = 'chart-tip'; tip.style.display = 'none';
+    area.appendChild(svg); area.appendChild(tip);
+
+    function move(ev) {
+      var rect = svg.getBoundingClientRect();
+      var cx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+      var sx = cx / rect.width * W;
+      var i = Math.round((sx - padL) / (W - padL - padR) * (pts.length - 1));
+      i = Math.max(0, Math.min(pts.length - 1, i));
+      var px = x(i), py = y(pts[i][1]);
+      vline.setAttribute('x1', px); vline.setAttribute('x2', px); vline.setAttribute('opacity', 1);
+      dot.setAttribute('cx', px); dot.setAttribute('cy', py); dot.setAttribute('opacity', 1);
+      tip.style.display = 'block';
+      tip.innerHTML = pts[i][0] + '<br><b>$' + pts[i][1].toFixed(2) + '</b>';
+      var tl = px / W * rect.width;
+      tip.style.left = Math.min(Math.max(tl, 34), rect.width - 34) + 'px';
+    }
+    svg.addEventListener('mousemove', move);
+    svg.addEventListener('touchmove', function (e) { move(e); e.preventDefault(); }, { passive: false });
+    svg.addEventListener('mouseleave', function () { vline.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); tip.style.display = 'none'; });
+  }
+
+  function open(ticker) {
+    if (!CHART_DATA[ticker]) return;
+    modal.style.display = 'flex';
+    render(ticker);
+  }
+  function close() { modal.style.display = 'none'; }
+
+  document.querySelectorAll('.company-card .spark').forEach(function (s) {
+    s.style.cursor = 'zoom-in';
+    s.addEventListener('click', function () {
+      var card = s.closest('.company-card');
+      if (card) open(card.getAttribute('data-ticker'));
+    });
+  });
+  document.getElementById('chartClose').addEventListener('click', close);
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})();
+</script>
+
+</body>
+</html>
