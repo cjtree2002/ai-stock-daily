@@ -35,4 +35,6 @@ AI_COMPANIES = [
     {"name": "黑莓 BlackBerry", "ticker": "BB",    "sector": "其他",       "keywords": ["BlackBerry", "BB"]},
     {"name": "Robinhood",       "ticker": "HOOD",  "sector": "其他",       "keywords": ["Robinhood", "HOOD"]},
     {"name": "Cloudflare",      "ticker": "NET",   "sector": "云与AI",     "keywords": ["Cloudflare", "NET"]},
+    {"name": "Snowflake",       "ticker": "SNOW",  "sector": "云与AI",     "keywords": ["Snowflake", "SNOW"]},
+    {"name": "Palantir",        "ticker": "PLTR",  "sector": "云与AI",     "keywords": ["Palantir", "PLTR"]},
 ]
