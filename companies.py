@@ -37,4 +37,5 @@ AI_COMPANIES = [
     {"name": "Cloudflare",      "ticker": "NET",   "sector": "云与AI",     "keywords": ["Cloudflare", "NET"]},
     {"name": "Snowflake",       "ticker": "SNOW",  "sector": "云与AI",     "keywords": ["Snowflake", "SNOW"]},
     {"name": "Palantir",        "ticker": "PLTR",  "sector": "云与AI",     "keywords": ["Palantir", "PLTR"]},
+    {"name": "Shopify",         "ticker": "SHOP",  "sector": "云与AI",     "keywords": ["Shopify", "SHOP"]},
 ]
