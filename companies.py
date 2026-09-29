@@ -22,6 +22,7 @@ AI_COMPANIES = [
     {"name": "微软 Microsoft",  "ticker": "MSFT",  "sector": "云与AI",     "keywords": ["Microsoft", "MSFT", "Copilot"]},
     {"name": "苹果 Apple",      "ticker": "AAPL",  "sector": "云与AI",     "keywords": ["Apple", "AAPL"]},
     {"name": "Meta",            "ticker": "META",  "sector": "云与AI",     "keywords": ["Meta", "META", "Facebook", "Instagram", "Llama"]},
+    {"name": "戴尔 Dell",       "ticker": "DELL",  "sector": "云与AI",     "keywords": ["Dell", "DELL", "PowerEdge"]},
     {"name": "亚马逊 Amazon",   "ticker": "AMZN",  "sector": "云与AI",     "keywords": ["Amazon", "AMZN", "AWS"]},
     {"name": "特斯拉 Tesla",    "ticker": "TSLA",  "sector": "云与AI",     "keywords": ["Tesla", "TSLA"]},
     {"name": "台积电 TSMC",     "ticker": "TSM",   "sector": "AI芯片",     "keywords": ["TSMC", "Taiwan Semiconductor", "TSM"]},

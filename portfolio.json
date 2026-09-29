@@ -3,7 +3,7 @@
  "strategy": "AI基建超级周期 · 基本面动量",
  "initial_capital": 1000000,
  "inception": "2026-07-01",
- "cash": 147966.27,
+ "cash": 56554.14,
  "holdings": [
   {
    "ticker": "NVDA",
@@ -76,6 +76,18 @@
    "shares": 258,
    "avg_cost": 171.44,
    "opened": "2026-09-03"
+  },
+  {
+   "ticker": "DELL",
+   "shares": 84,
+   "avg_cost": 542.61,
+   "opened": "2026-09-29"
+  },
+  {
+   "ticker": "SHOP",
+   "shares": 318,
+   "avg_cost": 144.13,
+   "opened": "2026-09-29"
   }
  ],
  "trades": [
@@ -262,6 +274,22 @@
    "shares": 258,
    "price": 171.44,
    "reason": "按用户指示新增自选并各建约5%仓位（手动执行，非AI调仓）"
+  },
+  {
+   "date": "2026-09-29",
+   "action": "买入",
+   "ticker": "DELL",
+   "shares": 84,
+   "price": 542.61,
+   "reason": "按用户指示建约5%仓位（手动执行，非AI调仓）"
+  },
+  {
+   "date": "2026-09-29",
+   "action": "买入",
+   "ticker": "SHOP",
+   "shares": 318,
+   "price": 144.13,
+   "reason": "按用户指示建约5%仓位（手动执行，非AI调仓）"
   }
  ],
  "history": [
