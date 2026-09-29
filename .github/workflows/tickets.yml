@@ -1,9 +1,11 @@
 name: 演出开票提醒
 
 on:
-  schedule:
-    - cron: "0 1 * * *"        # 每天 UTC 01:00 = 北京/新加坡 09:00 跑一次
-  workflow_dispatch:            # 也可在 GitHub 网页上手动点一次
+  # 已停用:2026-09-29 用户决定停止本项目,移除每天自动运行的定时触发。
+  # 如需恢复,把下面这行的注释去掉即可:
+  #   schedule:
+  #     - cron: "0 1 * * *"     # 每天 UTC 01:00 = 北京/新加坡 09:00
+  workflow_dispatch:            # 仅保留:如需手动跑一次,可在 GitHub 网页点 Run
 
 permissions:
   contents: write
